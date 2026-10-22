@@ -13,3 +13,7 @@
 | E-009 | 22.10.2026 | Getränkekarte: Ilker schickt ein Foto, Claude trägt sie vorab ein; danach pflegt der Inhaber sie in den Einstellungen | Chat | Ilker | gilt |
 | E-010 | 22.10.2026 | Keine Kasse: „Abrechnen“ zeigt Summe und Punkte, Zahlung läuft weiter über die TSE-Kasse | Plan 0.1 | Claude, Ilker bestätigt | gilt |
 | E-011 | 22.10.2026 | Getränkekarte vom 11.04.2026 komplett als Startdaten (`src/lib/menu.ts`), inkl. Snacks, Flaschenverkauf, Wein 0,5 l; „Mix +0,50 €“ als eigene Kachel bei Spirituosen und Whisky | Chat | Ilker | gilt |
+| E-012 | 22.10.2026 | QR-Inhalt `PUB22:<zufällige ID>`; fremde QR-Codes werden beim Scannen ignoriert | Bau 0.1 | Claude | gilt |
+| E-013 | 22.10.2026 | Einlösen: Punkte werden erst beim Abrechnen abgezogen; €-Rabatt in Stufen (Start 100 P. = 5 €), höchstens bis zur Summe; Prämien werden gratis ausgegeben und nicht gebucht; Punkte nur auf den bezahlten Betrag | Bau 0.1, Plan 0.1 | Claude | gilt |
+| E-014 | 22.10.2026 | Offline per handgeschriebenem Service Worker (keine neue Abhängigkeit); Seiten erst aus dem Netz (3 s), sonst aus dem Speicher | Bau 0.1 | Claude | gilt |
+| E-015 | 22.10.2026 | Sichern über das Teilen-Menü des iPads („In Dateien sichern“ → iCloud Drive), Erinnerung nach 7 Tagen ohne Sicherung | Bau 0.1, Plan 0.1 | Claude | gilt |

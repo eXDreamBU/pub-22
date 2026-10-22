@@ -1,6 +1,6 @@
 # Jetzt
 
-- **Version:** 0.1 (Grundgerüst steht: Vite + Svelte, Punkte-Rechnung mit Test)
+- **Version:** 0.1 gebaut: Deckel, Scannen, Kunden/Karten, Punkte, Prämien/Rabatt, Einstellungen, Sichern, offline-fähige PWA.
 - **Ziel:** Kundenkarten-App für die Bar Pub 22 auf dem iPad: QR-Karte scannen, Deckel führen, abrechnen, Punkte sammeln und einlösen.
-- **Nächste Schritte:** Datenmodell + Speicher (localStorage, Sichern/Wiederherstellen), dann Deckel-Bildschirm, Scannen, Kunden/Karten, Einstellungen. Getränkekarte steht als Startdaten in `src/lib/menu.ts`.
+- **Nächste Schritte:** GitHub Pages einschalten (Quelle „GitHub Actions“), dann Test auf dem iPad in der Bar (siehe OFFEN.md).
 - **aktualisiert:** 22.10.2026
