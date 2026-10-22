@@ -15,7 +15,7 @@
   // Only computed while the dialog is open.
   let summary = $derived(isOpen ? summarizeShift(runningTabs(app.db)) : null);
   let toCredit = $derived(isOpen ? tabsToCredit(app.db) : []);
-  let startedAt = $derived(summary?.startedAt ?? (isOpen ? runningShift(app.db).startedAt : undefined));
+  let startedAt = $derived(isOpen ? runningShift(app.db).startedAt : undefined);
   let creditCents = $derived(
     isOpen ? creditTotal(app.db) + toCredit.reduce((sum, t) => sum + tabSummary(app.db, t).paidCents, 0) : 0,
   );
