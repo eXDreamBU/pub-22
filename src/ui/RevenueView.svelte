@@ -1,5 +1,6 @@
 <script lang="ts">
   import { app } from '../state.svelte';
+  import { inBar, shiftCloseBlocker } from '../lib/db';
   import { formatEuro } from '../lib/money';
   import { runningShift } from '../lib/report';
   import { formatTime } from './format';
@@ -20,6 +21,7 @@
 
   let active = $state<(typeof tabs)[number][0]>('shifts');
   let running = $derived(runningShift(app.db));
+  let blocker = $derived(shiftCloseBlocker(app.db));
   let closeDialog: ShiftCloseDialog;
 
   function openTab(tabId: string) {
@@ -41,14 +43,12 @@
       <span>Noch offen: {running.openTabs} Deckel, {formatEuro(running.openCents)}</span>
     {/if}
     <div class="close">
-      <button class="primary" disabled={running.openTabs > 0 || running.tabCount === 0} onclick={() => closeDialog.open()}
-        >Schicht abschließen</button
-      >
-      {#if running.openTabs}<span class="muted">Erst alle Deckel abrechnen</span>{/if}
+      <button class="primary" disabled={!!blocker} onclick={() => closeDialog.open()}>Schicht abschließen</button>
+      {#if blocker && running.openTabs}<span class="muted">{blocker}</span>{/if}
     </div>
     {#if running.openTabs}
       <div class="row open">
-        {#each app.db.tabs as tab (tab.id)}
+        {#each inBar(app.db) as tab (tab.id)}
           <button class="small" onclick={() => openTab(tab.id)}>{tab.label}</button>
         {/each}
       </div>

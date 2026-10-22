@@ -4,17 +4,22 @@
     addItem,
     availablePoints,
     cancelTab,
+    checkIn,
+    creditTab,
+    inBar,
     incrementLine,
     payPart,
     redeemReward,
     removeItem,
     setDiscountSteps,
     settleTogether,
+    tabSince,
     tabSummary,
     type Tab,
+    type TabLine,
   } from '../lib/db';
   import { formatEuro, parseEuro, pointsFor, tabTotal } from '../lib/money';
-  import { formatTime } from './format';
+  import { formatDay, formatTime } from './format';
   import Icon from './Icon.svelte';
   import { categoryIcon, icons } from './icons';
 
@@ -28,6 +33,15 @@
   let summary = $derived(tabSummary(app.db, tab));
   let count = $derived(tab.lines.reduce((sum, l) => sum + l.qty, 0));
 
+  // Evenings on a tab that was credited: one separator per evening, only when there is more than one.
+  const visitOf = (l: TabLine) => l.visit ?? tab.openedAt;
+  let evenings = $derived(new Set(tab.lines.map(visitOf)).size);
+  const eveningCents = (visit: string) =>
+    tab.lines.reduce((sum, l) => sum + (visitOf(l) === visit ? l.priceCents * l.qty : 0), 0);
+  // ponytail: separators assume lines of one evening are contiguous, true because new lines are appended
+  const eveningStarts = (i: number) => i === 0 || visitOf(tab.lines[i - 1]) !== visitOf(tab.lines[i]);
+  const eveningLabel = (l: TabLine) => (!l.visit && !tab.creditedAt ? 'Heute' : formatDay(visitOf(l)));
+
   let redeemDialog: HTMLDialogElement;
   let settleDialog: HTMLDialogElement;
   let partDialog: HTMLDialogElement;
@@ -35,7 +49,7 @@
   let error = $state('');
 
   // Paying together: other open tabs this guest also pays, and whose tab pays (gets all points).
-  let others = $derived(app.db.tabs.filter((t) => t.id !== tab.id));
+  let others = $derived(inBar(app.db).filter((t) => t.id !== tab.id));
   let together = $state<string[]>([]);
   let payerId = $state('');
   let group = $derived([tab, ...others.filter((t) => together.includes(t.id))]);
@@ -107,8 +121,17 @@
     renameDialog.close();
   }
 
+  function doCredit() {
+    if (!confirm(`${tab.label} anschreiben? ${formatEuro(summary.paidCents)} bleiben offen.`)) return;
+    creditTab(app.db, tab.id, now());
+    app.selectedTabId = null;
+  }
+
   function doCancel() {
-    if (tab.lines.length && !confirm(`Deckel „${tab.label}“ ohne Abrechnen löschen?`)) return;
+    const question = tab.creditedAt
+      ? `„${tab.label}“ löschen? ${formatEuro(summary.paidCents)} angeschrieben gehen verloren.`
+      : `Deckel „${tab.label}“ ohne Abrechnen löschen?`;
+    if ((tab.lines.length || tab.creditedAt) && !confirm(question)) return;
     cancelTab(app.db, tab.id);
     app.selectedTabId = null;
   }
@@ -120,8 +143,19 @@
       <h2>{tab.label}</h2>
       <button class="small icon-only" aria-label="Deckel umbenennen" onclick={showRename}><Icon svg={icons.pen} size={18} /></button>
       <span class="grow"></span>
-      <span class="muted">seit {formatTime(tab.openedAt)}</span>
+      {#if tab.creditedAt}
+        <span class="badge">angeschrieben seit {formatDay(tabSince(tab))}</span>
+      {:else}
+        <span class="muted">seit {formatTime(tab.openedAt)}</span>
+      {/if}
     </header>
+
+    {#if tab.creditedAt}
+      <div class="away">
+        <p>{tab.label} ist gerade nicht da. Abrechnen geht auch so; für neue Getränke erst „Ist wieder da“ tippen (oder die Karte scannen).</p>
+        <button class="primary" onclick={() => checkIn(app.db, tab.customerId!, now())}>Ist wieder da</button>
+      </div>
+    {:else}
 
     <div class="cats">
       {#each categories as c (c)}
@@ -143,6 +177,7 @@
         </button>
       {/each}
     </div>
+    {/if}
   </div>
 
   <aside class="deckel">
@@ -152,13 +187,16 @@
     </div>
     <div class="scroll">
       {#each tab.lines as line, i (i)}
+        {#if evenings > 1 && eveningStarts(i)}
+          <div class="evening"><span class="grow">{eveningLabel(line)}</span><span class="num">{formatEuro(eveningCents(visitOf(line)))}</span></div>
+        {/if}
         <div class="line">
           <span class="stepper">
             <button class="small" aria-label="Eins entfernen" onclick={() => removeItem(tab, i)}>−</button>
             <b>{line.qty}</b>
             <button class="small" aria-label="Eins mehr" onclick={() => incrementLine(tab, i)}>+</button>
           </span>
-          <span class="grow">{line.name} <span class="muted">{line.size ?? ''}</span></span>
+          <span class="grow">{line.name.replaceAll('/', '/​')} <span class="muted">{line.size ?? ''}</span></span>
           <span class="num">{formatEuro(line.priceCents * line.qty)}</span>
         </div>
       {:else}
@@ -194,6 +232,9 @@
         <span class="muted">+{summary.pointsEarned} Punkte beim Abrechnen</span>
       {/if}
       <button class="ok pay" onclick={showSettle}>Abrechnen</button>
+      {#if tab.customerId && !tab.creditedAt}
+        <button onclick={doCredit} disabled={!tab.lines.length && !tab.rewards.length}>Anschreiben</button>
+      {/if}
       <div class="row">
         <button class="grow" onclick={showPart} disabled={!tab.lines.length}>Teil zahlen</button>
         <button class="danger grow" onclick={doCancel}>Löschen</button>
@@ -337,6 +378,25 @@
     display: grid;
     grid-template-columns: minmax(0, 1fr) minmax(280px, 320px);
   }
+  .away {
+    display: grid;
+    gap: 0.8rem;
+    justify-items: start;
+    margin-top: 2rem;
+    max-width: 32rem;
+  }
+  .away p {
+    margin: 0;
+  }
+  .evening {
+    display: flex;
+    gap: 0.5rem;
+    padding: 0.5rem 0 0.2rem;
+    border-top: 1px dashed var(--line);
+    color: var(--accent-ink);
+    font-size: 0.85rem;
+    font-weight: 600;
+  }
   .menu {
     min-height: 0;
     padding: 1rem 1.2rem;
@@ -436,6 +496,10 @@
     gap: 0.6rem;
     padding: 0.45rem 0;
     border-bottom: 1px solid var(--line);
+  }
+  .line .grow {
+    min-width: 0;
+    overflow-wrap: break-word; /* long names wrap at the "/" (zero-width space) */
   }
   .stepper {
     display: inline-flex;

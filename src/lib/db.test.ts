@@ -7,6 +7,9 @@ import {
   checkIn,
   closeShift,
   createDb,
+  creditTab,
+  creditTotal,
+  inBar,
   incrementLine,
   migrate,
   lastVisits,
@@ -22,7 +25,9 @@ import {
   setDiscountSteps,
   settle,
   settleTogether,
+  shiftCloseBlocker,
   summarizeShift,
+  tabSince,
   tabSummary,
   type Db,
 } from './db';
@@ -216,7 +221,7 @@ describe('redeeming', () => {
 });
 
 describe('openTabsTotal', () => {
-  it('sums what all open tabs would pay, discounts included, closed tabs left out', () => {
+  it('sums what all open tabs in the bar would pay, discounts included, closed and credited tabs left out', () => {
     const { db, id } = dbWithCustomer(250);
     db.settings.discountPoints = 100;
     db.settings.discountCents = 500;
@@ -229,6 +234,10 @@ describe('openTabsTotal', () => {
     const gone = openGuestTab(db, 'Tisch 4', NOW);
     addItem(gone, { id: 'z', category: 'Bier', name: 'Pils', priceCents: 999 });
     settle(db, gone.id, NOW);
+    const later = addCustomer(db, 'Ayse T.', '', NOW);
+    const owed = checkIn(db, later.id, NOW);
+    addItem(owed, { id: 'w', category: 'Bier', name: 'Pils', priceCents: 700 });
+    creditTab(db, owed.id, NOW);
     expect(openTabsTotal(db)).toBe(1350 + 400);
   });
 });
@@ -324,7 +333,7 @@ describe('closeShift', () => {
   it('refuses while a tab is open', () => {
     const db = bookedDb();
     openGuestTab(db, 'offen', NOW);
-    expect(() => closeShift(db, '', NOW)).toThrow('Erst alle Deckel');
+    expect(() => closeShift(db, '', NOW)).toThrow('Erst offen abrechnen (ohne Karte)');
     expect(db.shifts).toEqual([]);
   });
 
@@ -628,5 +637,145 @@ describe('aufs Haus', () => {
     expect(shift.discountCents).toBe(500);
     expect(shift.paidCents).toBe(3000 - 500 - 350);
     expect(shift.paidCents).toBe(db.history.reduce((sum, h) => sum + h.paidCents, 0));
+  });
+});
+
+describe('anschreiben', () => {
+  const MON = '2026-10-13T18:00:00.000Z';
+  const FRI = '2026-10-17T18:00:00.000Z';
+  const TODAY = '2026-10-23T18:00:00.000Z';
+
+  function creditedDb() {
+    const { db, id } = dbWithCustomer(0);
+    const tab = checkIn(db, id, MON);
+    addItem(tab, pils);
+    addItem(tab, pils);
+    creditTab(db, tab.id, '2026-10-13T23:00:00.000Z');
+    return { db, id, tab };
+  }
+
+  it('needs a card and something on the tab', () => {
+    const { db, id } = dbWithCustomer(0);
+    const guest = openGuestTab(db, 'Tisch 3', NOW);
+    addItem(guest, pils);
+    expect(() => creditTab(db, guest.id, NOW)).toThrow('Nur Kunden mit Karte');
+    const empty = checkIn(db, id, NOW);
+    expect(() => creditTab(db, empty.id, NOW)).toThrow('Nichts auf dem Deckel');
+    expect(inBar(db)).toHaveLength(2);
+  });
+
+  it('keeps the tab open but out of the bar, with each line stamped with its evening', () => {
+    const { db, tab } = creditedDb();
+    expect(db.tabs).toEqual([tab]);
+    expect(inBar(db)).toEqual([]);
+    expect(tab.creditedAt).toBe('2026-10-13T23:00:00.000Z');
+    expect(tab.lines.map((l) => l.visit)).toEqual([MON]);
+    expect(creditTotal(db)).toBe(800);
+  });
+
+  it('a scan brings it back: open again from now, old lines kept, new drinks on a new line', () => {
+    const { db, id, tab } = creditedDb();
+    expect(checkIn(db, id, FRI)).toBe(tab);
+    expect(tab.creditedAt).toBeUndefined();
+    expect(tab.openedAt).toBe(FRI);
+    expect(inBar(db)).toEqual([tab]);
+    addItem(tab, pils);
+    addItem(tab, pils);
+    expect(tab.lines.map((l) => [l.visit ?? tab.openedAt, l.qty])).toEqual([
+      [MON, 2],
+      [FRI, 2],
+    ]);
+    expect(tabSince(tab)).toBe(MON);
+    creditTab(db, tab.id, FRI);
+    expect(tab.lines.map((l) => l.visit)).toEqual([MON, FRI]);
+    expect(tabSince(tab)).toBe(MON);
+    expect(creditTotal(db)).toBe(1600);
+  });
+
+  it('paying three evenings books the whole sum and the points into the shift of the paying day', () => {
+    const { db, id, tab } = creditedDb();
+    closeShift(db, '', '2026-10-14T01:00:00.000Z');
+    checkIn(db, id, FRI);
+    addItem(tab, cola);
+    creditTab(db, tab.id, FRI);
+    checkIn(db, id, TODAY);
+    addItem(tab, cola);
+    const closed = settle(db, tab.id, '2026-10-23T22:00:00.000Z');
+    expect(closed.paidCents).toBe(800 + 300 + 300);
+    expect(db.customers[0].points).toBe(pointsFor(1400, 1));
+    const shift = closeShift(db, '', '2026-10-24T01:00:00.000Z');
+    expect(shift).toMatchObject({ startedAt: TODAY, paidCents: 1400, creditCents: 0 });
+    expect(shift.byCategory).toEqual([
+      { category: 'Bier', cents: 800, qty: 2 },
+      { category: 'Alkoholfrei', cents: 600, qty: 2 },
+    ]);
+  });
+
+  it('paying without drinking (tapped in the list) also counts today, not on the old evening', () => {
+    const { db, tab } = creditedDb();
+    closeShift(db, '', '2026-10-14T01:00:00.000Z');
+    settle(db, tab.id, TODAY);
+    expect(db.history.at(-1)).toMatchObject({ openedAt: TODAY, paidCents: 800 });
+    expect(db.history.at(-1)!.creditedAt).toBeUndefined();
+    expect(closeShift(db, '', TODAY).startedAt).toBe(TODAY);
+  });
+
+  it('a refused house discount leaves the credited tab credited', () => {
+    const { db, tab } = creditedDb();
+    expect(() => settle(db, tab.id, TODAY, { cents: 801 })).toThrow('Höchstens 8,00');
+    expect(tab).toMatchObject({ creditedAt: '2026-10-13T23:00:00.000Z', openedAt: MON });
+  });
+
+  it('paying part of a credited tab brings the rest back into the bar', () => {
+    const { db, tab } = creditedDb();
+    payPart(db, tab.id, [1], TODAY);
+    expect(inBar(db)).toEqual([tab]);
+    expect(tab.lines).toMatchObject([{ qty: 1, visit: MON }]);
+  });
+
+  it('shift close credits card tabs with drinks, closes empty ones and refuses with a guest left', () => {
+    const { db, id } = dbWithCustomer(0);
+    const jonas = addCustomer(db, 'Jonas', '', NOW);
+    const leer = addCustomer(db, 'Leer', '', NOW);
+    const murat = checkIn(db, id, TODAY);
+    addItem(murat, pils);
+    const j = checkIn(db, jonas.id, TODAY);
+    addItem(j, cola);
+    checkIn(db, leer.id, TODAY);
+    const guest = openGuestTab(db, 'Tisch 3', TODAY);
+    addItem(guest, pils);
+    expect(() => closeShift(db, '', NOW)).toThrow('Erst Tisch 3 abrechnen (ohne Karte)');
+    expect(db.tabs).toHaveLength(4);
+    expect(db.tabs.every((t) => !t.creditedAt)).toBe(true);
+
+    expect(shiftCloseBlocker(db)).toBe('Erst Tisch 3 abrechnen (ohne Karte)');
+    settle(db, guest.id, TODAY);
+    expect(shiftCloseBlocker(db)).toBeNull();
+    const shift = closeShift(db, '', '2026-10-24T01:00:00.000Z');
+    expect(shift).toMatchObject({ tabCount: 1, paidCents: 400, creditCents: 700 });
+    expect(db.tabs.map((t) => [t.label, !!t.creditedAt])).toEqual([
+      ['Murat K.', true],
+      ['Jonas', true],
+    ]);
+  });
+
+  it('a shift where nobody paid closes with 0 when something was credited, and counts older credits', () => {
+    const { db, id } = creditedDb();
+    closeShift(db, '', '2026-10-14T01:00:00.000Z');
+    expect(() => closeShift(db, '', FRI)).toThrow('noch keinen');
+    const jonas = addCustomer(db, 'Jonas', '', NOW);
+    const j = checkIn(db, jonas.id, FRI);
+    addItem(j, cola);
+    const shift = closeShift(db, '', '2026-10-18T01:00:00.000Z');
+    expect(shift).toMatchObject({ startedAt: FRI, tabCount: 0, paidCents: 0, byCategory: [], creditCents: 800 + 300 });
+    expect(db.tabs.find((t) => t.customerId === id)!.openedAt).toBe(MON);
+  });
+
+  it('a backup from 0.4 with an open tab loads and the tab is in the bar', () => {
+    const { db, id } = dbWithCustomer(0);
+    addItem(checkIn(db, id, NOW), pils);
+    const loaded = parseBackup(JSON.stringify(db));
+    expect(inBar(loaded)).toHaveLength(1);
+    expect(tabSince(loaded.tabs[0])).toBe(NOW);
   });
 });

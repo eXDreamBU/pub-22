@@ -60,6 +60,7 @@
     {#if shown.rewards.length}
       <p>Freigetränke: {shown.rewards.map((r) => `${r.count}× ${r.name}`).join(', ')}</p>
     {/if}
+    {#if shown.creditCents}<p class="muted">Angeschrieben offen beim Abschluss: {formatEuro(shown.creditCents)}</p>{/if}
     {#if shown.note}<p>Notiz: {shown.note}</p>{/if}
     <h3>Deckel</h3>
     <div class="tabs">
