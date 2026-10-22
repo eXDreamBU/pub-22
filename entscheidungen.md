@@ -17,3 +17,6 @@
 | E-013 | 22.10.2026 | Einlösen: Punkte werden erst beim Abrechnen abgezogen; €-Rabatt in Stufen (Start 100 P. = 5 €), höchstens bis zur Summe; Prämien werden gratis ausgegeben und nicht gebucht; Punkte nur auf den bezahlten Betrag | Bau 0.1, Plan 0.1 | Claude | gilt |
 | E-014 | 22.10.2026 | Offline per handgeschriebenem Service Worker (keine neue Abhängigkeit); Seiten erst aus dem Netz (3 s), sonst aus dem Speicher | Bau 0.1 | Claude | gilt |
 | E-015 | 22.10.2026 | Sichern über das Teilen-Menü des iPads („In Dateien sichern“ → iCloud Drive), Erinnerung nach 7 Tagen ohne Sicherung | Bau 0.1, Plan 0.1 | Claude | gilt |
+| E-016 | 22.10.2026 | Scanner startet mit der Vorderkamera (Gast hält die Karte vors iPad), Umschalten per Knopf | Chat | Ilker | gilt |
+| E-017 | 22.10.2026 | Start-Werte Einlösen bestätigt: 100 P. = Freigetränk bis 3,30 €, 100 P. = 5 € Rabatt | Chat | Ilker | gilt |
+| E-018 | 22.10.2026 | GitHub Pages eingeschaltet (Quelle GitHub Actions, Workflow `pages.yml`) | Chat | Ilker | gilt |
