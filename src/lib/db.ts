@@ -168,6 +168,12 @@ export function removeItem(tab: Tab, lineIndex: number): void {
   else tab.lines.splice(lineIndex, 1);
 }
 
+/** One more unit of an existing line, at the line's snapshot price. */
+export function incrementLine(tab: Tab, lineIndex: number): void {
+  const line = tab.lines[lineIndex];
+  if (line) line.qty++;
+}
+
 function pendingPoints(db: Db, tab: Tab, discountSteps = tab.discountSteps): number {
   return tab.rewards.reduce((sum, r) => sum + r.points, 0) + discountSteps * db.settings.discountPoints;
 }

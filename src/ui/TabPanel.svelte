@@ -4,6 +4,7 @@
     addItem,
     availablePoints,
     cancelTab,
+    incrementLine,
     payPart,
     redeemReward,
     removeItem,
@@ -145,7 +146,7 @@
           <span class="stepper">
             <button class="small" aria-label="Eins entfernen" onclick={() => removeItem(tab, i)}>−</button>
             <b>{line.qty}</b>
-            <button class="small" aria-label="Eins mehr" onclick={() => line.qty++}>+</button>
+            <button class="small" aria-label="Eins mehr" onclick={() => incrementLine(tab, i)}>+</button>
           </span>
           <span class="grow">{line.name} <span class="muted">{line.size ?? ''}</span></span>
           <span class="num">{formatEuro(line.priceCents * line.qty)}</span>
