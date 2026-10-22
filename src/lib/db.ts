@@ -160,6 +160,9 @@ export function setDiscountSteps(db: Db, tab: Tab, steps: number): void {
   const customer = customerOf(db, tab);
   if (!customer) throw new Error('Gäste ohne Karte sammeln keine Punkte');
   if (steps < 0 || pendingPoints(db, tab, steps) > customer.points) throw new Error('Nicht genug Punkte');
+  if (steps > tab.discountSteps && tab.discountSteps * db.settings.discountCents >= tabTotal(tab.lines)) {
+    throw new Error('Der Rabatt deckt schon die ganze Summe');
+  }
   tab.discountSteps = steps;
 }
 

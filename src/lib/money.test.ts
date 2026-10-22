@@ -1,5 +1,5 @@
 import { describe, expect, it } from 'vitest';
-import { formatEuro, pointsFor, tabTotal } from './money';
+import { formatEuro, parseEuro, pointsFor, tabTotal } from './money';
 
 describe('tabTotal', () => {
   it('sums quantity times price in cents', () => {
@@ -31,5 +31,21 @@ describe('pointsFor', () => {
 describe('formatEuro', () => {
   it('formats cents in German style', () => {
     expect(formatEuro(1850).replace(/\s/g, ' ')).toBe('18,50 €');
+  });
+});
+
+describe('parseEuro', () => {
+  it('reads German and English decimal input as cents', () => {
+    expect(parseEuro('3,30')).toBe(330);
+    expect(parseEuro('3.3')).toBe(330);
+    expect(parseEuro(' 12 € ')).toBe(1200);
+    expect(parseEuro('0,05')).toBe(5);
+  });
+
+  it('rejects anything that is not an amount', () => {
+    expect(parseEuro('')).toBeNull();
+    expect(parseEuro('abc')).toBeNull();
+    expect(parseEuro('-1')).toBeNull();
+    expect(parseEuro('1,234')).toBeNull();
   });
 });

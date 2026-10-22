@@ -15,6 +15,13 @@ export function pointsFor(amountCents: number, pointsPerEuro: number): number {
   return Math.floor((amountCents * pointsPerEuro) / 100);
 }
 
+/** Cents from a typed euro amount like "3,30", "3.3" or "3 €"; null if it is not a valid amount. */
+export function parseEuro(text: string): number | null {
+  const match = text.replace('€', '').trim().replace(',', '.').match(/^(\d+)(?:\.(\d{1,2}))?$/);
+  if (!match) return null;
+  return Number(match[1]) * 100 + Number((match[2] ?? '').padEnd(2, '0'));
+}
+
 const euro = new Intl.NumberFormat('de-DE', { style: 'currency', currency: 'EUR' });
 
 export function formatEuro(cents: number): string {

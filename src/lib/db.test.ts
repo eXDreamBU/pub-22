@@ -168,6 +168,17 @@ describe('redeeming', () => {
     expect(tab.discountSteps).toBe(0);
   });
 
+  it('refuses another discount step once the total is covered', () => {
+    const { db, id } = dbWithCustomer(1000);
+    db.settings.discountPoints = 100;
+    db.settings.discountCents = 500;
+    const tab = checkIn(db, id, NOW);
+    addItem(tab, { id: 'x', category: 'Bier', name: 'Pils', priceCents: 330 });
+    setDiscountSteps(db, tab, 1);
+    expect(() => setDiscountSteps(db, tab, 2)).toThrow('ganze Summe');
+    expect(tab.discountSteps).toBe(1);
+  });
+
   it('guests cannot redeem', () => {
     const db = createDb(NOW);
     const tab = openGuestTab(db, 'Tisch 3', NOW);

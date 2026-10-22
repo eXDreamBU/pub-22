@@ -1,0 +1,158 @@
+:root {
+  --bg: #15120f;
+  --panel: #241f1a;
+  --panel-2: #2f2822;
+  --line: #3d342c;
+  --text: #f3ece4;
+  --muted: #a89a8b;
+  --accent: #e0a040;
+  --accent-text: #1c1408;
+  --ok: #4fae6a;
+  --danger: #d0583f;
+  --radius: 12px;
+  color-scheme: dark;
+}
+
+* {
+  box-sizing: border-box;
+}
+
+html,
+body {
+  margin: 0;
+  height: 100%;
+  background: var(--bg);
+  color: var(--text);
+  font: 17px/1.35 system-ui, -apple-system, sans-serif;
+  -webkit-tap-highlight-color: transparent;
+  -webkit-user-select: none;
+  user-select: none;
+}
+
+input,
+textarea {
+  -webkit-user-select: text;
+  user-select: text;
+}
+
+#app {
+  height: 100%;
+}
+
+button {
+  font: inherit;
+  color: inherit;
+  background: var(--panel-2);
+  border: 1px solid var(--line);
+  border-radius: var(--radius);
+  padding: 0.7rem 1rem;
+  min-height: 48px;
+  cursor: pointer;
+  touch-action: manipulation;
+}
+
+button:active {
+  filter: brightness(1.3);
+}
+
+button:disabled {
+  opacity: 0.4;
+}
+
+button.primary {
+  background: var(--accent);
+  border-color: var(--accent);
+  color: var(--accent-text);
+  font-weight: 600;
+}
+
+button.ok {
+  background: var(--ok);
+  border-color: var(--ok);
+  color: #0c1a10;
+  font-weight: 600;
+}
+
+button.danger {
+  background: none;
+  border-color: var(--danger);
+  color: var(--danger);
+}
+
+button.small {
+  min-height: 36px;
+  padding: 0.3rem 0.7rem;
+  font-size: 0.9rem;
+}
+
+input,
+select {
+  font: inherit;
+  color: var(--text);
+  background: var(--bg);
+  border: 1px solid var(--line);
+  border-radius: 8px;
+  padding: 0.6rem 0.7rem;
+  min-height: 44px;
+  width: 100%;
+}
+
+label {
+  display: grid;
+  gap: 0.3rem;
+  color: var(--muted);
+  font-size: 0.9rem;
+}
+
+dialog {
+  background: var(--panel);
+  color: var(--text);
+  border: 1px solid var(--line);
+  border-radius: var(--radius);
+  padding: 1.5rem;
+  width: min(520px, 92vw);
+}
+
+dialog::backdrop {
+  background: rgb(0 0 0 / 0.6);
+}
+
+dialog h2 {
+  margin-top: 0;
+}
+
+.muted {
+  color: var(--muted);
+}
+
+.row {
+  display: flex;
+  gap: 0.6rem;
+  align-items: center;
+}
+
+.grow {
+  flex: 1;
+}
+
+.panel {
+  background: var(--panel);
+  border-radius: var(--radius);
+  padding: 1rem;
+}
+
+.badge {
+  display: inline-block;
+  font-size: 0.75rem;
+  padding: 0.1rem 0.45rem;
+  border-radius: 99px;
+  border: 1px solid var(--line);
+  color: var(--muted);
+  vertical-align: middle;
+}
+
+.num {
+  font-variant-numeric: tabular-nums;
+  text-align: right;
+  white-space: nowrap;
+}
