@@ -115,23 +115,43 @@ describe('periodTotals', () => {
 });
 
 describe('inPeriod', () => {
-  const now = new Date(2026, 9, 22, 12); // Thu 22.10.2026, KW 43
-  it('matches the current calendar week, month, year or everything', () => {
-    expect(inPeriod('2026-10-19', 'week', now)).toBe(true);
-    expect(inPeriod('2026-10-18', 'week', now)).toBe(false);
-    expect(inPeriod('2026-10-01', 'month', now)).toBe(true);
-    expect(inPeriod('2026-09-30', 'month', now)).toBe(false);
-    expect(inPeriod('2026-01-01', 'year', now)).toBe(true);
-    expect(inPeriod('2025-12-31', 'year', now)).toBe(false);
-    expect(inPeriod('1999-01-01', 'all', now)).toBe(true);
+  const today = '2026-10-22'; // Thu, KW 43
+  it('matches the calendar week, month, year or everything of today', () => {
+    expect(inPeriod('2026-10-19', 'week', today)).toBe(true);
+    expect(inPeriod('2026-10-18', 'week', today)).toBe(false);
+    expect(inPeriod('2026-10-01', 'month', today)).toBe(true);
+    expect(inPeriod('2026-09-30', 'month', today)).toBe(false);
+    expect(inPeriod('2026-01-01', 'year', today)).toBe(true);
+    expect(inPeriod('2025-12-31', 'year', today)).toBe(false);
+    expect(inPeriod('1999-01-01', 'all', today)).toBe(true);
   });
-  it('filters shifts by start day and tabs by closing day', () => {
-    const shift = fakeShift(at(2026, 10, 18, 18), 1, { closedAt: at(2026, 10, 19, 2) });
-    expect(shiftsInPeriod([shift], 'week', now)).toEqual([]);
+});
+
+describe('tabsInPeriod and shiftsInPeriod', () => {
+  it('put tabs paid after midnight into the start day of their shift', () => {
     const db = createDb(NOW);
-    const t = openGuestTab(db, 'A', at(2026, 10, 21));
-    const closed = settle(db, t.id, at(2026, 10, 21, 13));
-    expect(tabsInPeriod([closed], 'week', now)).toEqual([closed]);
+    const t = openGuestTab(db, 'A', at(2026, 10, 31, 20));
+    addItem(t, pils);
+    settle(db, t.id, at(2026, 11, 1, 1));
+    closeShift(db, '', at(2026, 11, 1, 2));
+    const october = new Date(2026, 9, 31, 12);
+    const november = new Date(2026, 10, 5, 12);
+    expect(tabsInPeriod(db, 'month', october)).toHaveLength(1);
+    expect(shiftsInPeriod(db, 'month', october)).toHaveLength(1);
+    expect(tabsInPeriod(db, 'month', november)).toEqual([]);
+    expect(shiftsInPeriod(db, 'month', november)).toEqual([]);
+  });
+
+  it('count the running shift in the week it started, also after midnight', () => {
+    const db = createDb(NOW);
+    const a = openGuestTab(db, 'A', at(2026, 10, 25, 20)); // Sun, KW 43
+    settle(db, a.id, at(2026, 10, 25, 23));
+    const b = openGuestTab(db, 'B', at(2026, 10, 26, 0, 30)); // Mon, KW 44
+    settle(db, b.id, at(2026, 10, 26, 1));
+    expect(tabsInPeriod(db, 'week', new Date(2026, 9, 26, 1, 30))).toHaveLength(2);
+    closeShift(db, '', at(2026, 10, 26, 2));
+    expect(tabsInPeriod(db, 'week', new Date(2026, 9, 26, 12))).toEqual([]);
+    expect(tabsInPeriod(db, 'week', new Date(2026, 9, 25, 12))).toHaveLength(2);
   });
 });
 

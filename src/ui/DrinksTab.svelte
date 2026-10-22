@@ -4,7 +4,7 @@
   import PeriodChips from './PeriodChips.svelte';
 
   let period = $state<Period>('month');
-  let drinks = $derived(topDrinks(tabsInPeriod(app.db.history, period, new Date())));
+  let drinks = $derived(topDrinks(tabsInPeriod(app.db, period, new Date())));
 </script>
 
 <div class="stack">

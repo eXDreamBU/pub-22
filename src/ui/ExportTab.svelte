@@ -11,8 +11,8 @@
     const at = new Date();
     const text =
       kind === 'schichten'
-        ? shiftsCsv(shiftsInPeriod(app.db.shifts, period, at))
-        : tabsCsv(tabsInPeriod(app.db.history, period, at));
+        ? shiftsCsv(shiftsInPeriod(app.db, period, at))
+        : tabsCsv(tabsInPeriod(app.db, period, at));
     const file = new File([text], `pub22-${kind}-${now().slice(0, 10)}.csv`, { type: 'text/csv' });
     message = (await shareOrDownload(file)) ? 'Datei erstellt.' : 'Abgebrochen.';
   }

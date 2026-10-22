@@ -17,11 +17,15 @@ export function shiftDay(shift: Shift): string {
   return localDay(shift.startedAt);
 }
 
+/** Start of the running shift: the earliest paid or open tab not yet in a closed shift. */
+function runningShiftStart(db: Db): string | undefined {
+  return [...runningTabs(db), ...db.tabs].map((t) => t.openedAt).sort()[0];
+}
+
 export function runningShift(db: Db) {
   const tabs = runningTabs(db);
-  const stamps = [...tabs.map((t) => t.openedAt), ...db.tabs.map((t) => t.openedAt)].sort();
   return {
-    startedAt: stamps[0] as string | undefined,
+    startedAt: runningShiftStart(db),
     tabCount: tabs.length,
     paidCents: tabs.reduce((sum, t) => sum + t.paidCents, 0),
     openTabs: db.tabs.length,
@@ -67,20 +71,33 @@ export function periodTotals(shifts: Shift[], by: 'week' | 'month'): PeriodTotal
   return [...groups.values()].sort((a, b) => b.key.localeCompare(a.key));
 }
 
-/** Is this 'YYYY-MM-DD' day in the current calendar week / month / year? */
-export function inPeriod(day: string, period: Period, now: Date): boolean {
+/** Is this 'YYYY-MM-DD' day in the same calendar week / month / year as `today`? */
+export function inPeriod(day: string, period: Period, today: string): boolean {
   if (period === 'all') return true;
-  const today = localDay(now.toISOString());
   if (period === 'year') return day.slice(0, 4) === today.slice(0, 4);
   if (period === 'month') return monthOf(day).key === monthOf(today).key;
   return weekOf(day).key === weekOf(today).key;
 }
 
-export const tabsInPeriod = (tabs: ClosedTab[], period: Period, now: Date) =>
-  tabs.filter((t) => inPeriod(localDay(t.closedAt), period, now));
+/** Today's business day: while a shift runs, the day it started (01:00 on Monday still belongs to Sunday). */
+function businessToday(db: Db, now: Date): string {
+  return localDay(runningShiftStart(db) ?? now.toISOString());
+}
 
-export const shiftsInPeriod = (shifts: Shift[], period: Period, now: Date) =>
-  shifts.filter((s) => inPeriod(shiftDay(s), period, now));
+/** Paid tabs whose shift (closed or running) started in the period, so they add up with `shiftsInPeriod`. */
+export function tabsInPeriod(db: Db, period: Period, now: Date): ClosedTab[] {
+  const today = businessToday(db, now);
+  const running = runningShiftStart(db);
+  const shiftStart = new Map(db.shifts.map((s) => [s.id, s.startedAt]));
+  return db.history.filter((t) =>
+    inPeriod(localDay(t.shiftId ? shiftStart.get(t.shiftId)! : running!), period, today),
+  );
+}
+
+export function shiftsInPeriod(db: Db, period: Period, now: Date): Shift[] {
+  const today = businessToday(db, now);
+  return db.shifts.filter((s) => inPeriod(shiftDay(s), period, today));
+}
 
 export function topDrinks(tabs: ClosedTab[]): { name: string; size?: string; qty: number }[] {
   const drinks = new Map<string, { name: string; size?: string; qty: number }>();

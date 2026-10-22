@@ -6,7 +6,7 @@
 
   let period = $state<Period>('month');
   let sortBy = $state<RankingKey>('paid');
-  let rows = $derived(customerRanking(app.db, tabsInPeriod(app.db.history, period, new Date()), sortBy));
+  let rows = $derived(customerRanking(app.db, tabsInPeriod(app.db, period, new Date()), sortBy));
 
   function open(customerId: string) {
     // A deleted customer has no detail page.

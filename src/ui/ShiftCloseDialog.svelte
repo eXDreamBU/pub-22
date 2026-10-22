@@ -9,6 +9,7 @@
   let isOpen = $state(false);
   let note = $state('');
   let error = $state('');
+  let closingAt = $state('');
 
   // Only computed while the dialog is open.
   let summary = $derived.by(() => {
@@ -18,13 +19,14 @@
 
   export function open() {
     note = error = '';
+    closingAt = now();
     isOpen = true;
     dialog.showModal();
   }
 
   function close() {
     try {
-      closeShift(app.db, note, now());
+      closeShift(app.db, note, closingAt);
     } catch (e) {
       error = (e as Error).message;
       return;
@@ -38,7 +40,7 @@
   <h2>Schicht abschließen</h2>
   {#if summary}
     <p class="muted">
-      {formatDay(summary.startedAt)}, {formatTime(summary.startedAt)} – {formatTime(summary.closedAt)} · {summary.tabCount} Deckel
+      {formatDay(summary.startedAt)}, {formatTime(summary.startedAt)} – {formatTime(closingAt)} · {summary.tabCount} Deckel
     </p>
     <p class="muted">In den Kassenbericht eintragen:</p>
     <table class="report">
