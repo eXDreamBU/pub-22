@@ -24,6 +24,7 @@ import {
   tabSummary,
   type Db,
 } from './db';
+import { pointsFor } from './money';
 
 const NOW = '2026-10-22T20:00:00.000Z';
 
@@ -481,6 +482,26 @@ describe('payPart', () => {
     expect(() => payPart(db, tab.id, [4, 0], NOW)).toThrow('Erst den Rabatt verringern'); // rest 7,20
     payPart(db, tab.id, [3, 0], NOW); // rest 11,40
     expect(tabSummary(db, tab).discountCents).toBe(1000);
+  });
+});
+
+describe('shift with part and joint payments', () => {
+  it('counts every paid cent and every drink exactly once', () => {
+    const db = createDb(NOW);
+    const murat = addCustomer(db, 'Murat K.', '', NOW);
+    const a = checkIn(db, murat.id, NOW);
+    const t = openGuestTab(db, 'Tisch 3', NOW);
+    for (let i = 0; i < 5; i++) addItem(t, pint);
+    addItem(t, coke);
+    addItem(a, pint);
+    payPart(db, t.id, [2, 1], NOW);
+    settleTogether(db, [a.id, t.id], a.id, NOW);
+    const shift = closeShift(db, '', NOW);
+    expect(shift.paidCents).toBe(db.history.reduce((sum, h) => sum + h.paidCents, 0));
+    expect(shift.paidCents).toBe(6 * 420 + 300);
+    expect(shift.tabCount).toBe(db.history.length);
+    expect(shift.byCategory.reduce((sum, c) => sum + c.qty, 0)).toBe(7);
+    expect(murat.points).toBe(pointsFor(4 * 420, 1));
   });
 });
 
