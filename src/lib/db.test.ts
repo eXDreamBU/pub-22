@@ -12,14 +12,19 @@ import {
   openGuestTab,
   parseBackup,
   parseCardPayload,
+  payPart,
+  renameCustomer,
   cardPayload,
   redeemReward,
   removeItem,
   setDiscountSteps,
   settle,
+  settleTogether,
+  summarizeShift,
   tabSummary,
   type Db,
 } from './db';
+import { pointsFor } from './money';
 
 const NOW = '2026-10-22T20:00:00.000Z';
 
@@ -361,5 +366,161 @@ describe('migrate', () => {
 
   it('parseBackup runs old backups through the migration', () => {
     expect(parseBackup(JSON.stringify(v1())).version).toBe(2);
+  });
+});
+
+const pint = { id: 'p', category: 'Bier', name: 'Pils', priceCents: 420 };
+const coke = { id: 'c', category: 'Alkoholfrei', name: 'Cola', priceCents: 300 };
+
+describe('settleTogether', () => {
+  function threeTabs() {
+    const db = createDb(NOW);
+    const murat = addCustomer(db, 'Murat K.', '', NOW);
+    const jonas = addCustomer(db, 'Jonas', '', NOW);
+    jonas.points = 150;
+    const a = checkIn(db, murat.id, NOW);
+    const b = checkIn(db, jonas.id, NOW);
+    const g = openGuestTab(db, 'Tisch 5', NOW);
+    for (let i = 0; i < 4; i++) addItem(a, pint); // 16,80
+    addItem(b, pint); // 4,20
+    addItem(g, coke); // 3,00
+    return { db, murat, jonas, a, b, g };
+  }
+
+  it('the payer earns points on the whole sum, rounded down once', () => {
+    const { db, murat, jonas, a, b, g } = threeTabs();
+    const closed = settleTogether(db, [a.id, b.id, g.id], a.id, NOW);
+    expect(closed.reduce((s, t) => s + t.paidCents, 0)).toBe(2400);
+    expect(murat.points).toBe(24);
+    expect(jonas.points).toBe(150);
+    expect(closed.map((t) => t.pointsEarned)).toEqual([24, 0, 0]);
+    expect(closed.map((t) => t.paidBy)).toEqual([undefined, 'Murat K.', 'Murat K.']);
+    expect(db.tabs).toEqual([]);
+    expect(db.history).toEqual(closed);
+  });
+
+  it('a payer without card means no points for anyone', () => {
+    const { db, murat, jonas, a, b, g } = threeTabs();
+    settleTogether(db, [a.id, b.id, g.id], g.id, NOW);
+    expect(murat.points).toBe(0);
+    expect(jonas.points).toBe(150);
+  });
+
+  it('redeemed points come off the balance of the tab they were redeemed on', () => {
+    const { db, murat, jonas, a, b } = threeTabs();
+    redeemReward(db, b, { id: 'r', name: 'Freigetränk', points: 100 });
+    settleTogether(db, [a.id, b.id], a.id, NOW);
+    expect(jonas.points).toBe(50);
+    expect(murat.points).toBe(21);
+  });
+
+  it('rejects a payer outside the group and unknown tabs', () => {
+    const { db, a, b, g } = threeTabs();
+    expect(() => settleTogether(db, [a.id, b.id], g.id, NOW)).toThrow();
+    expect(() => settleTogether(db, [a.id, 'nope'], a.id, NOW)).toThrow('Deckel nicht gefunden');
+    expect(db.tabs.length).toBe(3);
+  });
+
+  it('settle alone is the group of one', () => {
+    const { db, murat, a } = threeTabs();
+    const closed = settle(db, a.id, NOW);
+    expect(closed.paidBy).toBeUndefined();
+    expect(murat.points).toBe(16);
+  });
+});
+
+describe('payPart', () => {
+  function table() {
+    const { db, id } = dbWithCustomer(300);
+    const tab = checkIn(db, id, NOW);
+    for (let i = 0; i < 5; i++) addItem(tab, pint);
+    addItem(tab, coke);
+    return { db, tab };
+  }
+
+  it('closes the picked quantities as a guest entry without points, the rest stays open', () => {
+    const { db, tab } = table();
+    const part = payPart(db, tab.id, [2, 1], NOW);
+    expect(part).toMatchObject({ label: 'Murat K. (Teil)', paidCents: 1140, pointsEarned: 0, pointsSpent: 0 });
+    expect(part.customerId).toBeUndefined();
+    expect(part.lines.map((l) => l.qty)).toEqual([2, 1]);
+    expect(tab.lines.map((l) => l.qty)).toEqual([3]);
+    expect(db.customers[0].points).toBe(300);
+    expect(db.tabs).toEqual([tab]);
+    expect(db.history).toEqual([part]);
+    expect(summarizeShift(db.history).paidCents).toBe(1140);
+  });
+
+  it('paying everything closes the tab', () => {
+    const { db, tab } = table();
+    payPart(db, tab.id, [5, 1], NOW);
+    expect(db.tabs).toEqual([]);
+  });
+
+  it('keeps a tab with a pending reward open', () => {
+    const { db, tab } = table();
+    redeemReward(db, tab, { id: 'r', name: 'Freigetränk', points: 100 });
+    payPart(db, tab.id, [5, 1], NOW);
+    expect(db.tabs).toEqual([tab]);
+  });
+
+  it('rejects nothing picked, more than on the tab and broken input', () => {
+    const { db, tab } = table();
+    expect(() => payPart(db, tab.id, [0, 0], NOW)).toThrow();
+    expect(() => payPart(db, tab.id, [6, 0], NOW)).toThrow();
+    expect(() => payPart(db, tab.id, [-1, 1], NOW)).toThrow();
+    expect(() => payPart(db, tab.id, [1.5, 0], NOW)).toThrow();
+    expect(() => payPart(db, tab.id, [1], NOW)).toThrow();
+    expect(tab.lines.map((l) => l.qty)).toEqual([5, 1]);
+    expect(db.history).toEqual([]);
+  });
+
+  it('the rest cannot drop below the redeemed euro discount', () => {
+    const { db, tab } = table(); // 24,00 total
+    db.settings.discountCents = 500;
+    setDiscountSteps(db, tab, 2); // 10,00 discount
+    expect(() => payPart(db, tab.id, [4, 0], NOW)).toThrow('Erst den Rabatt verringern'); // rest 7,20
+    payPart(db, tab.id, [3, 0], NOW); // rest 11,40
+    expect(tabSummary(db, tab).discountCents).toBe(1000);
+  });
+});
+
+describe('shift with part and joint payments', () => {
+  it('counts every paid cent and every drink exactly once', () => {
+    const db = createDb(NOW);
+    const murat = addCustomer(db, 'Murat K.', '', NOW);
+    const a = checkIn(db, murat.id, NOW);
+    const t = openGuestTab(db, 'Tisch 3', NOW);
+    for (let i = 0; i < 5; i++) addItem(t, pint);
+    addItem(t, coke);
+    addItem(a, pint);
+    payPart(db, t.id, [2, 1], NOW);
+    settleTogether(db, [a.id, t.id], a.id, NOW);
+    const shift = closeShift(db, '', NOW);
+    expect(shift.paidCents).toBe(db.history.reduce((sum, h) => sum + h.paidCents, 0));
+    expect(shift.paidCents).toBe(6 * 420 + 300);
+    expect(shift.tabCount).toBe(db.history.length);
+    expect(shift.byCategory.reduce((sum, c) => sum + c.qty, 0)).toBe(7);
+    expect(murat.points).toBe(pointsFor(4 * 420, 1));
+  });
+});
+
+describe('renameCustomer', () => {
+  it('renames the open tab when it still carries the old name', () => {
+    const { db, id } = dbWithCustomer();
+    const tab = checkIn(db, id, NOW);
+    renameCustomer(db, id, ' Murat Kaya ');
+    expect(db.customers[0].name).toBe('Murat Kaya');
+    expect(tab.label).toBe('Murat Kaya');
+  });
+
+  it('leaves a tab renamed by hand alone and ignores an empty name', () => {
+    const { db, id } = dbWithCustomer();
+    const tab = checkIn(db, id, NOW);
+    tab.label = 'Tisch 3 Murat';
+    renameCustomer(db, id, 'Murat Kaya');
+    expect(tab.label).toBe('Tisch 3 Murat');
+    renameCustomer(db, id, '  ');
+    expect(db.customers[0].name).toBe('Murat Kaya');
   });
 });

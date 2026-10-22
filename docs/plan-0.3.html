@@ -1,0 +1,261 @@
+<!doctype html>
+<html lang="de" data-theme="luxury" data-lavish-annotate="on">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>Pub 22 – Plan 0.3</title>
+<link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/daisyui@5.5.19/daisyui.css">
+<link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/daisyui@5.5.19/themes.css">
+<script src="https://cdn.jsdelivr.net/npm/@tailwindcss/browser@4.2.4/dist/index.global.js"></script>
+<style>
+  *, *::before, *::after { box-sizing: border-box; }
+  .grid > *, .flex > * { min-width: 0; }
+  p, li, td, th, h1, h2, h3 { overflow-wrap: anywhere; }
+  svg { max-width: 100%; height: auto; }
+  .ipad { border: 10px solid #222; border-radius: 22px; background: #15120f; }
+  .tile { background: #241f1a; border-radius: 10px; padding: .75rem; }
+  .step { display: inline-flex; gap: .4rem; align-items: center; }
+  .step span { background: #2c2620; border-radius: 6px; padding: 0 .5rem; }
+</style>
+</head>
+<script type="application/json" data-lavish-revisions>
+[{ "id": "r1", "label": "Entwurf", "timestamp": "2026-10-22T20:30:00Z", "summary": "Erster Entwurf mit deinen drei Antworten aus dem Chat" }]
+</script>
+<body class="bg-base-100 text-base-content">
+<main class="max-w-5xl mx-auto px-4 py-10 space-y-12">
+
+<header class="space-y-3" data-lavish-revision="r1">
+  <p class="text-sm opacity-60">Plan · Version 0.3 · 22.10.2026 · baut auf 0.2 auf</p>
+  <h1 class="text-4xl font-bold">Zusammen zahlen, Teil zahlen, Deckel umbenennen</h1>
+  <p class="text-lg opacity-80 max-w-3xl">In der Bar zahlt selten jeder genau seinen eigenen Deckel. Einer gibt eine Runde aus und zahlt für drei Leute, oder ein ganzer Tisch hat einen Deckel und jeder zahlt seine eigenen Getränke. Heute kann die App nur einen Deckel ganz abrechnen. Version 0.3 bringt beides dazu. Außerdem kann man Kunden mit Karte ohne Scannen über <b>„+ Deckel“</b> suchen, und jeder Deckel lässt sich nachträglich umbenennen.</p>
+</header>
+
+<section class="space-y-4" data-lavish-revision="r1">
+  <h2 class="text-2xl font-bold">Heute und mit 0.3</h2>
+  <div class="grid md:grid-cols-2 gap-4">
+    <div class="card card-border bg-base-200"><div class="card-body">
+      <h3 class="card-title">Heute</h3>
+      <ul class="list-disc pl-5 space-y-1 text-sm">
+        <li>„Abrechnen“ rechnet immer genau einen Deckel ganz ab.</li>
+        <li>Zahlt einer für mehrere, muss man jeden Deckel einzeln abrechnen und die Beträge im Kopf zusammenzählen.</li>
+        <li>Zahlt am Tisch einer nur seine Getränke, geht das nicht; man rechnet am Ende alles auf einmal ab.</li>
+        <li>„+ Gast“ öffnet nur einen Deckel ohne Karte. Hat der Kunde seine Karte nicht dabei, muss man ihn unter 👥 Kunden suchen.</li>
+        <li>Der Name eines offenen Deckels lässt sich nicht ändern.</li>
+      </ul>
+    </div></div>
+    <div class="card card-border bg-base-200 border-success/40"><div class="card-body">
+      <h3 class="card-title">Mit 0.3</h3>
+      <ul class="list-disc pl-5 space-y-1 text-sm">
+        <li><b>Zusammen zahlen:</b> Im Abrechnen-Dialog weitere offene Deckel antippen. Die App zeigt eine Summe, man tippt an, wer zahlt, und der Zahlende bekommt alle Punkte.</li>
+        <li><b>Teil zahlen:</b> Neuer Knopf am Deckel. Man tippt an, was bezahlt wird, kassiert diesen Teil, und der Rest bleibt offen. Teilzahlungen bringen keine Punkte.</li>
+        <li><b>„+ Deckel“</b> mit zwei Reitern: <i>Kunde mit Karte</i> (suchen und antippen) und <i>Gast ohne Karte</i> (Name oder Tisch wie bisher).</li>
+        <li><b>✏️ Umbenennen</b> für jeden offenen Deckel.</li>
+      </ul>
+    </div></div>
+  </div>
+</section>
+
+<section class="space-y-4" data-lavish-revision="r1">
+  <h2 class="text-2xl font-bold">Drei Wege zu kassieren</h2>
+  <svg viewBox="0 0 900 270" class="w-full" role="img" aria-label="Vom offenen Deckel gibt es drei Wege: ganz abrechnen, zusammen mit anderen Deckeln abrechnen, oder einen Teil zahlen, wobei der Rest offen bleibt">
+    <defs><marker id="a" markerWidth="10" markerHeight="10" refX="8" refY="5" orient="auto"><path d="M0,0 L10,5 L0,10 z" fill="currentColor"/></marker></defs>
+    <g font-family="sans-serif" font-size="15" fill="currentColor" text-anchor="middle">
+      <g id="d-open"><title>Ein offener Deckel in der Bar</title><rect x="10" y="100" width="160" height="70" rx="12" fill="none" stroke="currentColor"/><text x="90" y="132">Offener Deckel</text><text x="90" y="152" font-size="12" opacity=".7">z. B. Tisch 3</text></g>
+      <g id="d-all"><title>Wie bisher: ganzer Deckel, Punkte für den Inhaber</title><rect x="300" y="10" width="220" height="64" rx="12" fill="none" stroke="currentColor"/><text x="410" y="38">Abrechnen</text><text x="410" y="58" font-size="12" opacity=".7">ganzer Deckel, wie bisher</text></g>
+      <g id="d-together"><title>Weitere Deckel dazu, einer zahlt und bekommt alle Punkte</title><rect x="300" y="103" width="220" height="64" rx="12" fill="none" stroke="#e0a040" stroke-width="2"/><text x="410" y="131">Abrechnen + Deckel dazu</text><text x="410" y="151" font-size="12" opacity=".7">einer zahlt, bekommt alle Punkte</text></g>
+      <g id="d-part"><title>Nur angetippte Getränke, ohne Punkte</title><rect x="300" y="196" width="220" height="64" rx="12" fill="none" stroke="#e0a040" stroke-width="2"/><text x="410" y="224">Teil zahlen</text><text x="410" y="244" font-size="12" opacity=".7">nur angetippte Sachen, ohne Punkte</text></g>
+      <g id="d-shift"><title>Jede Zahlung zählt in die laufende Schicht</title><rect x="680" y="70" width="200" height="70" rx="12" fill="none" stroke="currentColor"/><text x="780" y="102">Laufende Schicht</text><text x="780" y="122" font-size="12" opacity=".7">jede Zahlung zählt</text></g>
+      <g stroke="currentColor" fill="none" marker-end="url(#a)">
+        <path d="M170,125 C230,125 240,42 296,42"/><line x1="170" y1="135" x2="296" y2="135"/><path d="M170,145 C230,145 240,228 296,228"/>
+        <path d="M520,42 C600,42 600,95 676,95"/><line x1="520" y1="125" x2="676" y2="110"/><path d="M520,228 C610,228 610,130 676,125"/>
+      </g>
+      <path id="d-rest" d="M300,250 C200,268 90,240 90,174" fill="none" stroke="currentColor" stroke-dasharray="4 4" marker-end="url(#a)" opacity=".6"><title>Der Rest bleibt auf dem Deckel</title></path>
+      <text x="175" y="262" font-size="12" opacity=".7">Rest bleibt offen</text>
+    </g>
+  </svg>
+</section>
+
+<section class="space-y-4" data-lavish-revision="r1">
+  <h2 class="text-2xl font-bold">„+ Deckel“ (vorher „+ Gast“)</h2>
+  <div class="grid md:grid-cols-2 gap-4 items-start">
+    <div class="ipad p-5 text-sm text-stone-200 space-y-3" id="neu-kunde">
+      <b class="text-lg">Deckel öffnen</b>
+      <div class="flex gap-2"><span class="badge badge-warning">Kunde mit Karte</span><span class="badge badge-outline">Gast ohne Karte</span></div>
+      <input class="input input-sm w-full" value="mu" aria-label="Kunde suchen">
+      <div class="tile flex justify-between"><b>Murat K.</b><span class="opacity-60">⭐ 140 Punkte</span></div>
+      <div class="tile flex justify-between"><b>Mustafa</b><span class="badge badge-sm">schon in der Bar</span></div>
+      <p class="opacity-60 text-xs">Antippen öffnet den Deckel mit Punkten, als hätte man die Karte gescannt. Ist der Kunde schon in der Bar, springt die App zu seinem Deckel.</p>
+      <p class="opacity-60 text-xs">Kein Treffer? Unten steht „Als Gast ohne Karte öffnen: mu“, das wechselt in den zweiten Reiter und übernimmt den Text.</p>
+      <button class="btn btn-sm w-full">Abbrechen</button>
+    </div>
+    <div class="ipad p-5 text-sm text-stone-200 space-y-3" id="neu-gast">
+      <b class="text-lg">Deckel öffnen</b>
+      <div class="flex gap-2"><span class="badge badge-outline">Kunde mit Karte</span><span class="badge badge-warning">Gast ohne Karte</span></div>
+      <label class="block">Name oder Tisch <input class="input input-sm w-full" placeholder="z. B. Tisch 3"></label>
+      <p class="opacity-60">Deckel ohne Punkte.</p>
+      <div class="flex gap-2"><button class="btn btn-sm flex-1">Abbrechen</button><button class="btn btn-sm btn-primary flex-1">Deckel öffnen</button></div>
+    </div>
+  </div>
+  <p class="text-sm opacity-60">Der Knopf neben „📷 Karte scannen“ heißt dann „+ Deckel“. Der Dialog öffnet immer im Reiter „Kunde mit Karte“.</p>
+</section>
+
+<section class="space-y-4" data-lavish-revision="r1">
+  <h2 class="text-2xl font-bold">Deckel umbenennen</h2>
+  <div class="grid md:grid-cols-2 gap-4 items-start">
+    <div class="ipad p-5 text-sm text-stone-200 space-y-2">
+      <div class="flex items-center gap-3"><b class="text-xl">Tisch 3</b><button class="btn btn-xs">✏️</button><span class="ml-auto opacity-60">seit 19:40</span></div>
+      <p class="opacity-50 text-xs">Den Stift antippen:</p>
+      <div class="tile space-y-2">
+        <b>Deckel umbenennen</b>
+        <input class="input input-sm w-full" value="Tisch 3 – Junggesellenabschied">
+        <div class="flex gap-2"><button class="btn btn-sm flex-1">Abbrechen</button><button class="btn btn-sm btn-primary flex-1">Speichern</button></div>
+      </div>
+    </div>
+    <div class="space-y-3 text-sm">
+      <p><b>Gilt für jeden offenen Deckel</b>, mit Karte und ohne. Bei einem Kunden mit Karte ändert sich nur der Name auf dem Deckel. Der gespeicherte Kundenname bleibt gleich.</p>
+      <p><b>Andersherum:</b> Ändert man unter 👥 Kunden den Namen eines Kunden, bekommt sein offener Deckel den neuen Namen auch. Das gilt nicht, wenn man den Deckel vorher selbst umbenannt hat. (Das war bisher ein offener Punkt in OFFEN.md.)</p>
+      <p>Ein leerer Name wird nicht gespeichert.</p>
+    </div>
+  </div>
+</section>
+
+<section class="space-y-4" data-lavish-revision="r1">
+  <h2 class="text-2xl font-bold">Zusammen zahlen (Abrechnen-Dialog, erweitert)</h2>
+  <div class="grid md:grid-cols-2 gap-4 items-start">
+    <div class="ipad p-5 text-sm text-stone-200 space-y-2" id="zusammen">
+      <b class="text-lg">Abrechnen: Murat K.</b>
+      <p class="opacity-60 pt-1">Zahlt auch für:</p>
+      <label class="flex gap-2 items-center"><input type="checkbox" class="checkbox checkbox-sm" checked> <span class="flex-1">Jonas</span><span>12,40 €</span></label>
+      <label class="flex gap-2 items-center"><input type="checkbox" class="checkbox checkbox-sm" checked> <span class="flex-1">Tisch 5</span><span>9,90 €</span></label>
+      <label class="flex gap-2 items-center"><input type="checkbox" class="checkbox checkbox-sm"> <span class="flex-1">Sabine</span><span>6,60 €</span></label>
+      <p class="opacity-60 pt-1">Wer zahlt?</p>
+      <div class="flex gap-2 flex-wrap"><span class="badge badge-warning">Murat K.</span><span class="badge badge-outline">Jonas</span><span class="badge badge-outline">Tisch 5</span></div>
+      <div class="border-t border-stone-700 pt-2 space-y-1">
+        <div class="flex justify-between"><span>Murat K.</span><span>18,50 €</span></div>
+        <div class="flex justify-between"><span>Jonas</span><span>12,40 €</span></div>
+        <div class="flex justify-between"><span>Tisch 5</span><span>9,90 €</span></div>
+        <div class="flex justify-between text-lg"><b>Kassieren</b><b>40,80 €</b></div>
+      </div>
+      <p>⭐ Murat K. bekommt +40 Punkte (für alle drei Deckel)</p>
+      <p class="opacity-60">Zählt in die laufende Schicht.</p>
+      <div class="flex gap-2"><button class="btn btn-sm flex-1">Zurück</button><button class="btn btn-sm btn-success flex-1">Bezahlt</button></div>
+    </div>
+    <div class="space-y-3 text-sm">
+      <p><b>So geht's:</b> Den Deckel von dem öffnen, der zahlt, dann „Abrechnen“. Unter „Zahlt auch für“ stehen alle anderen offenen Deckel; man hakt die an, die mitbezahlt werden. Hakt man nichts an, ist es das normale Abrechnen wie bisher.</p>
+      <p><b>Wer zahlt?</b> Am Anfang steht dort der Deckel, von dem man gekommen ist. Man kann aber jeden angehakten Deckel antippen. <b>Der Zahlende bekommt die Punkte für die ganze Summe</b> (deine Antwort). Zahlt ein Gast ohne Karte, gibt es für niemanden Punkte. Der Dialog sagt das dann auch so.</p>
+      <p><b>Eingelöste Punkte</b> bleiben bei ihrem Deckel. Hat Jonas auf seinem Deckel ein Freigetränk eingelöst, gehen die Punkte von Jonas' Konto ab, nicht von Murats.</p>
+      <p><b>Danach</b> sind alle angehakten Deckel geschlossen. In der Schicht stehen sie weiter einzeln, mit dem Zusatz „bezahlt von Murat K.“.</p>
+    </div>
+  </div>
+</section>
+
+<section class="space-y-4" data-lavish-revision="r1">
+  <h2 class="text-2xl font-bold">Teil zahlen (neuer Dialog)</h2>
+  <div class="grid md:grid-cols-2 gap-4 items-start">
+    <div class="ipad p-5 text-sm text-stone-200 space-y-2" id="teil">
+      <b class="text-lg">Teil zahlen: Tisch 3</b>
+      <p class="opacity-60">Antippen, was jetzt bezahlt wird:</p>
+      <div class="flex items-center gap-2"><span class="flex-1">Mönchshof 0,5 l <span class="opacity-50">(von 5)</span></span><span class="step"><button class="btn btn-xs">−</button><span>2</span><button class="btn btn-xs">+</button></span><span class="w-16 text-right">8,40 €</span></div>
+      <div class="flex items-center gap-2"><span class="flex-1">Jägermeister 2 cl <span class="opacity-50">(von 4)</span></span><span class="step"><button class="btn btn-xs">−</button><span>1</span><button class="btn btn-xs">+</button></span><span class="w-16 text-right">2,80 €</span></div>
+      <div class="flex items-center gap-2 opacity-60"><span class="flex-1">Coca Cola 0,3 l <span class="opacity-50">(von 2)</span></span><span class="step"><button class="btn btn-xs">−</button><span>0</span><button class="btn btn-xs">+</button></span><span class="w-16 text-right">–</span></div>
+      <div class="border-t border-stone-700 pt-2 space-y-1">
+        <div class="flex justify-between text-lg"><b>Kassieren</b><b>11,20 €</b></div>
+        <div class="flex justify-between opacity-70"><span>Bleibt offen</span><span>23,60 €</span></div>
+      </div>
+      <p class="opacity-60">Teilzahlung ohne Punkte. Zählt in die laufende Schicht.</p>
+      <div class="flex gap-2"><button class="btn btn-sm flex-1">Zurück</button><button class="btn btn-sm btn-success flex-1">Teil bezahlt</button></div>
+    </div>
+    <div class="space-y-3 text-sm">
+      <p><b>Wo:</b> Neuer Knopf „Teil zahlen“ am Deckel, neben „Abrechnen“.</p>
+      <p><b>So geht's:</b> Jede Zeile hat − und +. Am Anfang steht überall 0, und mehr als auf dem Deckel steht, geht nicht. Die App zeigt laufend, was jetzt kassiert wird und was offen bleibt.</p>
+      <p><b>Punkte:</b> Eine Teilzahlung bringt keine Punkte (deine Antwort). Gehört der Deckel einem Kunden mit Karte, bekommt er am Ende Punkte für das, was er selbst zahlt.</p>
+      <p><b>Rabatt und Prämien</b> bleiben auf dem Rest-Deckel. Ist auf dem Deckel ein €-Rabatt eingelöst, kann der Rest nicht kleiner werden als der Rabatt. Die App sagt dann „Erst den Rabatt verringern“, damit keine Punkte verloren gehen.</p>
+      <p><b>Alles angetippt:</b> Dann ist der Deckel bezahlt und verschwindet aus der Bar, genau wie beim Abrechnen, nur ohne Punkte. Steht noch eine Prämie darauf, bleibt er offen, bis man ihn abrechnet.</p>
+      <p><b>In der Schicht</b> steht jede Teilzahlung als eigener Eintrag „Tisch 3 (Teil)“. Die Summen je Kategorie stimmen damit weiter.</p>
+    </div>
+  </div>
+</section>
+
+<section class="space-y-4" data-lavish-revision="r1">
+  <h2 class="text-2xl font-bold">Was Version 0.3 kann</h2>
+  <ul class="list-disc pl-6 space-y-1">
+    <li><b>Zusammen zahlen:</b> mehrere offene Deckel in einem Rutsch kassieren. Man wählt, wer zahlt, und der Zahlende bekommt die Punkte für die ganze Summe.</li>
+    <li><b>Teil zahlen:</b> einzelne Getränke (auch einen Teil einer Menge) kassieren, der Rest bleibt offen. Ohne Punkte.</li>
+    <li><b>„+ Deckel“</b> mit Reiter <i>Kunde mit Karte</i> (Suche nach Namen) und <i>Gast ohne Karte</i>.</li>
+    <li><b>Deckel umbenennen</b> (✏️), und ein neuer Kundenname kommt auch auf den offenen Deckel.</li>
+    <li>In der Schicht-Ansicht: „bezahlt von …“ und „(Teil)“ an den Deckeln.</li>
+  </ul>
+</section>
+
+<section class="space-y-4" data-lavish-revision="r1">
+  <h2 class="text-2xl font-bold">Technik</h2>
+  <div class="overflow-x-auto"><table class="table">
+    <tbody>
+      <tr><th>Zusammen zahlen</th><td>Neue Funktion in <code>src/lib/db.ts</code>: schließt mehrere Deckel auf einmal. Jeder Deckel wird wie heute einzeln abgeschlossen, mit seiner eigenen Summe, seinem Rabatt und seinen eingelösten Punkten. Die verdienten Punkte rechnet die App einmal über die ganze Summe aus, abgerundet, und schreibt sie dem Zahlenden gut. Das normale Abrechnen ist derselbe Weg mit nur einem Deckel.</td></tr>
+      <tr><th>Teil zahlen</th><td>Neue Funktion: nimmt die angetippten Mengen vom Deckel und legt sie als eigenen bezahlten Eintrag ohne Kunde und ohne Punkte ab, Name „… (Teil)“. Die Mengen werden geprüft (mindestens 1, höchstens was auf dem Deckel steht), der Rabatt-Schutz ebenso.</td></tr>
+      <tr><th>Neue Daten</th><td>Abgerechnete Deckel bekommen ein optionales Feld <code>paidBy</code> (Name des Zahlenden), sonst ändert sich nichts. Darum <b>keine Umstellung des Datenstands</b>. Alte Sicherungen und die Daten auf dem iPad bleiben, wie sie sind.</td></tr>
+      <tr><th>Umbenennen</th><td>Der Name auf dem Deckel war schon ein eigenes Feld. Er lässt sich jetzt ändern. Beim Umbenennen eines Kunden bekommt sein offener Deckel den neuen Namen, wenn dort noch der alte Kundenname stand.</td></tr>
+      <tr><th>Rechnen</th><td>Alles bleibt in Cent. Schichtsummen, Kategorien, Export und Kunden-Rangliste rechnen weiter über die abgerechneten Deckel und brauchen deshalb keine Änderung.</td></tr>
+      <tr><th>Tests</th><td>Vitest prüft: Zusammen zahlen (Summe, Punkte für den Zahlenden auf die Gesamtsumme, Zahlender ohne Karte = keine Punkte, eingelöste Punkte beim eigenen Kunden, „bezahlt von“); Teil zahlen (Mengen, Rest, keine Punkte, Rabatt-Schutz, falsche Mengen abgelehnt, alles bezahlt = Deckel weg); Schichtabschluss mit Teil- und Sammelzahlungen; Kunde umbenennen benennt den Deckel mit. Dazu Screenshots aller neuen Dialoge.</td></tr>
+    </tbody>
+  </table></div>
+</section>
+
+<section class="space-y-3" data-lavish-revision="r1">
+  <h2 class="text-2xl font-bold">Risiken</h2>
+  <ul class="list-disc pl-6 space-y-1">
+    <li><b>Falscher Deckel angehakt:</b> Vor „Bezahlt“ zeigt der Dialog jeden angehakten Deckel mit Namen und Betrag. Rückgängig machen gibt es wie bisher nicht, deshalb ist diese Liste die Kontrolle.</li>
+    <li><b>Punkte verloren durch Teilzahlung:</b> Der Rabatt-Schutz verhindert, dass ein eingelöster Rabatt größer wird als der Rest.</li>
+    <li><b>Falsche Summe:</b> Die Schicht zählt jede Zahlung genau einmal, egal ob ganz, zusammen oder in Teilen. Ein Test prüft, dass die Schichtsumme dem kassierten Geld entspricht.</li>
+    <li><b>Kassenrecht:</b> Unverändert. Die Frage an den Steuerberater aus 0.2 bleibt offen, bevor die App die Papier-Deckel ersetzt.</li>
+  </ul>
+</section>
+
+<section class="space-y-3" data-lavish-revision="r1">
+  <h2 class="text-2xl font-bold">Bewusst nicht in 0.3</h2>
+  <ul class="list-disc pl-6 space-y-1">
+    <li>Getränke von einem Deckel auf einen anderen schieben oder zwei offene Deckel zusammenlegen, ohne zu kassieren.</li>
+    <li>Teil zahlen nach Betrag („jeder 20 €“) statt nach Getränken.</li>
+    <li>Teilzahler scannt seine Karte und bekommt Punkte für seinen Teil.</li>
+    <li>Eine Zahlung rückgängig machen.</li>
+  </ul>
+</section>
+
+<section class="space-y-6" data-lavish-annotate="off" data-lavish-revision="r1">
+  <h2 class="text-2xl font-bold">Deine Entscheidungen</h2>
+  <div class="card card-border bg-base-200"><div class="card-body text-sm space-y-1">
+    <h3 class="card-title text-base">Schon entschieden (Chat)</h3>
+    <p>✅ Zusammen zahlen: Der Zahlende bekommt die Punkte für alle Deckel. Man tippt an, wer zahlt.</p>
+    <p>✅ Teilzahlung ohne Punkte. Der Inhaber bekommt Punkte nur für das, was er am Ende selbst zahlt.</p>
+    <p>✅ Umbenennen ändert nur den Deckel, nicht den gespeicherten Kundennamen.</p>
+  </div></div>
+
+  <form data-lavish-question="rangliste" class="card card-border bg-base-200" onsubmit="event.preventDefault(); const v = new FormData(event.currentTarget).get('r'); if (v) window.lavish.queuePrompt('Rangliste bei Zusammen zahlen: ' + v, { tag: 'choice', text: 'Rangliste: ' + v, element: event.currentTarget, data: { question: 'rangliste', answer: v } });">
+    <div class="card-body space-y-2">
+      <h3 class="card-title">Kunden-Rangliste: Wem zählt der Umsatz, wenn einer für andere zahlt?</h3>
+      <p class="text-sm opacity-70">Beispiel: Murat zahlt Jonas' Deckel (12,40 €) mit.</p>
+      <label class="flex gap-2"><input type="radio" class="radio" name="r" value="dem, der getrunken hat" checked> <span><b>Dem, der getrunken hat</b> (empfohlen): Jonas behält 12,40 € und einen Deckel in der Rangliste. Die Rangliste zeigt weiter, wer wie oft da ist und was er trinkt. Nur die Punkte gehen an Murat.</span></label>
+      <label class="flex gap-2"><input type="radio" class="radio" name="r" value="dem Zahlenden"> <span><b>Dem Zahlenden</b>: Die 12,40 € zählen bei Murat. Jonas' Besuch taucht in seiner Liste nicht auf.</span></label>
+      <button class="btn btn-sm btn-primary w-fit" type="submit">Antwort vormerken</button>
+    </div>
+  </form>
+
+  <form data-lavish-question="freigabe" class="card card-border bg-base-200" onsubmit="event.preventDefault(); const f = new FormData(event.currentTarget); const v = f.get('ok'); const n = (f.get('notiz') || '').trim(); if (v) window.lavish.queuePrompt('Plan 0.3: ' + v + (n ? ' – Anmerkung: ' + n : ''), { tag: 'choice', text: 'Plan 0.3: ' + v, element: event.currentTarget, data: { question: 'freigabe', answer: v, notiz: n } });">
+    <div class="card-body space-y-2">
+      <h3 class="card-title">Passt der Plan?</h3>
+      <label class="flex gap-2"><input type="radio" class="radio" name="ok" value="Ja, los"> <span>Ja, los</span></label>
+      <label class="flex gap-2"><input type="radio" class="radio" name="ok" value="Ja, mit Änderungen (siehe Anmerkung)"> <span>Ja, mit Änderungen</span></label>
+      <label class="flex gap-2"><input type="radio" class="radio" name="ok" value="Nein, nochmal überarbeiten"> <span>Nein, nochmal überarbeiten</span></label>
+      <textarea name="notiz" class="textarea w-full" placeholder="Anmerkungen (optional)"></textarea>
+      <button class="btn btn-sm btn-primary w-fit" type="submit">Antwort vormerken</button>
+    </div>
+  </form>
+  <p class="text-sm opacity-70">Danach oben auf <b>„Send to Agent“</b> klicken.</p>
+</section>
+
+<footer class="text-xs opacity-50 space-y-1 pt-6">
+  <p>Grundlage: Code-Stand nach PR #6 (<code>src/lib/db.ts</code>, <code>src/ui/BarView.svelte</code>, <code>src/ui/TabPanel.svelte</code>, <code>src/lib/report.ts</code>), Plan 0.2, Antworten aus dem Chat vom 22.10.2026. Die Beträge in den Skizzen sind Beispiele.</p>
+</footer>
+</main>
+</body>
+</html>

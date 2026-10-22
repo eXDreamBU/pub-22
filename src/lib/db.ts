@@ -53,6 +53,7 @@ export interface Summary {
 export interface ClosedTab extends Tab, Summary {
   closedAt: string;
   shiftId?: string; // missing = belongs to the running shift
+  paidBy?: string; // label of the tab that paid for this one (paying together); missing = paid itself
 }
 
 /** A closed shift: the numbers are frozen at close, they are what goes into the paper Kassenbericht. */
@@ -122,6 +123,15 @@ export function addCustomer(db: Db, name: string, phone: string, now: string): C
   const customer = { id: newId(), name: name.trim(), phone: phone.trim(), points: 0, createdAt: now };
   db.customers.push(customer);
   return customer;
+}
+
+/** Rename a customer; their open tab follows unless it was renamed by hand. */
+export function renameCustomer(db: Db, customerId: string, name: string): void {
+  const customer = db.customers.find((c) => c.id === customerId);
+  if (!customer || !name.trim()) return;
+  const tab = db.tabs.find((t) => t.customerId === customerId && t.label === customer.name);
+  customer.name = name.trim();
+  if (tab) tab.label = customer.name;
 }
 
 function customerOf(db: Db, tab: Tab): Customer | undefined {
@@ -200,16 +210,75 @@ export function tabSummary(db: Db, tab: Tab): Summary {
 
 /** Close the tab: book points, move it to the history. Payment itself goes into the bar's open cash box. */
 export function settle(db: Db, tabId: string, now: string): ClosedTab {
-  const index = db.tabs.findIndex((t) => t.id === tabId);
-  if (index < 0) throw new Error('Deckel nicht gefunden');
-  const tab = db.tabs[index];
-  const closed: ClosedTab = { ...tab, ...tabSummary(db, tab), closedAt: now };
-  const customer = customerOf(db, tab);
-  // Clamped: rewards were already handed out even if the balance was corrected below them meanwhile.
-  if (customer) customer.points = Math.max(0, customer.points + closed.pointsEarned - closed.pointsSpent);
-  db.tabs.splice(index, 1);
-  db.history.push(closed);
+  return settleTogether(db, [tabId], tabId, now)[0];
+}
+
+/**
+ * One guest pays several tabs: each closes with its own sums and redeemed points (booked on its own customer),
+ * the points earned on the whole paid sum go to the payer's customer (none if the payer has no card).
+ */
+export function settleTogether(db: Db, tabIds: string[], payerTabId: string, now: string): ClosedTab[] {
+  const tabs = tabIds.map((id) => db.tabs.find((t) => t.id === id));
+  if (!tabs.every((t) => t !== undefined)) throw new Error('Deckel nicht gefunden');
+  const payer = tabs.find((t) => t.id === payerTabId);
+  if (!payer) throw new Error('Der Zahlende gehört nicht zu den Deckeln');
+  const summaries = tabs.map((t) => tabSummary(db, t));
+  const paidCents = summaries.reduce((sum, s) => sum + s.paidCents, 0);
+  const payerCustomer = customerOf(db, payer);
+  const pointsEarned = payerCustomer ? pointsFor(paidCents, db.settings.pointsPerEuro) : 0;
+  const closed = tabs.map((tab, i): ClosedTab => {
+    const isPayer = tab === payer;
+    return {
+      ...tab,
+      ...summaries[i],
+      pointsEarned: isPayer ? pointsEarned : 0,
+      closedAt: now,
+      ...(tabs.length > 1 && !isPayer && { paidBy: payer.label }),
+    };
+  });
+  for (const tab of closed) {
+    const customer = customerOf(db, tab);
+    // Clamped: rewards were already handed out even if the balance was corrected below them meanwhile.
+    if (customer) customer.points = Math.max(0, customer.points + tab.pointsEarned - tab.pointsSpent);
+  }
+  db.tabs = db.tabs.filter((t) => !tabIds.includes(t.id));
+  db.history.push(...closed);
   return closed;
+}
+
+/**
+ * Pay part of a tab: `qtys[i]` of line i are closed as a separate entry without customer and points.
+ * The rest, rewards and discount stay on the tab; a fully paid tab without pending rewards is closed.
+ */
+export function payPart(db: Db, tabId: string, qtys: number[], now: string): ClosedTab {
+  const tab = db.tabs.find((t) => t.id === tabId);
+  if (!tab) throw new Error('Deckel nicht gefunden');
+  if (qtys.length !== tab.lines.length || !qtys.every((q, i) => Number.isInteger(q) && q >= 0 && q <= tab.lines[i].qty)) {
+    throw new Error('Ungültige Menge');
+  }
+  const lines = tab.lines.flatMap((l, i) => (qtys[i] ? [{ ...l, qty: qtys[i] }] : []));
+  if (lines.length === 0) throw new Error('Nichts ausgewählt');
+  const rest = tab.lines.flatMap((l, i) => (l.qty > qtys[i] ? [{ ...l, qty: l.qty - qtys[i] }] : []));
+  if (tab.discountSteps && tabTotal(rest) < tabSummary(db, tab).discountCents) throw new Error('Erst den Rabatt verringern');
+  const paidCents = tabTotal(lines);
+  const part: ClosedTab = {
+    id: newId(),
+    label: `${tab.label} (Teil)`,
+    openedAt: tab.openedAt,
+    lines,
+    rewards: [],
+    discountSteps: 0,
+    totalCents: paidCents,
+    discountCents: 0,
+    paidCents,
+    pointsSpent: 0,
+    pointsEarned: 0,
+    closedAt: now,
+  };
+  tab.lines = rest;
+  if (rest.length === 0 && tab.rewards.length === 0) cancelTab(db, tab.id);
+  db.history.push(part);
+  return part;
 }
 
 export function cancelTab(db: Db, tabId: string): void {
