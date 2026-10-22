@@ -18,7 +18,9 @@
 
   let products = $derived(app.db.products.filter((p) => !p.hidden));
   let categories = $derived([...new Set(products.map((p) => p.category))]);
-  let category = $state(app.db.products.find((p) => !p.hidden)?.category ?? '');
+  let picked = $state('');
+  // Falls back to the first category when the picked one has no visible drinks (left).
+  let category = $derived(categories.includes(picked) ? picked : categories[0]);
   let summary = $derived(tabSummary(app.db, tab));
 
   let redeemDialog: HTMLDialogElement;
@@ -56,7 +58,7 @@
 
   <div class="cats">
     {#each categories as c (c)}
-      <button class="small" class:primary={c === category} onclick={() => (category = c)}>{c}</button>
+      <button class="small" class:primary={c === category} onclick={() => (picked = c)}>{c}</button>
     {/each}
   </div>
 

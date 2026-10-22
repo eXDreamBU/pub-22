@@ -20,6 +20,14 @@
     input.value = formatEuro(cents);
   }
 
+  // Committed on change, not per keystroke: an emptied field must not leave null behind (null points = free discount).
+  function setWhole<T>(target: T, key: keyof T, min: number, e: Event) {
+    const input = e.currentTarget as HTMLInputElement;
+    const value = Math.round(Number(input.value));
+    if (input.value.trim() !== '' && Number.isFinite(value) && value >= min) (target[key] as number) = value;
+    input.value = String(target[key]);
+  }
+
   function addProduct() {
     const product: Product = { id: newId(), category: category || 'Neu', name: 'Neues Getränk', priceCents: 0 };
     app.db.products.push(product);
@@ -31,12 +39,17 @@
   }
 
   async function backup() {
-    app.db.lastBackupAt = now();
-    const name = `pub22-sicherung-${app.db.lastBackupAt.slice(0, 10)}.json`;
-    const file = new File([JSON.stringify(app.db, null, 1)], name, { type: 'application/json' });
+    const at = now();
+    const name = `pub22-sicherung-${at.slice(0, 10)}.json`;
+    const file = new File([JSON.stringify({ ...app.db, lastBackupAt: at }, null, 1)], name, { type: 'application/json' });
     if (navigator.canShare?.({ files: [file] })) {
-      // iPad: share sheet → "In Dateien sichern" → iCloud Drive.
-      await navigator.share({ files: [file] }).catch(() => {});
+      // iPad: share sheet → "In Dateien sichern" → iCloud Drive. Cancelling it rejects: then nothing was saved.
+      try {
+        await navigator.share({ files: [file] });
+      } catch {
+        message = 'Nicht gesichert (abgebrochen).';
+        return;
+      }
     } else {
       const a = document.createElement('a');
       a.href = URL.createObjectURL(file);
@@ -44,6 +57,7 @@
       a.click();
       URL.revokeObjectURL(a.href);
     }
+    app.db.lastBackupAt = at;
     message = 'Sicherung erstellt.';
   }
 
@@ -67,10 +81,22 @@
 <div class="settings">
   <section class="panel">
     <h2>Punkte</h2>
-    <label>Punkte pro 1 € <input type="number" min="0" step="1" bind:value={app.db.settings.pointsPerEuro} /></label>
+    <label>Punkte pro 1 € <input
+        type="number"
+        min="0"
+        step="1"
+        value={app.db.settings.pointsPerEuro}
+        onchange={(e) => setWhole(app.db.settings, 'pointsPerEuro', 0, e)}
+      /></label>
     <h3>Rabatt in €</h3>
     <div class="row">
-      <label class="grow">Punkte <input type="number" min="1" step="1" bind:value={app.db.settings.discountPoints} /></label>
+      <label class="grow">Punkte <input
+          type="number"
+          min="1"
+          step="1"
+          value={app.db.settings.discountPoints}
+          onchange={(e) => setWhole(app.db.settings, 'discountPoints', 1, e)}
+        /></label>
       <span>=</span>
       <label class="grow"
         >Rabatt <input
@@ -84,7 +110,15 @@
     {#each app.db.rewards as r, i (r.id)}
       <div class="row">
         <input class="grow" bind:value={r.name} aria-label="Prämie" />
-        <input class="pts" type="number" min="1" step="1" bind:value={r.points} aria-label="Punkte" />
+        <input
+          class="pts"
+          type="number"
+          min="0"
+          step="1"
+          value={r.points}
+          onchange={(e) => setWhole(r, 'points', 0, e)}
+          aria-label="Punkte"
+        />
         <span class="muted">P.</span>
         <button class="small danger" onclick={() => app.db.rewards.splice(i, 1)}>✕</button>
       </div>
