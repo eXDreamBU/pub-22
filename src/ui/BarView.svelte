@@ -1,6 +1,6 @@
 <script lang="ts">
   import { app, now } from '../state.svelte';
-  import { checkIn, openGuestTab, tabSummary } from '../lib/db';
+  import { checkIn, openGuestTab, openTabsTotal, tabSummary } from '../lib/db';
   import { formatEuro } from '../lib/money';
   import Scanner from './Scanner.svelte';
   import TabPanel from './TabPanel.svelte';
@@ -86,6 +86,10 @@
         <li class="muted empty">Noch niemand eingecheckt.</li>
       {/each}
     </ul>
+    <div class="total">
+      <span class="muted">Auf allen Deckeln</span>
+      <b class="num gold">{formatEuro(openTabsTotal(app.db))}</b>
+    </div>
   </aside>
 
   <section>
@@ -149,7 +153,26 @@
   aside {
     border-right: 1px solid var(--line);
     padding: 1rem;
+    display: flex;
+    flex-direction: column;
+    min-height: 0;
+  }
+  aside ul {
+    flex: 1;
+    align-content: start;
     overflow-y: auto;
+    padding-bottom: 0.5rem;
+  }
+  .total {
+    display: flex;
+    justify-content: space-between;
+    align-items: baseline;
+    border-top: 1px solid var(--line);
+    padding-top: 0.8rem;
+    margin-top: 0.5rem;
+  }
+  .total b {
+    font-size: 1.5rem;
   }
   .start {
     display: grid;

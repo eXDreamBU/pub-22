@@ -214,6 +214,11 @@ export function tabSummary(db: Db, tab: Tab): Summary {
   };
 }
 
+/** What all open tabs in the bar would pay right now (after their discounts). */
+export function openTabsTotal(db: Db): number {
+  return db.tabs.reduce((sum, tab) => sum + tabSummary(db, tab).paidCents, 0);
+}
+
 /** Close the tab: book points, move it to the history. Payment itself goes into the bar's open cash box. */
 export function settle(db: Db, tabId: string, now: string): ClosedTab {
   return settleTogether(db, [tabId], tabId, now)[0];

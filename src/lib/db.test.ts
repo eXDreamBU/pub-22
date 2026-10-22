@@ -11,6 +11,7 @@ import {
   migrate,
   lastVisits,
   openGuestTab,
+  openTabsTotal,
   parseBackup,
   parseCardPayload,
   payPart,
@@ -211,6 +212,24 @@ describe('redeeming', () => {
     const db = createDb(NOW);
     const tab = openGuestTab(db, 'Tisch 3', NOW);
     expect(() => redeemReward(db, tab, { id: 'r', name: 'Freigetränk', points: 0 })).toThrow();
+  });
+});
+
+describe('openTabsTotal', () => {
+  it('sums what all open tabs would pay, discounts included, closed tabs left out', () => {
+    const { db, id } = dbWithCustomer(250);
+    db.settings.discountPoints = 100;
+    db.settings.discountCents = 500;
+    expect(openTabsTotal(db)).toBe(0);
+    const card = checkIn(db, id, NOW);
+    addItem(card, { id: 'x', category: 'Bier', name: 'Pils', priceCents: 1850 });
+    setDiscountSteps(db, card, 1);
+    const guest = openGuestTab(db, 'Tisch 3', NOW);
+    addItem(guest, { id: 'y', category: 'Bier', name: 'Pils', priceCents: 400 });
+    const gone = openGuestTab(db, 'Tisch 4', NOW);
+    addItem(gone, { id: 'z', category: 'Bier', name: 'Pils', priceCents: 999 });
+    settle(db, gone.id, NOW);
+    expect(openTabsTotal(db)).toBe(1350 + 400);
   });
 });
 
