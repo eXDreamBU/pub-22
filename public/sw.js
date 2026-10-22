@@ -26,7 +26,8 @@ async function page(request) {
   const cache = await caches.open(CACHE);
   try {
     const timeout = new Promise((_, reject) => setTimeout(() => reject(new Error('timeout')), 3000));
-    const response = await Promise.race([fetch(request), timeout]);
+    // no-cache: GitHub Pages lets browsers keep the page for 10 minutes, which would hide a new release.
+    const response = await Promise.race([fetch(request, { cache: 'no-cache' }), timeout]);
     if (response.ok) cache.put('./', response.clone());
     return response;
   } catch {
