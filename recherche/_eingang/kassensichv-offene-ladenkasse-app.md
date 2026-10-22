@@ -56,6 +56,7 @@ Keine Rechtsberatung. Korrigiert die Prämisse in `kassensichv-deckel-app.md` (d
 4. Wäre es unschädlich, wenn die App nur Kunden und Punkte, aber keine Getränke-Einzelpositionen speichert?
 5. Müssen wir etwas an das Finanzamt melden (§ 146a Abs. 4), wenn wir die App einführen?
 6. Alternativ: Ist eine zertifizierte TSE-Kasse mit Tischfunktion die für diese Größe empfohlene Lösung?
+7. Der Chef lässt manchmal etwas nach oder gibt eine Runde aufs Haus. Die App zieht das vom kassierten Betrag ab und führt es getrennt als „Aufs Haus“ (Betrag, freiwilliger Grund). Wie muss das im Kassenbericht und in der Buchhaltung stehen (Preisnachlass, Werbung, Bewirtung, Eigenverbrauch)?
 
 ## Nicht gefunden
 1. BMF-Aussage, FG-Urteil oder Steuerberater-Fachartikel zu "elektronische Deckel/Strichliste/Bestell-App mit offener Ladenkasse" (nur Anbieter-Blog Lido und Suchzusammenfassungen).

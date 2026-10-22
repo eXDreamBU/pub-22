@@ -13,7 +13,7 @@
     tabSummary,
     type Tab,
   } from '../lib/db';
-  import { formatEuro, pointsFor, tabTotal } from '../lib/money';
+  import { formatEuro, parseEuro, pointsFor, tabTotal } from '../lib/money';
   import { formatTime } from './format';
   import Icon from './Icon.svelte';
   import { categoryIcon, icons } from './icons';
@@ -41,7 +41,15 @@
   let group = $derived([tab, ...others.filter((t) => together.includes(t.id))]);
   let payer = $derived(group.find((t) => t.id === payerId) ?? tab);
   let groupPaid = $derived(group.reduce((sum, t) => sum + tabSummary(app.db, t).paidCents, 0));
-  let groupPoints = $derived(payer.customerId ? pointsFor(groupPaid, app.db.settings.pointsPerEuro) : 0);
+  // "Aufs Haus": the owner's own discount on the group's sum, typed in euro.
+  let houseText = $state('');
+  let houseReason = $state('');
+  let houseCents = $derived(houseText.trim() ? parseEuro(houseText) : 0);
+  let houseError = $derived(
+    houseCents === null ? 'Bitte einen Betrag wie 3,50 eintippen' : houseCents > groupPaid ? `Höchstens ${formatEuro(groupPaid)}` : '',
+  );
+  let cashCents = $derived(groupPaid - (houseError ? 0 : (houseCents ?? 0)));
+  let groupPoints = $derived(payer.customerId ? pointsFor(cashCents, app.db.settings.pointsPerEuro) : 0);
 
   // Paying part: how many of each line are paid now.
   let partQtys = $state<number[]>([]);
@@ -61,11 +69,13 @@
   function showSettle() {
     together = [];
     payerId = tab.id;
+    houseText = '';
+    houseReason = '';
     settleDialog.showModal();
   }
 
   function doSettle() {
-    settleTogether(app.db, group.map((t) => t.id), payer.id, now());
+    settleTogether(app.db, group.map((t) => t.id), payer.id, now(), { cents: houseCents ?? 0, reason: houseReason });
     settleDialog.close();
     app.selectedTabId = null;
   }
@@ -255,7 +265,17 @@
       <div class="row"><span class="grow">Rabatt</span><span class="num">−{formatEuro(summary.discountCents)}</span></div>
     {/if}
   {/if}
-  <div class="row kassieren"><b class="grow">Kassieren</b><b class="num">{formatEuro(groupPaid)}</b></div>
+  <div class="house">
+    <label class="row">
+      <span class="grow gold">Aufs Haus</span>
+      <input class="house-cents num" inputmode="decimal" placeholder="0,00" bind:value={houseText} />
+      <span>€</span>
+    </label>
+    <button class="small" onclick={() => (houseText = (groupPaid / 100).toFixed(2).replace('.', ','))}>Alles aufs Haus</button>
+    <input placeholder="Grund (freiwillig), z. B. Geburtstag" aria-label="Grund" bind:value={houseReason} />
+    {#if houseError}<p class="error">{houseError}</p>{/if}
+  </div>
+  <div class="row kassieren"><b class="grow">Kassieren</b><b class="num">{formatEuro(cashCents)}</b></div>
   <p class="muted">Zählt in die laufende Schicht.</p>
   {#each group as t (t.id)}
     {#each t.rewards as r, i (i)}
@@ -269,12 +289,12 @@
     </p>
   {:else if tab.customerId}
     <p>
-      +{summary.pointsEarned} Punkte{#if summary.pointsSpent}, −{summary.pointsSpent} eingelöst{/if}
+      +{groupPoints} Punkte{#if summary.pointsSpent}, −{summary.pointsSpent} eingelöst{/if}
     </p>
   {/if}
   <div class="row">
     <button class="grow" onclick={() => settleDialog.close()}>Zurück</button>
-    <button class="ok grow" onclick={doSettle}>Bezahlt</button>
+    <button class="ok grow" disabled={!!houseError} onclick={doSettle}>Bezahlt</button>
   </div>
 </dialog>
 
@@ -496,6 +516,18 @@
   }
   .part {
     min-width: 5rem;
+    text-align: right;
+  }
+  .house {
+    display: grid;
+    gap: 0.5rem;
+    margin-top: 0.8rem;
+    padding: 0.75rem;
+    border-radius: var(--radius);
+    background: var(--panel-2);
+  }
+  .house-cents {
+    width: 7rem;
     text-align: right;
   }
   .kassieren {

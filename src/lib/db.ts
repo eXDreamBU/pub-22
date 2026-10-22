@@ -2,7 +2,7 @@
 // UI code mutates it only through these functions; storage.ts persists it.
 
 import { seedMenu, type MenuItem } from './menu';
-import { pointsFor, tabTotal } from './money';
+import { formatEuro, pointsFor, tabTotal } from './money';
 
 export interface Product extends MenuItem {
   id: string;
@@ -54,6 +54,14 @@ export interface ClosedTab extends Tab, Summary {
   closedAt: string;
   shiftId?: string; // missing = belongs to the running shift
   paidBy?: string; // label of the tab that paid for this one (paying together); missing = paid itself
+  houseCents?: number; // "aufs Haus": the owner's own discount, already taken off paidCents; missing = 0 (older tabs)
+  houseReason?: string;
+}
+
+/** The owner's discount at settle, on top of the points discount. */
+export interface House {
+  cents: number;
+  reason?: string;
 }
 
 /** A closed shift: the numbers are frozen at close, they are what goes into the paper Kassenbericht. */
@@ -64,7 +72,8 @@ export interface Shift {
   tabCount: number;
   totalCents: number; // value of the drinks (sum of the categories)
   discountCents: number; // points discount, not spread over the categories
-  paidCents: number; // totalCents - discountCents = cash actually taken
+  houseCents?: number; // "aufs Haus", not spread over the categories; missing = 0 (older shifts)
+  paidCents: number; // totalCents - discountCents - houseCents = cash actually taken
   byCategory: { category: string; cents: number; qty: number }[];
   rewards: { name: string; count: number }[]; // free drinks handed out, no money involved
   note: string;
@@ -220,28 +229,44 @@ export function openTabsTotal(db: Db): number {
 }
 
 /** Close the tab: book points, move it to the history. Payment itself goes into the bar's open cash box. */
-export function settle(db: Db, tabId: string, now: string): ClosedTab {
-  return settleTogether(db, [tabId], tabId, now)[0];
+export function settle(db: Db, tabId: string, now: string, house: House = { cents: 0 }): ClosedTab {
+  return settleTogether(db, [tabId], tabId, now, house)[0];
 }
 
 /**
  * One guest pays several tabs: each closes with its own sums and redeemed points (booked on its own customer),
  * the points earned on the whole paid sum go to the payer's customer (none if the payer has no card).
+ * `house` comes off the group's sum before the points are counted.
  */
-export function settleTogether(db: Db, tabIds: string[], payerTabId: string, now: string): ClosedTab[] {
+export function settleTogether(db: Db, tabIds: string[], payerTabId: string, now: string, house: House = { cents: 0 }): ClosedTab[] {
   const tabs = tabIds.map((id) => db.tabs.find((t) => t.id === id));
   if (!tabs.every((t) => t !== undefined)) throw new Error('Deckel nicht gefunden');
   const payer = tabs.find((t) => t.id === payerTabId);
   if (!payer) throw new Error('Der Zahlende gehört nicht zu den Deckeln');
   const summaries = tabs.map((t) => tabSummary(db, t));
-  const paidCents = summaries.reduce((sum, s) => sum + s.paidCents, 0);
+  const dueCents = summaries.reduce((sum, s) => sum + s.paidCents, 0);
+  if (!Number.isInteger(house.cents) || house.cents < 0) throw new Error('Ungültiger Betrag');
+  if (house.cents > dueCents) throw new Error(`Höchstens ${formatEuro(dueCents)} aufs Haus`);
+  const reason = house.reason?.trim();
+  // The payer's tab takes the house discount first, then the others in order, so no tab goes below zero.
+  const shares = new Map<Tab, number>();
+  let left = house.cents;
+  for (const tab of [payer, ...tabs.filter((t) => t !== payer)]) {
+    const share = Math.min(left, summaries[tabs.indexOf(tab)].paidCents);
+    shares.set(tab, share);
+    left -= share;
+  }
   const payerCustomer = customerOf(db, payer);
-  const pointsEarned = payerCustomer ? pointsFor(paidCents, db.settings.pointsPerEuro) : 0;
+  const pointsEarned = payerCustomer ? pointsFor(dueCents - house.cents, db.settings.pointsPerEuro) : 0;
   const closed = tabs.map((tab, i): ClosedTab => {
     const isPayer = tab === payer;
+    const houseCents = shares.get(tab) ?? 0;
     return {
       ...tab,
       ...summaries[i],
+      paidCents: summaries[i].paidCents - houseCents,
+      houseCents,
+      ...(houseCents > 0 && reason && { houseReason: reason }),
       pointsEarned: isPayer ? pointsEarned : 0,
       closedAt: now,
       ...(tabs.length > 1 && !isPayer && { paidBy: payer.label }),
@@ -314,9 +339,11 @@ export function summarizeShift(tabs: ClosedTab[]): Omit<Shift, 'id' | 'note'> {
   const rewards = new Map<string, number>();
   let totalCents = 0;
   let discountCents = 0;
+  let houseCents = 0;
   for (const tab of tabs) {
     totalCents += tab.totalCents;
     discountCents += tab.discountCents;
+    houseCents += tab.houseCents ?? 0;
     for (const line of tab.lines) {
       const entry = categories.get(line.category) ?? { cents: 0, qty: 0 };
       entry.cents += line.priceCents * line.qty;
@@ -331,7 +358,8 @@ export function summarizeShift(tabs: ClosedTab[]): Omit<Shift, 'id' | 'note'> {
     tabCount: tabs.length,
     totalCents,
     discountCents,
-    paidCents: totalCents - discountCents,
+    houseCents,
+    paidCents: totalCents - discountCents - houseCents,
     byCategory: [...categories].map(([category, v]) => ({ category, ...v })).sort((a, b) => b.cents - a.cents),
     rewards: [...rewards].map(([name, count]) => ({ name, count })),
   };

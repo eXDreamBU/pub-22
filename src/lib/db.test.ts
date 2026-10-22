@@ -555,3 +555,78 @@ describe('renameCustomer', () => {
     expect(db.customers[0].name).toBe('Murat Kaya');
   });
 });
+
+describe('aufs Haus', () => {
+  function twoTabs() {
+    const db = createDb(NOW);
+    const murat = addCustomer(db, 'Murat K.', '', NOW);
+    murat.points = 100;
+    const a = checkIn(db, murat.id, NOW);
+    const g = openGuestTab(db, 'Tisch 5', NOW);
+    for (let i = 0; i < 5; i++) addItem(a, pint); // 21,00
+    for (let i = 0; i < 3; i++) addItem(g, coke); // 9,00
+    return { db, murat, a, g };
+  }
+
+  it('takes the house discount off the cash and gives points only on the rest', () => {
+    const { db, murat, a } = twoTabs();
+    setDiscountSteps(db, a, 1); // −5,00 for 100 points
+    const closed = settle(db, a.id, NOW, { cents: 350, reason: ' Stammgast ' });
+    expect(closed.houseCents).toBe(350);
+    expect(closed.houseReason).toBe('Stammgast');
+    expect(closed.paidCents).toBe(2100 - 500 - 350);
+    expect(murat.points).toBe(12);
+  });
+
+  it('everything on the house: nothing to take, no points, redeemed points still go', () => {
+    const { db, murat, a } = twoTabs();
+    setDiscountSteps(db, a, 1);
+    const closed = settle(db, a.id, NOW, { cents: 1600, reason: '' });
+    expect(closed.paidCents).toBe(0);
+    expect(closed.pointsEarned).toBe(0);
+    expect(closed.houseReason).toBeUndefined();
+    expect(murat.points).toBe(0);
+  });
+
+  it('refuses more than is left, negative or fractional amounts and closes nothing', () => {
+    const { db, a, g } = twoTabs();
+    expect(() => settleTogether(db, [a.id, g.id], a.id, NOW, { cents: 3001 })).toThrow('Höchstens 30,00');
+    expect(() => settle(db, a.id, NOW, { cents: -1 })).toThrow();
+    expect(() => settle(db, a.id, NOW, { cents: 1.5 })).toThrow();
+    expect(db.tabs.length).toBe(2);
+    expect(db.history).toEqual([]);
+  });
+
+  it('paying together: fills the payer first, then the others, never below zero', () => {
+    const { db, murat, a, g } = twoTabs();
+    const closed = settleTogether(db, [g.id, a.id], g.id, NOW, { cents: 1500, reason: 'Geburtstag' });
+    expect(closed.map((t) => [t.label, t.houseCents, t.paidCents])).toEqual([
+      ['Tisch 5', 900, 0],
+      ['Murat K.', 600, 1500],
+    ]);
+    expect(closed.map((t) => t.houseReason)).toEqual(['Geburtstag', 'Geburtstag']);
+    expect(murat.points).toBe(100); // a guest without card paid
+  });
+
+  it('the payer with card earns points on the group sum after the house discount', () => {
+    const { db, murat, a, g } = twoTabs();
+    const closed = settleTogether(db, [a.id, g.id], a.id, NOW, { cents: 1000 });
+    expect(closed.map((t) => t.houseCents)).toEqual([1000, 0]);
+    expect(closed[1].houseReason).toBeUndefined();
+    expect(murat.points).toBe(100 + 20);
+  });
+
+  it('the shift lists it apart and its total is the cash taken; old tabs without it count 0', () => {
+    const { db, a, g } = twoTabs();
+    setDiscountSteps(db, a, 1);
+    settle(db, a.id, NOW, { cents: 350 });
+    settle(db, g.id, NOW);
+    const { houseCents: _, ...oldTab } = db.history[1];
+    db.history[1] = oldTab;
+    const shift = closeShift(db, '', NOW);
+    expect(shift.houseCents).toBe(350);
+    expect(shift.discountCents).toBe(500);
+    expect(shift.paidCents).toBe(3000 - 500 - 350);
+    expect(shift.paidCents).toBe(db.history.reduce((sum, h) => sum + h.paidCents, 0));
+  });
+});
