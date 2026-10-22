@@ -9,6 +9,7 @@ import {
   createDb,
   creditTab,
   creditTotal,
+  deleteShift,
   inBar,
   incrementLine,
   migrate,
@@ -351,6 +352,26 @@ describe('closeShift', () => {
     const second = closeShift(db, '', NOW);
     expect([first.tabCount, second.tabCount]).toEqual([2, 1]);
     expect(db.history.length).toBe(3);
+  });
+});
+
+describe('deleteShift', () => {
+  it('removes the shift and its tabs and takes back the points they booked', () => {
+    const { db, id } = dbWithCustomer(150);
+    const card = checkIn(db, id, NOW);
+    addItem(card, { id: 'x', category: 'Bier', name: 'Pils', priceCents: 1000 });
+    redeemReward(db, card, { id: 'r', name: 'Freigetränk', points: 100 });
+    settle(db, card.id, NOW);
+    const first = closeShift(db, '', NOW);
+    settle(db, openGuestTab(db, 'bleibt', NOW).id, NOW);
+    const second = closeShift(db, '', NOW);
+    expect(db.customers[0].points).toBe(150 + 10 - 100);
+
+    deleteShift(db, first.id);
+    expect(db.shifts).toEqual([second]);
+    expect(db.history.map((t) => t.label)).toEqual(['bleibt']);
+    expect(db.customers[0].points).toBe(150);
+    expect(() => deleteShift(db, first.id)).toThrow('nicht gefunden');
   });
 });
 

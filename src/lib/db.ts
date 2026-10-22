@@ -453,6 +453,18 @@ export function closeShift(db: Db, note: string, now: string): Shift {
   return shift;
 }
 
+/** Delete a closed shift with its tabs, e.g. a test run; the points its tabs booked are taken back. */
+export function deleteShift(db: Db, shiftId: string): void {
+  if (!db.shifts.some((s) => s.id === shiftId)) throw new Error('Schicht nicht gefunden');
+  for (const tab of db.history) {
+    if (tab.shiftId !== shiftId) continue;
+    const customer = customerOf(db, tab);
+    if (customer) customer.points = Math.max(0, customer.points - tab.pointsEarned + tab.pointsSpent);
+  }
+  db.history = db.history.filter((t) => t.shiftId !== shiftId);
+  db.shifts = db.shifts.filter((s) => s.id !== shiftId);
+}
+
 /** Bring a parsed backup to the current version, or throw if it is not one of ours. */
 export function migrate(data: unknown): Db {
   const db = data as Db | undefined;
