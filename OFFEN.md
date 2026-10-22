@@ -14,3 +14,4 @@ Die eine Liste offener Punkte. Erledigtes fliegt raus (die Geschichte steht in g
 ## 3. Ideen
 - Statistiken (Besuche, Umsatz pro Stammgast) – bewusst nicht in 0.1.
 - Vorlage/no-mistakes: `no-mistakes ci-workflow` erzeugt bei Node-Projekten einen Go-Schritt (`setup-go`, `go.mod`); hier von Hand auf `setup-node` + `npm ci` umgestellt. Im Skill neues-projekt vermerken.
+- Vorlage: Die Hooks in `.claude/` sind CommonJS und brechen in Projekten mit `"type": "module"` (Vite, Svelte …). Hier per `.claude/package.json` mit `{"type": "commonjs"}` behoben. Vorschlag: diese Datei in `Vorlagen/projekt-start/.claude/` aufnehmen.
