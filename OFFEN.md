@@ -10,8 +10,7 @@ Die eine Liste offener Punkte. Erledigtes fliegt raus (die Geschichte steht in g
 - v0.1 bauen laut `docs/plan-0.1.html`: Datenmodell + Speicher, Deckel, Scannen (jsQR), Kunden/Karten (qrcode, drucken), Prämien/Rabatt, Einstellungen, Sichern/Wiederherstellen.
 - PWA: Manifest, Icon, kleiner Service Worker; GitHub-Pages-Deploy-Workflow.
 - `navigator.storage.persist()` beim Start anfragen; Erinnerung, wenn länger nicht gesichert.
+- Graphify über das Projekt laufen lassen, sobald die ersten Funktionen stehen (beim Anlegen übersprungen: nur 5 Mini-Dateien).
 
 ## 3. Ideen
 - Statistiken (Besuche, Umsatz pro Stammgast) – bewusst nicht in 0.1.
-- Vorlage/no-mistakes: `no-mistakes ci-workflow` erzeugt bei Node-Projekten einen Go-Schritt (`setup-go`, `go.mod`); hier von Hand auf `setup-node` + `npm ci` umgestellt. Im Skill neues-projekt vermerken.
-- Vorlage: Die Hooks in `.claude/` sind CommonJS und brechen in Projekten mit `"type": "module"` (Vite, Svelte …). Hier per `.claude/package.json` mit `{"type": "commonjs"}` behoben. Vorschlag: diese Datei in `Vorlagen/projekt-start/.claude/` aufnehmen.
