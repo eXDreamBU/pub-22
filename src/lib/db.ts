@@ -24,6 +24,7 @@ export interface TabLine {
   size?: string;
   priceCents: number; // snapshot: a later price change does not touch open tabs
   qty: number;
+  visit?: string; // openedAt of the evening it was added; missing = the tab's current evening
 }
 
 export interface Reward {
@@ -36,7 +37,8 @@ export interface Tab {
   id: string;
   customerId?: string; // missing = guest without card, no points
   label: string;
-  openedAt: string;
+  openedAt: string; // start of the current evening: a credited tab gets it anew when it comes back
+  creditedAt?: string; // angeschrieben: open, but the customer has left without paying
   lines: TabLine[];
   rewards: Reward[]; // redeemed on this tab, points deducted at settle
   discountSteps: number; // each step trades settings.discountPoints for settings.discountCents
@@ -76,6 +78,7 @@ export interface Shift {
   paidCents: number; // totalCents - discountCents - houseCents = cash actually taken
   byCategory: { category: string; cents: number; qty: number }[];
   rewards: { name: string; count: number }[]; // free drinks handed out, no money involved
+  creditCents?: number; // all credited tabs at close, not in the cash box; missing before 0.5
   note: string;
 }
 
@@ -147,12 +150,15 @@ function customerOf(db: Db, tab: Tab): Customer | undefined {
   return tab.customerId ? db.customers.find((c) => c.id === tab.customerId) : undefined;
 }
 
-/** Open tab for this customer; a second scan returns the tab already open. */
+/** Open tab for this customer; a second scan returns the tab already open, a credited one comes back. */
 export function checkIn(db: Db, customerId: string, now: string): Tab {
   const customer = db.customers.find((c) => c.id === customerId);
   if (!customer) throw new Error('Unbekannte Karte');
   const open = db.tabs.find((t) => t.customerId === customerId);
-  if (open) return open;
+  if (open) {
+    resumeTab(open, now);
+    return open;
+  }
   const tab: Tab = { id: newId(), customerId, label: customer.name, openedAt: now, lines: [], rewards: [], discountSteps: 0 };
   db.tabs.push(tab);
   return tab;
@@ -164,8 +170,41 @@ export function openGuestTab(db: Db, label: string, now: string): Tab {
   return tab;
 }
 
+/** Tabs of guests in the bar right now; credited tabs are open too, but not here. */
+export function inBar(db: Db): Tab[] {
+  return db.tabs.filter((t) => !t.creditedAt);
+}
+
+/** What all credited tabs still owe (after their discounts). */
+export function creditTotal(db: Db): number {
+  return db.tabs.reduce((sum, t) => sum + (t.creditedAt ? tabSummary(db, t).paidCents : 0), 0);
+}
+
+/** The oldest evening on the tab ("angeschrieben seit"). */
+export function tabSince(tab: Tab): string {
+  return tab.lines.map((l) => l.visit ?? tab.openedAt).reduce((a, b) => (b < a ? b : a), tab.openedAt);
+}
+
+/** Anschreiben: the customer leaves without paying, the tab stays open until they pay. */
+export function creditTab(db: Db, tabId: string, now: string): void {
+  const tab = db.tabs.find((t) => t.id === tabId);
+  if (!tab) throw new Error('Deckel nicht gefunden');
+  if (!tab.customerId) throw new Error('Nur Kunden mit Karte können anschreiben lassen');
+  if (!tab.lines.length && !tab.rewards.length) throw new Error('Nichts auf dem Deckel');
+  for (const line of tab.lines) line.visit ??= tab.openedAt;
+  tab.creditedAt = now;
+}
+
+/** A credited tab is back in the bar; its current evening starts now, so shifts and periods date it today. */
+function resumeTab(tab: Tab, now: string): void {
+  if (!tab.creditedAt) return;
+  delete tab.creditedAt;
+  tab.openedAt = now;
+}
+
 export function addItem(tab: Tab, product: Product): void {
-  const line = tab.lines.find((l) => l.productId === product.id && l.priceCents === product.priceCents);
+  // Only lines of the current evening (no visit yet) take one more; earlier evenings stay as they were.
+  const line = tab.lines.find((l) => !l.visit && l.productId === product.id && l.priceCents === product.priceCents);
   if (line) line.qty++;
   else tab.lines.push({ productId: product.id, category: product.category, name: product.name, size: product.size, priceCents: product.priceCents, qty: 1 });
 }
@@ -223,9 +262,9 @@ export function tabSummary(db: Db, tab: Tab): Summary {
   };
 }
 
-/** What all open tabs in the bar would pay right now (after their discounts). */
+/** What all open tabs in the bar would pay right now (after their discounts); credited tabs count in creditTotal. */
 export function openTabsTotal(db: Db): number {
-  return db.tabs.reduce((sum, tab) => sum + tabSummary(db, tab).paidCents, 0);
+  return inBar(db).reduce((sum, tab) => sum + tabSummary(db, tab).paidCents, 0);
 }
 
 /** Close the tab: book points, move it to the history. Payment itself goes into the bar's open cash box. */
@@ -247,6 +286,7 @@ export function settleTogether(db: Db, tabIds: string[], payerTabId: string, now
   const dueCents = summaries.reduce((sum, s) => sum + s.paidCents, 0);
   if (!Number.isInteger(house.cents) || house.cents < 0) throw new Error('Ungültiger Betrag');
   if (house.cents > dueCents) throw new Error(`Höchstens ${formatEuro(dueCents)} aufs Haus`);
+  for (const tab of tabs) resumeTab(tab, now); // paying means the customer is here tonight
   const reason = house.reason?.trim();
   // The payer's tab takes the house discount first, then the others in order, so no tab goes below zero.
   const shares = new Map<Tab, number>();
@@ -296,6 +336,7 @@ export function payPart(db: Db, tabId: string, qtys: number[], now: string): Clo
   if (lines.length === 0) throw new Error('Nichts ausgewählt');
   const rest = tab.lines.flatMap((l, i) => (l.qty > qtys[i] ? [{ ...l, qty: l.qty - qtys[i] }] : []));
   if (tab.discountSteps && tabTotal(rest) < tabSummary(db, tab).discountCents) throw new Error('Erst den Rabatt verringern');
+  resumeTab(tab, now);
   const paidCents = tabTotal(lines);
   const part: ClosedTab = {
     id: newId(),
@@ -353,8 +394,8 @@ export function summarizeShift(tabs: ClosedTab[]): Omit<Shift, 'id' | 'note'> {
     for (const r of tab.rewards) rewards.set(r.name, (rewards.get(r.name) ?? 0) + 1);
   }
   return {
-    startedAt: tabs.map((t) => t.openedAt).reduce((a, b) => (b < a ? b : a)),
-    closedAt: tabs.map((t) => t.closedAt).reduce((a, b) => (b > a ? b : a)),
+    startedAt: tabs.map((t) => t.openedAt).sort()[0],
+    closedAt: tabs.map((t) => t.closedAt).sort().at(-1)!,
     tabCount: tabs.length,
     totalCents,
     discountCents,
@@ -365,12 +406,48 @@ export function summarizeShift(tabs: ClosedTab[]): Omit<Shift, 'id' | 'note'> {
   };
 }
 
-/** Close the running shift: freeze its numbers and stamp its tabs. Only possible once no tab is open. */
+/** Card tabs in the bar with something on them: shift close credits them. */
+export function tabsToCredit(db: Db): Tab[] {
+  return inBar(db).filter((t) => t.customerId && (t.lines.length || t.rewards.length));
+}
+
+/** Tabs credited in the running shift, including those its close will credit. */
+function creditedThisShift(db: Db): Tab[] {
+  const lastClose = db.shifts.map((s) => s.closedAt).sort().at(-1) ?? '';
+  return [...db.tabs.filter((t) => t.creditedAt && t.creditedAt > lastClose), ...tabsToCredit(db)];
+}
+
+/** Why the running shift cannot be closed yet, or null. */
+export function shiftCloseBlocker(db: Db): string | null {
+  const guests = inBar(db).filter((t) => !t.customerId);
+  if (guests.length) return `Erst ${guests.map((t) => t.label).join(', ')} abrechnen (ohne Karte)`;
+  if (runningTabs(db).length === 0 && creditedThisShift(db).length === 0) return 'Die Schicht hat noch keinen bezahlten Deckel';
+  return null;
+}
+
+/**
+ * Close the running shift: freeze its numbers and stamp its tabs. Card tabs still in the bar are credited
+ * (empty ones closed); guests without card must pay first. Nothing paid is fine if something was credited
+ * since the last close.
+ */
 export function closeShift(db: Db, note: string, now: string): Shift {
-  if (db.tabs.length > 0) throw new Error('Erst alle Deckel abrechnen');
+  const blocker = shiftCloseBlocker(db);
+  if (blocker) throw new Error(blocker);
   const tabs = runningTabs(db);
-  if (tabs.length === 0) throw new Error('Die Schicht hat noch keinen bezahlten Deckel');
-  const shift: Shift = { id: newId(), ...summarizeShift(tabs), closedAt: now, note: note.trim() };
+  const credited = creditedThisShift(db);
+  const toCredit = tabsToCredit(db);
+  for (const tab of inBar(db)) {
+    if (toCredit.includes(tab)) creditTab(db, tab.id, now);
+    else cancelTab(db, tab.id);
+  }
+  const shift: Shift = {
+    id: newId(),
+    ...summarizeShift(tabs),
+    startedAt: [...tabs, ...credited].map((t) => t.openedAt).sort()[0],
+    closedAt: now,
+    creditCents: creditTotal(db),
+    note: note.trim(),
+  };
   for (const tab of tabs) tab.shiftId = shift.id;
   db.shifts.push(shift);
   return shift;

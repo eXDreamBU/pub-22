@@ -1,0 +1,243 @@
+<!doctype html>
+<html lang="de" data-theme="luxury" data-lavish-annotate="on">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>Pub 22 – Plan 0.5</title>
+<link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/daisyui@5.5.19/daisyui.css">
+<link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/daisyui@5.5.19/themes.css">
+<script src="https://cdn.jsdelivr.net/npm/@tailwindcss/browser@4.2.4/dist/index.global.js"></script>
+<style>
+  *, *::before, *::after { box-sizing: border-box; }
+  .grid > *, .flex > * { min-width: 0; }
+  p, li, td, th, h1, h2, h3 { overflow-wrap: anywhere; }
+  svg { max-width: 100%; height: auto; }
+  .ipad { border: 10px solid #222; border-radius: 22px; background: #15120f; }
+  .tile { background: #241f1a; border-radius: 10px; padding: .75rem; }
+  .sep { border-top: 1px dashed #6b5a3e; padding-top: .35rem; color: #d9b46a; font-size: .8rem; display: flex; justify-content: space-between; }
+</style>
+</head>
+<script type="application/json" data-lavish-revisions>
+[{ "id": "r1", "label": "Entwurf", "timestamp": "2026-10-23T00:30:00Z", "summary": "Erster Entwurf mit deinen vier Antworten aus dem Chat" }]
+</script>
+<body class="bg-base-100 text-base-content">
+<main class="max-w-5xl mx-auto px-4 py-10 space-y-12">
+
+<header class="space-y-3" data-lavish-revision="r1">
+  <p class="text-sm opacity-60">Plan · Version 0.5 · 23.10.2026 · baut auf 0.4 auf</p>
+  <h1 class="text-4xl font-bold">Anschreiben: Deckel über mehrere Abende</h1>
+  <p class="text-lg opacity-80 max-w-3xl">Stammkunden zahlen ihren Deckel oft nicht am selben Abend. Sie kommen ein paar Tage später wieder, trinken weiter und zahlen dann alles zusammen. Heute geht das in der App nicht: Die Schicht lässt sich erst abschließen, wenn jeder Deckel bezahlt ist. Mit 0.5 kann man den Deckel eines Kunden mit Karte <b>anschreiben</b>. Er bleibt offen, wächst beim nächsten Besuch weiter und wird abgerechnet, wenn der Kunde wirklich zahlt.</p>
+</header>
+
+<section class="space-y-4" data-lavish-revision="r1">
+  <h2 class="text-2xl font-bold">Heute und mit 0.5</h2>
+  <div class="grid md:grid-cols-2 gap-4">
+    <div class="card card-border bg-base-200"><div class="card-body">
+      <h3 class="card-title">Heute</h3>
+      <ul class="list-disc pl-5 space-y-1 text-sm">
+        <li>„Schicht abschließen“ geht nur, wenn kein Deckel mehr offen ist („Erst alle Deckel abrechnen“).</li>
+        <li>Zahlt ein Kunde heute nicht, müsste man seinen Deckel löschen oder als bezahlt buchen, obwohl kein Geld in der Kasse ist. Beides ist falsch.</li>
+        <li>Darum steht so ein Deckel weiter auf Papier, neben der App.</li>
+      </ul>
+    </div></div>
+    <div class="card card-border bg-base-200 border-success/40"><div class="card-body">
+      <h3 class="card-title">Mit 0.5</h3>
+      <ul class="list-disc pl-5 space-y-1 text-sm">
+        <li><b>Anschreiben:</b> neuer Knopf am Deckel, wenn der Kunde geht, ohne zu zahlen. Der Deckel verlässt „In der Bar“ und steht unter <b>„Angeschrieben“</b>.</li>
+        <li><b>Schichtabschluss</b> blockiert nicht mehr wegen Kunden mit Karte: Was noch offen ist, wird mit einem Tipp angeschrieben. Nur Gäste ohne Karte müssen vorher zahlen.</li>
+        <li><b>Wiederkommen:</b> Karte scannen (oder suchen) holt den alten Deckel zurück in die Bar. Neue Getränke kommen dazu, im Deckel steht je Abend eine Trennzeile.</li>
+        <li><b>Zahlen</b> wie gewohnt mit „Abrechnen“ (oder „Teil zahlen“). Die ganze Summe zählt in die Schicht, in der das Geld kommt.</li>
+      </ul>
+    </div></div>
+  </div>
+</section>
+
+<section class="space-y-4" data-lavish-revision="r1">
+  <h2 class="text-2xl font-bold">Der Weg eines angeschriebenen Deckels</h2>
+  <svg viewBox="0 0 900 250" class="w-full" role="img" aria-label="Ein Deckel ist in der Bar, wird angeschrieben, kommt beim nächsten Scan zurück in die Bar und wird irgendwann abgerechnet; erst dann zählt das Geld in die Schicht">
+    <defs><marker id="a" markerWidth="10" markerHeight="10" refX="8" refY="5" orient="auto"><path d="M0,0 L10,5 L0,10 z" fill="currentColor"/></marker></defs>
+    <g font-family="sans-serif" font-size="15" fill="currentColor" text-anchor="middle">
+      <g id="d-bar"><title>Der Deckel ist offen, der Kunde ist da</title><rect x="20" y="80" width="190" height="70" rx="12" fill="none" stroke="currentColor"/><text x="115" y="112">In der Bar</text><text x="115" y="132" font-size="12" opacity=".7">Getränke kommen dazu</text></g>
+      <g id="d-credit"><title>Der Kunde ist gegangen, ohne zu zahlen</title><rect x="355" y="10" width="190" height="70" rx="12" fill="none" stroke="#e0a040" stroke-width="2"/><text x="450" y="42">Angeschrieben</text><text x="450" y="62" font-size="12" opacity=".7">bleibt offen, kein Geld</text></g>
+      <g id="d-paid"><title>Der Kunde zahlt: Abrechnen wie bisher</title><rect x="355" y="160" width="190" height="70" rx="12" fill="none" stroke="currentColor"/><text x="450" y="192">Abrechnen</text><text x="450" y="212" font-size="12" opacity=".7">ganze Summe, Punkte</text></g>
+      <g id="d-shift"><title>Erst das bezahlte Geld zählt in die Schicht</title><rect x="690" y="160" width="190" height="70" rx="12" fill="none" stroke="currentColor"/><text x="785" y="192">Schicht des Zahltags</text><text x="785" y="212" font-size="12" opacity=".7">Kassenbericht</text></g>
+      <g stroke="currentColor" fill="none" marker-end="url(#a)">
+        <path d="M210,100 C280,100 290,45 351,45"/>
+        <path d="M210,130 C280,130 290,195 351,195"/>
+        <line x1="545" y1="195" x2="686" y2="195"/>
+      </g>
+      <path id="d-back" d="M355,60 C290,80 260,95 214,108" fill="none" stroke="#e0a040" stroke-dasharray="5 4" marker-end="url(#a)"><title>Karte scannen holt den Deckel zurück in die Bar</title></path>
+      <text x="292" y="38" font-size="12" opacity=".8">Anschreiben</text>
+      <text x="300" y="100" font-size="12" fill="#e0a040">Scan: wieder da</text>
+      <path id="d-direct" d="M450,80 L450,156" fill="none" stroke="currentColor" stroke-dasharray="3 4" marker-end="url(#a)" opacity=".7"><title>Er kann auch zahlen, ohne etwas zu trinken</title></path>
+      <text x="520" y="123" font-size="12" opacity=".7">nur zahlen kommen</text>
+    </g>
+  </svg>
+  <p class="text-sm opacity-70">Ein Deckel kann beliebig oft zwischen „In der Bar“ und „Angeschrieben“ wechseln. Er schließt erst, wenn er bezahlt ist.</p>
+</section>
+
+<section class="space-y-4" data-lavish-revision="r1">
+  <h2 class="text-2xl font-bold">Die Deckel-Spalte</h2>
+  <div class="grid md:grid-cols-2 gap-4 items-start">
+    <div class="ipad p-5 text-sm text-stone-200 space-y-2" id="spalte">
+      <button class="btn btn-sm btn-warning w-full">📷 Karte scannen</button>
+      <button class="btn btn-sm w-full">+ Deckel</button>
+      <p class="opacity-60 pt-2">In der Bar · 2</p>
+      <div class="tile flex justify-between"><span><b>Murat K.</b><br><span class="text-xs text-amber-300">★ 140 Punkte</span></span><b>18,50 €</b></div>
+      <div class="tile flex justify-between"><span><b>Tisch 3</b><br><span class="text-xs opacity-60">ohne Karte</span></span><b>9,90 €</b></div>
+      <p class="opacity-60 pt-2">Angeschrieben · 2 · 54,20 €</p>
+      <div class="tile flex justify-between opacity-90"><span><b>Jonas</b><br><span class="text-xs opacity-60">seit Mo 13.10.</span></span><b>31,80 €</b></div>
+      <div class="tile flex justify-between opacity-90"><span><b>Sabine</b><br><span class="text-xs opacity-60">seit Fr 17.10.</span></span><b>22,40 €</b></div>
+    </div>
+    <div class="space-y-3 text-sm">
+      <p><b>Neuer Abschnitt „Angeschrieben“</b> unter „In der Bar“: Name, offener Betrag und seit wann (der älteste Abend auf dem Deckel). Oben steht die Summe aller angeschriebenen Deckel.</p>
+      <p><b>Antippen</b> öffnet den Deckel rechts, so wie heute. Man sieht alles und kann abrechnen. Getränke dazu gibt es erst nach „Ist wieder da“ (siehe unten), damit nichts aus Versehen auf einem fremden Deckel landet.</p>
+      <p><b>Im Dialog „+ Deckel“</b> steht beim Kunden statt „schon in der Bar“ dann „angeschrieben 31,80 €“. Antippen holt den Deckel zurück, genau wie der Scan.</p>
+    </div>
+  </div>
+</section>
+
+<section class="space-y-4" data-lavish-revision="r1">
+  <h2 class="text-2xl font-bold">Der Deckel: anschreiben und wieder da</h2>
+  <div class="grid md:grid-cols-2 gap-4 items-start">
+    <div class="ipad p-5 text-sm text-stone-200 space-y-2" id="deckel-zurueck">
+      <div class="flex items-center gap-3"><b class="text-xl">Jonas</b><button class="btn btn-xs">✏️</button><span class="ml-auto opacity-60">★ 260 Punkte</span></div>
+      <p class="opacity-50 text-xs">Getränke-Kacheln wie heute …</p>
+      <div class="sep"><span>Mo 13.10.</span><span>18,40 €</span></div>
+      <div class="flex justify-between"><span>3× Mönchshof 0,5 l</span><span>12,60 €</span></div>
+      <div class="flex justify-between"><span>2× Jägermeister 2 cl</span><span>5,80 €</span></div>
+      <div class="sep"><span>Fr 17.10.</span><span>13,40 €</span></div>
+      <div class="flex justify-between"><span>2× Mönchshof 0,5 l</span><span>8,40 €</span></div>
+      <div class="flex justify-between"><span>1× Ouzo 4 cl</span><span>5,00 €</span></div>
+      <div class="sep"><span>Heute</span><span>4,20 €</span></div>
+      <div class="flex justify-between"><span>1× Mönchshof 0,5 l</span><span>4,20 €</span></div>
+      <div class="border-t border-stone-700 pt-2 flex justify-between text-lg"><b>Summe</b><b>36,00 €</b></div>
+      <button class="btn btn-sm btn-success w-full">Abrechnen</button>
+      <div class="flex gap-2"><button class="btn btn-sm flex-1">Teil zahlen</button><button class="btn btn-sm btn-warning btn-outline flex-1">Anschreiben</button><button class="btn btn-sm btn-error flex-1">Löschen</button></div>
+    </div>
+    <div class="space-y-3 text-sm">
+      <p><b>„Anschreiben“</b> ist ein neuer Knopf neben „Teil zahlen“, nur bei Kunden mit Karte und nur, wenn etwas auf dem Deckel steht. Die App fragt: „Jonas anschreiben? 36,00 € bleiben offen.“ Danach ist der Deckel unter „Angeschrieben“.</p>
+      <p><b>Wieder da:</b> Scan der Karte oder Suche bei „+ Deckel“ holt den Deckel zurück nach „In der Bar“. Tippt man einen angeschriebenen Deckel links an, steht oben „Angeschrieben seit Mo 13.10.“ und ein Knopf <b>„Ist wieder da“</b>; abrechnen geht auch ohne diesen Knopf.</p>
+      <p><b>Trennzeilen je Abend:</b> Jede Getränkezeile merkt sich den Abend, an dem sie dazukam. Ein Mönchshof von heute landet in einer neuen Zeile unter „Heute“, nicht in der Zeile vom 13.10. Die −/+ Knöpfe gehen auch auf alten Zeilen, falls etwas falsch war.</p>
+      <p><b>Punkte und Einlösen</b> wie heute. Eingelöste Prämien und Rabatte bleiben auf dem Deckel, die Punkte gehen beim Abrechnen ab. Neue Punkte gibt es auf den bezahlten Betrag, wenn er bezahlt wird.</p>
+      <p><b>Zahlen:</b> „Abrechnen“ kassiert alle Abende zusammen. „Teil zahlen“ geht auch, etwa wenn er heute nur den alten Abend zahlt. Wie in 0.3 gibt es für eine Teilzahlung keine Punkte.</p>
+    </div>
+  </div>
+</section>
+
+<section class="space-y-4" data-lavish-revision="r1">
+  <h2 class="text-2xl font-bold">Schicht abschließen (Dialog, erweitert)</h2>
+  <div class="grid md:grid-cols-2 gap-4 items-start">
+    <div class="ipad p-5 text-sm text-stone-200 space-y-2" id="schicht">
+      <b class="text-lg">Schicht abschließen</b>
+      <p class="opacity-60">Do 23.10., 18:02 – 01:45 · 14 Deckel</p>
+      <div class="tile space-y-1 border border-amber-500/50">
+        <b>Noch offen, wird angeschrieben:</b>
+        <div class="flex justify-between"><span>Murat K.</span><span>18,50 €</span></div>
+        <div class="flex justify-between"><span>Jonas</span><span>36,00 €</span></div>
+      </div>
+      <p class="opacity-60">In den Kassenbericht eintragen:</p>
+      <div class="flex justify-between"><span>Bier</span><span>212,40 €</span></div>
+      <div class="flex justify-between"><span>Spirituosen</span><span>96,00 €</span></div>
+      <div class="flex justify-between text-lg"><b>Gesamt</b><b>308,40 €</b></div>
+      <p class="opacity-70">Angeschrieben offen (nicht in der Kasse): 76,90 €</p>
+      <input class="input input-sm w-full" placeholder="Notiz (optional)">
+      <div class="flex gap-2"><button class="btn btn-sm flex-1">Zurück</button><button class="btn btn-sm btn-success flex-1">Anschreiben und abschließen</button></div>
+    </div>
+    <div class="space-y-3 text-sm">
+      <p><b>Kunden mit Karte, die noch in der Bar stehen,</b> zeigt der Dialog oben mit Betrag. Der Knopf heißt dann „Anschreiben und abschließen“: ein Tipp, und alle diese Deckel sind angeschrieben und die Schicht ist zu.</p>
+      <p><b>Gäste ohne Karte</b> blockieren weiter: „Erst Tisch 3 abrechnen (Gast ohne Karte)“. Anschreiben geht nur mit Karte (deine Antwort).</p>
+      <p><b>Leere Deckel</b> (nichts drauf, nichts eingelöst) werden nicht angeschrieben, sondern einfach geschlossen.</p>
+      <p><b>Kassenbericht:</b> Die Summe zeigt nur das Geld, das heute wirklich kam. Ein angeschriebener Deckel, der heute bezahlt wurde, zählt heute ganz (alle Abende, alle Kategorien). Darunter steht zur Info, wie viel insgesamt angeschrieben offen ist. Die Zahl wird mit der Schicht festgeschrieben und steht auch unter Umsatz → Schichten.</p>
+      <p><b>Schicht ohne bezahlten Deckel:</b> Hat an einem Abend niemand gezahlt und alle wurden angeschrieben, geht die Schicht mit 0,00 € zu. So ist der Abend trotzdem erfasst.</p>
+    </div>
+  </div>
+</section>
+
+<section class="space-y-4" data-lavish-revision="r1">
+  <h2 class="text-2xl font-bold">Was Version 0.5 kann</h2>
+  <ul class="list-disc pl-6 space-y-1">
+    <li><b>Anschreiben</b> per Knopf am Deckel (nur Kunden mit Karte).</li>
+    <li><b>Schichtabschluss</b> schreibt offene Karten-Deckel mit einem Tipp an. Gäste ohne Karte müssen vorher zahlen.</li>
+    <li><b>Abschnitt „Angeschrieben“</b> in der Deckel-Spalte, mit Betrag, „seit“ und der Gesamtsumme.</li>
+    <li><b>Wiederkommen</b> per Scan oder Suche: Der alte Deckel wächst weiter, mit einer Trennzeile je Abend.</li>
+    <li><b>Abrechnen und Teil zahlen</b> wie gewohnt. Das Geld zählt in die Schicht des Zahltags.</li>
+    <li><b>Schicht</b> zeigt „Angeschrieben offen“ (festgeschrieben).</li>
+  </ul>
+</section>
+
+<section class="space-y-4" data-lavish-revision="r1">
+  <h2 class="text-2xl font-bold">Technik</h2>
+  <div class="overflow-x-auto"><table class="table">
+    <tbody>
+      <tr><th>Neue Daten</th><td>Offener Deckel: optionales Feld <code>creditedAt</code> (wann angeschrieben; fehlt = in der Bar). Getränkezeile: optionales Feld <code>visit</code> (Beginn des Abends, an dem sie dazukam). Schicht: optionales Feld <code>creditCents</code> (angeschrieben offen beim Abschluss). Der angeschriebene Deckel bleibt in der Liste der offenen Deckel, darum funktionieren Abrechnen, Teil zahlen, Umbenennen und Löschen ohne Änderung.</td></tr>
+      <tr><th>Umstellung</th><td><b>Keine Umstellung des Datenstands.</b> Alle neuen Felder sind optional. Sicherungen aus 0.4 laden unverändert; eine Zeile ohne <code>visit</code> gehört zum Abend, an dem der Deckel geöffnet wurde. Beim ersten Anschreiben bekommen solche Zeilen ihren Abend fest eingetragen.</td></tr>
+      <tr><th>Wieder da</th><td>Der Check-in (Scan oder Suche) findet den offenen Deckel des Kunden wie heute, löscht <code>creditedAt</code> und setzt den Öffnungszeitpunkt auf jetzt. Das ist wichtig: Die laufende Schicht und die Umsatz-Wochen und -Monate rechnen mit dem Öffnungszeitpunkt. Ein Deckel vom 13.10. würde sonst die heutige Schicht auf den 13.10. datieren.</td></tr>
+      <tr><th>Neue Zeilen</th><td>Ein Getränk geht nur dann auf eine bestehende Zeile (Menge +1), wenn Produkt, Preis <b>und</b> Abend gleich sind. Sonst gibt es eine neue Zeile unter dem heutigen Abend.</td></tr>
+      <tr><th>Schicht</th><td>Der Abschluss prüft nur noch Deckel in der Bar. Kunden mit Karte mit Inhalt werden angeschrieben, leere geschlossen, Gäste ohne Karte blockieren. Laufende Schicht (Beginn, „offen in der Bar“) zählt angeschriebene Deckel nicht mit. Eine Schicht ohne bezahlten Deckel ist erlaubt, wenn etwas angeschrieben wurde. Kategorien, Rabatt und Freigetränke kommen wie heute aus den bezahlten Deckeln.</td></tr>
+      <tr><th>Zusammen zahlen</th><td>„Zahlt auch für“ zeigt nur Deckel, die in der Bar sind. Angeschriebene Deckel bleiben draußen, damit dort nichts aus Versehen angehakt wird.</td></tr>
+      <tr><th>Rechnen</th><td>Alles bleibt in Cent. Umsatz, Kunden-Rangliste und CSV-Export rechnen weiter über die bezahlten Deckel, also am Zahltag.</td></tr>
+      <tr><th>Tests</th><td>Vitest prüft: Anschreiben (nur mit Karte und Inhalt; Deckel bleibt offen, ist aber nicht mehr „in der Bar“); Schichtabschluss mit Karten-Deckeln (werden angeschrieben, leere geschlossen) und mit Gast-Deckel (blockiert); Schicht mit 0 € und angeschrieben offen; Beginn der laufenden Schicht ohne angeschriebene Deckel; Wieder da setzt den Öffnungszeitpunkt neu und behält alle Zeilen; ein Getränk an einem neuen Abend gibt eine neue Zeile; Abrechnen nach drei Abenden bucht die ganze Summe und die Punkte in die heutige Schicht und den heutigen Monat; Sicherung aus 0.4 lädt. Dazu Screenshots der Deckel-Spalte, des Deckels mit Trennzeilen und des Schicht-Dialogs.</td></tr>
+    </tbody>
+  </table></div>
+</section>
+
+<section class="space-y-3" data-lavish-revision="r1">
+  <h2 class="text-2xl font-bold">Risiken</h2>
+  <ul class="list-disc pl-6 space-y-1">
+    <li><b>Kassenrecht:</b> Ein angeschriebener Deckel ist Geld, das ein Kunde der Bar schuldet. Die App zählt es erst, wenn es bezahlt ist (Kassenbericht = Geld in der Kasse). Ob das für die Umsatzsteuer und die offene Ladenkasse so passt, oder ob der Umsatz schon am Abend des Trinkens zählt, gehört zum Steuerberater. Ich ergänze die Frage in der Liste unter <code>recherche/_eingang/kassensichv-offene-ladenkasse-app.md</code>.</li>
+    <li><b>Datenverlust:</b> Angeschriebene Deckel sind Schulden, die nur auf dem iPad stehen. Geht das iPad verloren, ist auch die Liste weg. Die Erinnerung zum Sichern nach 7 Tagen bleibt. Wer viel anschreibt, sollte nach jeder Schicht sichern.</li>
+    <li><b>Falsche Schicht-Datierung:</b> Siehe Technik „Wieder da“. Ein Test prüft, dass ein drei Wochen alter Deckel die heutige Schicht nicht zurückdatiert.</li>
+    <li><b>Getränk auf dem falschen Deckel:</b> Auf einen angeschriebenen Deckel kommt nur etwas nach Scan, Suche oder „Ist wieder da“.</li>
+  </ul>
+</section>
+
+<section class="space-y-3" data-lavish-revision="r1">
+  <h2 class="text-2xl font-bold">Bewusst nicht in 0.5</h2>
+  <ul class="list-disc pl-6 space-y-1">
+    <li>Anschreiben für Gäste ohne Karte.</li>
+    <li>Warnung bei alten angeschriebenen Deckeln (z. B. nach 30 Tagen) oder eine Obergrenze je Kunde.</li>
+    <li>Den angeschriebenen Deckel eines anderen mitbezahlen („Zahlt auch für“).</li>
+    <li>Angeschriebene Beträge beim Kunden unter 👥 Kunden oder in der Umsatz-Seite auswerten.</li>
+  </ul>
+</section>
+
+<section class="space-y-6" data-lavish-annotate="off" data-lavish-revision="r1">
+  <h2 class="text-2xl font-bold">Deine Entscheidungen</h2>
+  <div class="card card-border bg-base-200"><div class="card-body text-sm space-y-1">
+    <h3 class="card-title text-base">Schon entschieden (Chat)</h3>
+    <p>✅ Anschreiben nur für Kunden mit Karte.</p>
+    <p>✅ Ein Deckel wächst weiter, mit Trennzeile je Abend.</p>
+    <p>✅ Knopf „Anschreiben“ am Deckel, dazu beim Schichtabschluss mit einem Tipp.</p>
+    <p>✅ Eigener Abschnitt „Angeschrieben“ in der Deckel-Spalte, ohne Warnung nach Tagen.</p>
+  </div></div>
+
+  <form data-lavish-question="loeschen" class="card card-border bg-base-200" onsubmit="event.preventDefault(); const v = new FormData(event.currentTarget).get('l'); if (v) window.lavish.queuePrompt('Löschen bei angeschriebenem Deckel: ' + v, { tag: 'choice', text: 'Löschen: ' + v, element: event.currentTarget, data: { question: 'loeschen', answer: v } });">
+    <div class="card-body space-y-2">
+      <h3 class="card-title">Darf man einen angeschriebenen Deckel löschen?</h3>
+      <p class="text-sm opacity-70">Zum Beispiel, wenn der Inhaber die Schulden erlässt oder der Kunde nicht mehr kommt.</p>
+      <label class="flex gap-2"><input type="radio" class="radio" name="l" value="ja, mit deutlicher Rückfrage" checked> <span><b>Ja, mit deutlicher Rückfrage</b> (empfohlen): „Jonas löschen? 36,00 € angeschrieben gehen verloren.“ Kein Geld, keine Punkte, wie Löschen heute.</span></label>
+      <label class="flex gap-2"><input type="radio" class="radio" name="l" value="nein, erst zurück in die Bar holen"> <span><b>Nein</b>: Am angeschriebenen Deckel gibt es keinen Löschen-Knopf. Wer wirklich löschen will, holt ihn erst mit „Ist wieder da“ zurück.</span></label>
+      <button class="btn btn-sm btn-primary w-fit" type="submit">Antwort vormerken</button>
+    </div>
+  </form>
+
+  <form data-lavish-question="freigabe" class="card card-border bg-base-200" onsubmit="event.preventDefault(); const f = new FormData(event.currentTarget); const v = f.get('ok'); const n = (f.get('notiz') || '').trim(); if (v) window.lavish.queuePrompt('Plan 0.5: ' + v + (n ? ' – Anmerkung: ' + n : ''), { tag: 'choice', text: 'Plan 0.5: ' + v, element: event.currentTarget, data: { question: 'freigabe', answer: v, notiz: n } });">
+    <div class="card-body space-y-2">
+      <h3 class="card-title">Passt der Plan?</h3>
+      <label class="flex gap-2"><input type="radio" class="radio" name="ok" value="Ja, los"> <span>Ja, los</span></label>
+      <label class="flex gap-2"><input type="radio" class="radio" name="ok" value="Ja, mit Änderungen (siehe Anmerkung)"> <span>Ja, mit Änderungen</span></label>
+      <label class="flex gap-2"><input type="radio" class="radio" name="ok" value="Nein, nochmal überarbeiten"> <span>Nein, nochmal überarbeiten</span></label>
+      <textarea name="notiz" class="textarea w-full" placeholder="Anmerkungen (optional)"></textarea>
+      <button class="btn btn-sm btn-primary w-fit" type="submit">Antwort vormerken</button>
+    </div>
+  </form>
+  <p class="text-sm opacity-70">Danach oben auf <b>„Send to Agent“</b> klicken.</p>
+</section>
+
+<footer class="text-xs opacity-50 space-y-1 pt-6">
+  <p>Grundlage: Code-Stand nach PR #9 (<code>src/lib/db.ts</code>, <code>src/lib/report.ts</code>, <code>src/ui/BarView.svelte</code>, <code>src/ui/TabPanel.svelte</code>, <code>src/ui/ShiftCloseDialog.svelte</code>), Antworten aus dem Chat vom 23.10.2026. Die Beträge in den Skizzen sind Beispiele. Andere offene Arbeiten (Schichten löschen, Rabatt, Gesamtsumme in der Bar) laufen in eigenen Sitzungen und werden beim Bau berücksichtigt.</p>
+</footer>
+</main>
+</body>
+</html>

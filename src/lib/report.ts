@@ -1,6 +1,6 @@
 // Reports over the closed tabs and shifts: pure functions, no UI. Money stays integer cents.
 
-import { runningTabs, tabSummary, type ClosedTab, type Db, type Shift } from './db';
+import { inBar, runningTabs, tabSummary, type ClosedTab, type Db, type Shift } from './db';
 
 export type Period = 'week' | 'month' | 'year' | 'all';
 
@@ -17,9 +17,9 @@ export function shiftDay(shift: Shift): string {
   return localDay(shift.startedAt);
 }
 
-/** Start of the running shift: the earliest paid or open tab not yet in a closed shift. */
+/** Start of the running shift: the earliest paid tab not yet in a closed shift or tab in the bar. */
 function runningShiftStart(db: Db): string | undefined {
-  return [...runningTabs(db), ...db.tabs].map((t) => t.openedAt).sort()[0];
+  return [...runningTabs(db), ...inBar(db)].map((t) => t.openedAt).sort()[0];
 }
 
 export function runningShift(db: Db) {
@@ -28,8 +28,8 @@ export function runningShift(db: Db) {
     startedAt: runningShiftStart(db),
     tabCount: tabs.length,
     paidCents: tabs.reduce((sum, t) => sum + t.paidCents, 0),
-    openTabs: db.tabs.length,
-    openCents: db.tabs.reduce((sum, t) => sum + tabSummary(db, t).paidCents, 0),
+    openTabs: inBar(db).length,
+    openCents: inBar(db).reduce((sum, t) => sum + tabSummary(db, t).paidCents, 0),
   };
 }
 

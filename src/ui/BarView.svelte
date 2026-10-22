@@ -1,7 +1,8 @@
 <script lang="ts">
   import { app, now } from '../state.svelte';
-  import { checkIn, openGuestTab, openTabsTotal, tabSummary } from '../lib/db';
+  import { checkIn, creditTotal, inBar, openGuestTab, openTabsTotal, tabSince, tabSummary, type Tab } from '../lib/db';
   import { formatEuro } from '../lib/money';
+  import { formatDay } from './format';
   import Scanner from './Scanner.svelte';
   import TabPanel from './TabPanel.svelte';
   import Icon from './Icon.svelte';
@@ -21,6 +22,8 @@
   );
 
   let selected = $derived(app.db.tabs.find((t) => t.id === app.selectedTabId));
+  let bar = $derived(inBar(app.db));
+  let credited = $derived(app.db.tabs.filter((t) => t.creditedAt));
 
   function onCard(customerId: string) {
     scanning = false;
@@ -50,8 +53,8 @@
     openDialog.close();
   }
 
-  function hasTab(customerId: string) {
-    return app.db.tabs.some((t) => t.customerId === customerId);
+  function openTab(customerId: string): Tab | undefined {
+    return app.db.tabs.find((t) => t.customerId === customerId);
   }
 
   function points(customerId?: string) {
@@ -65,27 +68,46 @@
       <button class="primary iconbtn" onclick={() => (scanning = true)}><Icon svg={icons.camera} /> Karte scannen</button>
       <button onclick={showOpenDialog}>+ Deckel</button>
     </div>
-    <p class="muted heading">In der Bar · {app.db.tabs.length}</p>
-    <ul>
-      {#each app.db.tabs as tab (tab.id)}
-        <li>
-          <button class="tab" class:selected={tab.id === app.selectedTabId} onclick={() => (app.selectedTabId = tab.id)}>
-            <span class="avatar">{initials(tab.label)}</span>
-            <span class="who">
-              <b>{tab.label}</b>
-              {#if tab.customerId}
-                <span class="gold small-text">★ {points(tab.customerId)} Punkte</span>
-              {:else}
-                <span class="muted small-text">ohne Karte</span>
-              {/if}
-            </span>
-            <span class="num amount">{formatEuro(tabSummary(app.db, tab).paidCents)}</span>
-          </button>
-        </li>
-      {:else}
-        <li class="muted empty">Noch niemand eingecheckt.</li>
-      {/each}
-    </ul>
+    <div class="lists">
+      <p class="muted heading">In der Bar · {bar.length}</p>
+      <ul>
+        {#each bar as tab (tab.id)}
+          <li>
+            <button class="tab" class:selected={tab.id === app.selectedTabId} onclick={() => (app.selectedTabId = tab.id)}>
+              <span class="avatar">{initials(tab.label)}</span>
+              <span class="who">
+                <b>{tab.label}</b>
+                {#if tab.customerId}
+                  <span class="gold small-text">★ {points(tab.customerId)} Punkte</span>
+                {:else}
+                  <span class="muted small-text">ohne Karte</span>
+                {/if}
+              </span>
+              <span class="num amount">{formatEuro(tabSummary(app.db, tab).paidCents)}</span>
+            </button>
+          </li>
+        {:else}
+          <li class="muted empty">Noch niemand eingecheckt.</li>
+        {/each}
+      </ul>
+      {#if credited.length}
+        <p class="muted heading">Angeschrieben · {credited.length} · <span class="num">{formatEuro(creditTotal(app.db))}</span></p>
+        <ul>
+          {#each credited as tab (tab.id)}
+            <li>
+              <button class="tab credited" class:selected={tab.id === app.selectedTabId} onclick={() => (app.selectedTabId = tab.id)}>
+                <span class="avatar">{initials(tab.label)}</span>
+                <span class="who">
+                  <b>{tab.label}</b>
+                  <span class="muted small-text">seit {formatDay(tabSince(tab))}</span>
+                </span>
+                <span class="num amount">{formatEuro(tabSummary(app.db, tab).paidCents)}</span>
+              </button>
+            </li>
+          {/each}
+        </ul>
+      {/if}
+    </div>
     <div class="total">
       <span class="muted">Auf allen Deckeln</span>
       <b class="num gold">{formatEuro(openTabsTotal(app.db))}</b>
@@ -117,11 +139,14 @@
     <input placeholder="Kunde suchen" aria-label="Kunde suchen" bind:value={search} bind:this={searchInput} />
     <ul class="found">
       {#each found as c (c.id)}
+        {@const open = openTab(c.id)}
         <li>
           <button class="tab" onclick={() => pickCustomer(c.id)}>
             <span class="avatar">{initials(c.name)}</span>
             <b class="who">{c.name}</b>
-            {#if hasTab(c.id)}<span class="badge">schon in der Bar</span>{:else}<span class="gold small-text">★ {c.points} Punkte</span>{/if}
+            {#if open?.creditedAt}<span class="badge">angeschrieben {formatEuro(tabSummary(app.db, open).paidCents)}</span>
+            {:else if open}<span class="badge">schon in der Bar</span>
+            {:else}<span class="gold small-text">★ {c.points} Punkte</span>{/if}
           </button>
         </li>
       {:else}
@@ -157,10 +182,13 @@
     flex-direction: column;
     min-height: 0;
   }
-  aside ul {
+  .lists {
     flex: 1;
-    align-content: start;
+    min-height: 0;
     overflow-y: auto;
+  }
+  aside ul {
+    align-content: start;
     padding-bottom: 0.5rem;
   }
   .total {
@@ -211,6 +239,10 @@
   }
   .tab.selected {
     border-color: var(--accent);
+  }
+  .tab.credited {
+    box-shadow: none;
+    border-style: dashed;
   }
   .who {
     flex: 1;

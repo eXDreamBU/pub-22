@@ -6,6 +6,7 @@ import {
   checkIn,
   closeShift,
   createDb,
+  creditTab,
   openGuestTab,
   redeemReward,
   settle,
@@ -78,6 +79,16 @@ describe('runningShift', () => {
       openCents: 300,
     });
   });
+  it('leaves credited tabs out: they neither start the shift nor count as open', () => {
+    const db = createDb(NOW);
+    const murat = addCustomer(db, 'Murat', '', NOW);
+    const old = checkIn(db, murat.id, at(2026, 10, 1, 20));
+    addItem(old, pils);
+    creditTab(db, old.id, at(2026, 10, 1, 23));
+    const b = openGuestTab(db, 'B', at(2026, 10, 18, 21));
+    addItem(b, cola);
+    expect(runningShift(db)).toMatchObject({ startedAt: at(2026, 10, 18, 21), openTabs: 1, openCents: 300 });
+  });
   it('is empty for a fresh db', () => {
     expect(runningShift(createDb(NOW))).toEqual({
       startedAt: undefined,
@@ -147,6 +158,20 @@ describe('tabsInPeriod and shiftsInPeriod', () => {
     expect(shiftsInPeriod(db, 'month', october)).toHaveLength(1);
     expect(tabsInPeriod(db, 'month', november)).toEqual([]);
     expect(shiftsInPeriod(db, 'month', november)).toEqual([]);
+  });
+
+  it('count a credited tab in the month it is paid, not the month it was opened', () => {
+    const db = createDb(NOW);
+    const murat = addCustomer(db, 'Murat', '', NOW);
+    const t = checkIn(db, murat.id, at(2026, 9, 28, 20));
+    addItem(t, pils);
+    creditTab(db, t.id, at(2026, 9, 28, 23));
+    checkIn(db, murat.id, at(2026, 10, 2, 20));
+    settle(db, t.id, at(2026, 10, 2, 22));
+    closeShift(db, '', at(2026, 10, 3, 1));
+    expect(tabsInPeriod(db, 'month', new Date(2026, 9, 5, 12))).toHaveLength(1);
+    expect(shiftsInPeriod(db, 'month', new Date(2026, 9, 5, 12))).toHaveLength(1);
+    expect(tabsInPeriod(db, 'month', new Date(2026, 8, 29, 12))).toEqual([]);
   });
 
   it('count the running shift in the week it started, also after midnight', () => {
