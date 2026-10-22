@@ -187,7 +187,8 @@ export function settle(db: Db, tabId: string, now: string): ClosedTab {
   const tab = db.tabs[index];
   const closed: ClosedTab = { ...tab, ...tabSummary(db, tab), closedAt: now };
   const customer = customerOf(db, tab);
-  if (customer) customer.points += closed.pointsEarned - closed.pointsSpent;
+  // Clamped: rewards were already handed out even if the balance was corrected below them meanwhile.
+  if (customer) customer.points = Math.max(0, customer.points + closed.pointsEarned - closed.pointsSpent);
   db.tabs.splice(index, 1);
   db.history.push(closed);
   return closed;

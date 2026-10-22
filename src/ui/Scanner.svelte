@@ -11,22 +11,32 @@
   let facing = $state<'user' | 'environment'>('user');
   let stream: MediaStream | undefined;
   let timer: ReturnType<typeof setInterval> | undefined;
+  let generation = 0;
   const canvas = document.createElement('canvas');
   const ctx = canvas.getContext('2d', { willReadFrequently: true })!;
 
   async function start() {
     stop();
+    const current = generation;
     try {
-      stream = await navigator.mediaDevices.getUserMedia({ video: { facingMode: facing }, audio: false });
+      const media = await navigator.mediaDevices.getUserMedia({ video: { facingMode: facing }, audio: false });
+      if (current !== generation) {
+        media.getTracks().forEach((t) => t.stop());
+        return;
+      }
+      stream = media;
       video.srcObject = stream;
       await video.play();
+      if (current !== generation) return;
       timer = setInterval(tick, 150);
     } catch {
+      if (current !== generation) return;
       message = 'Kamera nicht verfügbar. Bitte Kamerazugriff erlauben.';
     }
   }
 
   function stop() {
+    generation++;
     clearInterval(timer);
     stream?.getTracks().forEach((t) => t.stop());
   }

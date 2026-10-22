@@ -149,6 +149,15 @@ describe('settle', () => {
     settle(db, tab.id, NOW);
     expect(db.customers[0].points).toBe(20);
   });
+  it('never leaves the balance below zero when it was corrected below a pending reward', () => {
+    const { db, id } = dbWithCustomer(100);
+    const tab = checkIn(db, id, NOW);
+    redeemReward(db, tab, { id: 'r', name: 'Freigetränk', points: 100 });
+    db.customers[0].points -= 50;
+    addItem(tab, { id: 'x', category: 'Bier', name: 'Pils', priceCents: 200 });
+    settle(db, tab.id, NOW);
+    expect(db.customers[0].points).toBe(0);
+  });
 });
 
 describe('redeeming', () => {

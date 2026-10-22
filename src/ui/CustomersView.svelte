@@ -33,7 +33,7 @@
   }
 
   function applyAdjust() {
-    selected!.points = Math.max(0, selected!.points + adjust);
+    selected!.points = Math.max(0, selected!.points + Math.round(adjust));
     adjust = 0;
   }
 

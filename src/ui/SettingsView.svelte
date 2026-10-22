@@ -5,7 +5,9 @@
   import { formatDate, formatTime } from './format';
 
   let categories = $derived([...new Set(app.db.products.map((p) => p.category))]);
-  let category = $state(app.db.products[0]?.category ?? '');
+  let picked = $state('');
+  // Falls back to the first category when the picked one has no drinks (left).
+  let category = $derived(categories.includes(picked) ? picked : (categories[0] ?? ''));
   let restoreInput: HTMLInputElement;
   let message = $state('');
 
@@ -147,7 +149,7 @@
   <section class="panel menu">
     <div class="row">
       <h2 class="grow">Getränkekarte</h2>
-      <select bind:value={category} class="cat">
+      <select value={category} onchange={(e) => (picked = e.currentTarget.value)} class="cat">
         {#each categories as c (c)}<option>{c}</option>{/each}
       </select>
       <button class="small primary" onclick={addProduct}>+ Getränk</button>
@@ -160,7 +162,7 @@
           <tr class:hidden-row={p.hidden}>
             <td><input bind:value={p.name} aria-label="Name" /></td>
             <td><input class="size" bind:value={p.size} aria-label="Größe" /></td>
-            <td><input bind:value={p.category} aria-label="Kategorie" /></td>
+            <td><input value={p.category} onchange={(e) => (p.category = picked = e.currentTarget.value)} aria-label="Kategorie" /></td>
             <td
               ><input
                 class="price"
