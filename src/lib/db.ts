@@ -180,7 +180,7 @@ export function tabSummary(db: Db, tab: Tab): Summary {
   };
 }
 
-/** Close the tab: book points, move it to the history. Payment itself runs through the TSE register. */
+/** Close the tab: book points, move it to the history. Payment itself goes into the bar's open cash box. */
 export function settle(db: Db, tabId: string, now: string): ClosedTab {
   const index = db.tabs.findIndex((t) => t.id === tabId);
   if (index < 0) throw new Error('Deckel nicht gefunden');
