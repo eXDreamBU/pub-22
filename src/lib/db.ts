@@ -412,7 +412,7 @@ export function tabsToCredit(db: Db): Tab[] {
 }
 
 /** Tabs credited in the running shift, including those its close will credit. */
-function creditedThisShift(db: Db): Tab[] {
+export function creditedThisShift(db: Db): Tab[] {
   const lastClose = db.shifts.map((s) => s.closedAt).sort().at(-1) ?? '';
   return [...db.tabs.filter((t) => t.creditedAt && t.creditedAt > lastClose), ...tabsToCredit(db)];
 }

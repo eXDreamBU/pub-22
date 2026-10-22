@@ -79,15 +79,27 @@ describe('runningShift', () => {
       openCents: 300,
     });
   });
-  it('leaves credited tabs out: they neither start the shift nor count as open', () => {
+  it('leaves tabs credited in an earlier shift out: they neither start the shift nor count as open', () => {
     const db = createDb(NOW);
     const murat = addCustomer(db, 'Murat', '', NOW);
     const old = checkIn(db, murat.id, at(2026, 10, 1, 20));
     addItem(old, pils);
     creditTab(db, old.id, at(2026, 10, 1, 23));
+    closeShift(db, '', at(2026, 10, 2, 1));
     const b = openGuestTab(db, 'B', at(2026, 10, 18, 21));
     addItem(b, cola);
     expect(runningShift(db)).toMatchObject({ startedAt: at(2026, 10, 18, 21), openTabs: 1, openCents: 300 });
+  });
+  it('a tab credited in this shift still dates it, like closeShift will', () => {
+    const db = createDb(NOW);
+    const jonas = addCustomer(db, 'Jonas', '', NOW);
+    const t = checkIn(db, jonas.id, at(2026, 10, 25, 23, 30)); // Sun, KW 43
+    addItem(t, pils);
+    creditTab(db, t.id, at(2026, 10, 26, 0, 30));
+    settle(db, openGuestTab(db, 'B', at(2026, 10, 26, 0, 45)).id, at(2026, 10, 26, 1)); // Mon, KW 44
+    expect(runningShift(db).startedAt).toBe(at(2026, 10, 25, 23, 30));
+    expect(tabsInPeriod(db, 'week', new Date(2026, 9, 25, 12))).toHaveLength(1);
+    expect(closeShift(db, '', at(2026, 10, 26, 2)).startedAt).toBe(at(2026, 10, 25, 23, 30));
   });
   it('is empty for a fresh db', () => {
     expect(runningShift(createDb(NOW))).toEqual({
