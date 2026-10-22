@@ -7,10 +7,10 @@
   import SettingsView from './ui/SettingsView.svelte';
 
   const views: [View, string][] = [
-    ['bar', '🍺 Bar'],
-    ['customers', '👥 Kunden'],
-    ['revenue', '📊 Umsatz'],
-    ['settings', '⚙️ Einstellungen'],
+    ['bar', 'Bar'],
+    ['customers', 'Kunden'],
+    ['revenue', 'Umsatz'],
+    ['settings', 'Einstellungen'],
   ];
 
   let due = $derived(backupDue(app.db));
@@ -18,10 +18,13 @@
 
 <div class="shell">
   <nav>
+    <img class="logo" src="./logo.jpg" alt="" />
     <strong class="brand">Pub 22</strong>
-    {#each views as [view, label] (view)}
-      <button class:active={app.view === view} onclick={() => (app.view = view)}>{label}</button>
-    {/each}
+    <div class="seg">
+      {#each views as [view, label] (view)}
+        <button class:active={app.view === view} onclick={() => (app.view = view)}>{label}</button>
+      {/each}
+    </div>
   </nav>
 
   {#if due}
@@ -52,28 +55,30 @@
   }
   nav {
     display: flex;
-    gap: 0.5rem;
+    gap: 0.7rem;
     align-items: center;
     padding: 0.6rem 1rem;
+    background: var(--panel);
     border-bottom: 1px solid var(--line);
   }
+  .logo {
+    width: 40px;
+    height: 40px;
+    border-radius: 50%;
+  }
   .brand {
-    color: var(--accent);
-    font-size: 1.3rem;
+    font-family: var(--font-brand);
+    font-size: 1.45rem;
+    font-weight: 600;
     margin-right: auto;
-  }
-  nav button {
-    background: none;
-    border-color: transparent;
-  }
-  nav button.active {
-    background: var(--panel-2);
-    border-color: var(--line);
   }
   .reminder {
     border-radius: 0;
     border: none;
-    background: #5a3b12;
+    border-bottom: 1px solid var(--line);
+    background: color-mix(in srgb, var(--accent) 18%, var(--panel));
+    color: var(--text);
+    font-weight: 500;
     min-height: 40px;
     padding: 0.5rem 1rem;
     text-align: left;

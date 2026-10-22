@@ -7,6 +7,7 @@ import {
   checkIn,
   closeShift,
   createDb,
+  incrementLine,
   migrate,
   lastVisits,
   openGuestTab,
@@ -99,6 +100,17 @@ describe('tab lines', () => {
     expect(tab.lines[0].qty).toBe(1);
     removeItem(tab, 0);
     expect(tab.lines).toEqual([]);
+  });
+
+  it('incrementing a line keeps its snapshot price and ignores unknown lines', () => {
+    const db = createDb(NOW);
+    const tab = openGuestTab(db, 'Tisch 3', NOW);
+    const cola = db.products[0];
+    addItem(tab, cola);
+    cola.priceCents = 400;
+    incrementLine(tab, 0);
+    incrementLine(tab, 5);
+    expect(tab.lines.map((l) => [l.qty, l.priceCents])).toEqual([[2, 330]]);
   });
 });
 

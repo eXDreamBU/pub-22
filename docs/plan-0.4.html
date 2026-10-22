@@ -1,0 +1,394 @@
+<!doctype html>
+<html lang="de" data-theme="luxury" data-lavish-annotate="on">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>Pub 22 – Plan 0.4</title>
+<link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/daisyui@5.5.19/daisyui.css">
+<link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/daisyui@5.5.19/themes.css">
+<script src="https://cdn.jsdelivr.net/npm/@tailwindcss/browser@4.2.4/dist/index.global.js"></script>
+<style>
+  *, *::before, *::after { box-sizing: border-box; }
+  .grid > *, .flex > * { min-width: 0; }
+  p, li, td, th, h1, h2, h3 { overflow-wrap: anywhere; }
+  svg { max-width: 100%; height: auto; }
+
+  /* --- Mockup tokens: the same ones the app will use --- */
+  .m { --bg:#F6F5F2; --surface:#FFFFFF; --surface-2:#EFEDE8; --line:#E3E0D9; --text:#1C1A17; --muted:#6F6960;
+       --gold:#B8913F; --gold-ink:#8A6A24; --on-gold:#1C1A17; --ok:#2E8B57; --shadow:0 1px 2px rgb(60 45 20 / .06), 0 4px 14px rgb(60 45 20 / .07);
+       font-family: "Avenir Next", "Segoe UI", system-ui, sans-serif; color: var(--text); background: var(--bg);
+       border: 10px solid #222; border-radius: 22px; overflow: hidden; font-size: 13px; line-height: 1.35; text-align: left; }
+  .m.dark { --bg:#0F0E0C; --surface:#1A1815; --surface-2:#23201B; --line:#2F2B25; --text:#F1ECE2; --muted:#9C9487;
+       --gold:#D2AE62; --gold-ink:#D2AE62; --on-gold:#17140E; --ok:#3FA36B; --shadow:none; }
+  .m b, .m span, .m div { color: inherit; }
+  .m .tab b, .m .tile .nm, .m .tabtitle b, .m .right b { color: var(--text); }
+  .m .serif { font-family: Didot, "Bodoni 72", "Bodoni MT", Georgia, serif; letter-spacing: .01em; }
+  .m .top { display:flex; align-items:center; gap:14px; padding:10px 16px; background:var(--surface); border-bottom:1px solid var(--line); }
+  .m .logo { width:34px; height:34px; border-radius:50%; }
+  .m .brandname { font-size:18px; font-weight:600; }
+  .m .seg { margin-left:auto; display:flex; gap:2px; background:var(--surface-2); border-radius:12px; padding:3px; }
+  .m .seg span { padding:6px 12px; border-radius:9px; color:var(--muted); font-weight:500; }
+  .m .seg span.on { background:var(--surface); color:var(--text); box-shadow:var(--shadow); }
+  .m.dark .seg span.on { background:var(--surface-2); outline:1px solid var(--line); }
+  .m .cols { display:grid; grid-template-columns: 240px 1fr 250px; height: 430px; }
+  .m .cols > * { min-height:0; }
+  .m .left { padding:12px; border-right:1px solid var(--line); display:grid; align-content:start; gap:8px; }
+  .m .scan { background:var(--gold); color:var(--on-gold); border-radius:12px; padding:9px; font-weight:600; text-align:center; }
+  .m .ghost { border:1px solid var(--line); border-radius:12px; padding:8px; text-align:center; font-weight:500; background:var(--surface); }
+  .m .h { font-size:11px; color:var(--muted); font-weight:500; margin-top:4px; }
+  .m .tab { display:grid; grid-template-columns:30px 1fr auto; gap:8px; align-items:center; background:var(--surface); border-radius:14px; padding:8px; box-shadow:var(--shadow); border:1px solid transparent; }
+  .m.dark .tab { border-color:var(--line); }
+  .m .tab.sel { border:1.5px solid var(--gold); }
+  .m .av { width:30px; height:30px; border-radius:10px; background:var(--surface-2); display:grid; place-items:center; font-weight:600; font-size:12px; color:var(--gold-ink); }
+  .m .sub { font-size:11px; color:var(--muted); }
+  .m .amt { font-variant-numeric: tabular-nums; font-weight:600; }
+  .m .mid { padding:14px 16px; overflow:hidden; display:grid; align-content:start; gap:12px; }
+  .m .tabtitle { display:flex; align-items:baseline; gap:10px; }
+  .m .tabtitle b { font-size:22px; font-weight:600; }
+  .m .chips { display:flex; gap:6px; flex-wrap:nowrap; overflow:hidden; }
+  .m .chip { display:flex; align-items:center; gap:6px; padding:6px 11px; border-radius:99px; background:var(--surface); border:1px solid var(--line); white-space:nowrap; font-weight:500; }
+  .m .chip.on { background:var(--text); color:var(--bg); border-color:var(--text); }
+  .m .chip svg, .m .tile svg, .m .ico svg { width:16px; height:16px; }
+  .m .tiles { display:grid; grid-template-columns:repeat(3, 1fr); gap:9px; }
+  .m .tile { background:var(--surface); border-radius:14px; padding:10px; box-shadow:var(--shadow); display:grid; gap:6px; position:relative; }
+  .m.dark .tile { border:1px solid var(--line); }
+  .m .tile .ico { width:30px; height:30px; border-radius:9px; background:var(--surface-2); display:grid; place-items:center; color:var(--gold-ink); }
+  .m .tile .nm { font-weight:600; }
+  .m .tile .pr { display:flex; justify-content:space-between; align-items:center; }
+  .m .plus { width:24px; height:24px; border-radius:50%; background:var(--gold); color:var(--on-gold); display:grid; place-items:center; font-weight:700; }
+  .m .right { background:var(--surface); border-left:1px solid var(--line); padding:14px; display:grid; grid-template-rows:auto 1fr auto; gap:10px; }
+  .m .line { display:grid; grid-template-columns:auto 1fr auto; gap:8px; align-items:center; padding:6px 0; border-bottom:1px solid var(--line); }
+  .m .qty { display:flex; align-items:center; gap:6px; background:var(--surface-2); border-radius:99px; padding:2px 6px; font-weight:600; }
+  .m .tot { display:flex; justify-content:space-between; font-size:17px; font-weight:600; }
+  .m .pay { background:var(--ok); color:#fff; border-radius:14px; padding:11px; text-align:center; font-weight:600; font-size:14px; }
+  .m .two { display:grid; grid-template-columns:1fr 1fr; gap:6px; }
+  .m .pts { background:var(--surface-2); border-radius:10px; padding:7px 9px; display:flex; justify-content:space-between; }
+  .m .gold { color:var(--gold-ink); }
+  /* Sheet mockup */
+  .m.sheetwrap { height: 470px; position:relative; background: color-mix(in srgb, var(--bg) 60%, #000); }
+  .m .sheet { position:absolute; left:50%; transform:translateX(-50%); bottom:0; width:420px; max-width:92%; background:var(--surface); border-radius:22px 22px 0 0; padding:10px 18px 18px; display:grid; gap:10px; }
+  .m .grab { width:38px; height:4px; border-radius:4px; background:var(--line); margin:0 auto 4px; }
+  .m .check { display:grid; grid-template-columns:20px 1fr auto; gap:8px; align-items:center; padding:8px 10px; border-radius:12px; background:var(--surface-2); }
+  .m .box { width:18px; height:18px; border-radius:6px; border:1.5px solid var(--muted); }
+  .m .box.on { background:var(--gold); border-color:var(--gold); }
+  .icons { display:grid; grid-template-columns:repeat(auto-fill, minmax(118px, 1fr)); gap:10px; }
+  .icons div { display:grid; justify-items:center; gap:6px; padding:12px 6px; border-radius:12px; background:#1A1815; color:#D2AE62; text-align:center; font-size:12px; }
+  .icons span { color:#F1ECE2; }
+  .icons svg { width:30px; height:30px; }
+  .swatch { display:flex; gap:8px; flex-wrap:wrap; }
+  .swatch div { width:92px; border-radius:10px; overflow:hidden; font-size:11px; border:1px solid #3333; }
+  .swatch div i { display:block; height:42px; }
+  .swatch div span { display:block; padding:4px 6px; }
+</style>
+</head>
+<script type="application/json" data-lavish-revisions>
+[{ "id": "r1", "label": "Entwurf", "timestamp": "2026-10-22T21:00:00Z", "summary": "Erster Entwurf: Logo-Farben Schwarz und Gold, automatisch hell oder dunkel, Symbole je Kategorie" }]
+</script>
+<body class="bg-base-100 text-base-content">
+
+<svg width="0" height="0" style="position:absolute" aria-hidden="true">
+  <defs>
+    <g id="i-fass" fill="none" stroke="currentColor" stroke-width="1.7" stroke-linecap="round" stroke-linejoin="round"><path d="M5 8h10v11a2 2 0 0 1-2 2H7a2 2 0 0 1-2-2z"/><path d="M15 10h2a2 2 0 0 1 2 2v3a2 2 0 0 1-2 2h-2"/><path d="M5 8a2.5 2.5 0 0 1 2.6-3 3 3 0 0 1 4.8 0A2.5 2.5 0 0 1 15 8"/></g>
+    <g id="i-flasche" fill="none" stroke="currentColor" stroke-width="1.7" stroke-linecap="round" stroke-linejoin="round"><path d="M10 2h4v4l1.5 3v11a2 2 0 0 1-2 2h-3a2 2 0 0 1-2-2V9L10 6z"/><path d="M8.5 13h7"/></g>
+    <g id="i-weizen" fill="none" stroke="currentColor" stroke-width="1.7" stroke-linecap="round" stroke-linejoin="round"><path d="M8 3h8l-1 7c1.5 2 1.5 4 0 6l-.5 5h-5l-.5-5c-1.5-2-1.5-4 0-6z"/></g>
+    <g id="i-alkfrei" fill="none" stroke="currentColor" stroke-width="1.7" stroke-linecap="round" stroke-linejoin="round"><path d="M6 8h12l-1.5 13h-9z"/><path d="M13.5 8l2-5h3"/></g>
+    <g id="i-saft" fill="none" stroke="currentColor" stroke-width="1.7" stroke-linecap="round" stroke-linejoin="round"><path d="M12 7.5c-2-2-7-1.5-7 3.8 0 4.2 3 8.7 5 8.7 1 0 1.3-.5 2-.5s1 .5 2 .5c2 0 5-4.5 5-8.7 0-5.3-5-5.8-7-3.8z"/><path d="M12 7.5c0-2 1-3.5 3-4.5"/></g>
+    <g id="i-energy" fill="none" stroke="currentColor" stroke-width="1.7" stroke-linecap="round" stroke-linejoin="round"><rect x="7" y="3" width="10" height="18" rx="2"/><path d="M13 7l-3 5h4l-3 5"/></g>
+    <g id="i-shot" fill="none" stroke="currentColor" stroke-width="1.7" stroke-linecap="round" stroke-linejoin="round"><path d="M7 6h10l-1.5 14h-7z"/><path d="M7.6 11h8.8"/></g>
+    <g id="i-whisky" fill="none" stroke="currentColor" stroke-width="1.7" stroke-linecap="round" stroke-linejoin="round"><path d="M5 7h14l-1.5 13h-11z"/><rect x="9" y="11" width="4.5" height="4.5" rx="1" transform="rotate(-12 11 13)"/></g>
+    <g id="i-cocktail" fill="none" stroke="currentColor" stroke-width="1.7" stroke-linecap="round" stroke-linejoin="round"><path d="M4 4h16l-8 9z"/><path d="M12 13v8M8 21h8"/></g>
+    <g id="i-wein" fill="none" stroke="currentColor" stroke-width="1.7" stroke-linecap="round" stroke-linejoin="round"><path d="M8 3h8v4a4 4 0 0 1-8 0z"/><path d="M12 11v10M8 21h8"/></g>
+    <g id="i-kiste" fill="none" stroke="currentColor" stroke-width="1.7" stroke-linecap="round" stroke-linejoin="round"><path d="M4 11h16v9H4z"/><path d="M7 11V6l1-2h1l1 2v5M14 11V6l1-2h1l1 2v5"/></g>
+    <g id="i-snack" fill="none" stroke="currentColor" stroke-width="1.7" stroke-linecap="round" stroke-linejoin="round"><path d="M3 11h18a9 7 0 0 1-18 0z"/><path d="M7.5 11c0-2 1-3.2 2.3-3.2M12.5 11c0-3 1.5-4.2 3-4.2"/></g>
+  </defs>
+</svg>
+
+<main class="max-w-6xl mx-auto px-4 py-10 space-y-12">
+
+<header class="space-y-3" data-lavish-revision="r1">
+  <p class="text-sm opacity-60">Plan · Version 0.4 · 22.10.2026 · baut auf 0.3.1 auf</p>
+  <h1 class="text-4xl font-bold">Neues Aussehen im Stil von Pub 22</h1>
+  <p class="text-lg opacity-80 max-w-3xl">Die App kann alles, sieht aber noch nach Werkzeug aus. In 0.4 wird sie aufgeräumt wie Lieferando oder Uber: klare Karten, viel Luft, eine feste Ordnung auf jedem Bildschirm und der Deckel rechts wie ein Warenkorb. Die Farben kommen aus deinem Logo, Schwarz und Gold. Tagsüber ist die App hell, abends dunkel, je nach iPad-Einstellung. Was die App kann und wie sie rechnet, bleibt genau gleich.</p>
+</header>
+
+<section class="space-y-4" data-lavish-revision="r1">
+  <h2 class="text-2xl font-bold">Was sich ändert</h2>
+  <div class="grid md:grid-cols-2 gap-4">
+    <div class="card card-border bg-base-200"><div class="card-body">
+      <h3 class="card-title">Heute</h3>
+      <ul class="list-disc pl-5 space-y-1 text-sm">
+        <li>Überall dasselbe Dunkelbraun, die Kacheln sind braune Blöcke.</li>
+        <li>Getränke und Deckel teilen sich eine Spalte, die Summe rutscht nach unten.</li>
+        <li>Emojis als Symbole (🍺 👥 📊), die Schrift ist die Systemschrift ohne Ordnung.</li>
+        <li>Die Dialoge sind schlichte Kästen, Häkchen und Knöpfe sehen wie im Browser aus.</li>
+      </ul>
+    </div></div>
+    <div class="card card-border bg-base-200 border-success/40"><div class="card-body">
+      <h3 class="card-title">Mit 0.4</h3>
+      <ul class="list-disc pl-5 space-y-1 text-sm">
+        <li><b>Drei Spalten wie bei Lieferando:</b> links wer in der Bar ist, in der Mitte die Karte, rechts der Deckel mit Summe und großem Knopf „Abrechnen“.</li>
+        <li><b>Logo und Schriftzug</b> oben links, Gold als einzige Akzentfarbe.</li>
+        <li><b>Hell und dunkel automatisch</b>, beide sauber gestaltet.</li>
+        <li><b>Ein Symbol pro Kategorie</b>, alle im gleichen Strich, statt Emojis.</li>
+        <li><b>Dialoge als Blätter</b>, die von unten hochkommen (wie bei Uber), mit großen Tippflächen.</li>
+      </ul>
+    </div></div>
+  </div>
+</section>
+
+<section class="space-y-4" data-lavish-revision="r1">
+  <h2 class="text-2xl font-bold">Bar, hell (tagsüber)</h2>
+  <div class="m" id="bar-hell">
+    <div class="top"><img class="logo" src="data:image/jpeg;base64,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" alt="Pub 22 Logo"><span class="brandname serif">Pub 22</span>
+      <div class="seg"><span class="on">Bar</span><span>Kunden</span><span>Umsatz</span><span>Einstellungen</span></div></div>
+    <div class="cols">
+      <div class="left">
+        <div class="two"><div class="scan">Karte scannen</div><div class="ghost">+ Deckel</div></div>
+        <p class="h">In der Bar · 3</p>
+        <div class="tab sel"><span class="av">MK</span><span><b>Murat K.</b><br><span class="sub gold">★ 140 Punkte</span></span><span class="amt">13,20 €</span></div>
+        <div class="tab"><span class="av">MU</span><span><b>Mustafa</b><br><span class="sub gold">★ 20 Punkte</span></span><span class="amt">9,60 €</span></div>
+        <div class="tab"><span class="av">T3</span><span><b>Tisch 3</b><br><span class="sub">ohne Karte</span></span><span class="amt">25,50 €</span></div>
+      </div>
+      <div class="mid">
+        <div class="tabtitle"><b>Murat K.</b><span class="sub">seit 21:52 · ✏️</span></div>
+        <div class="chips">
+          <span class="chip on"><svg viewBox="0 0 24 24"><use href="#i-fass"/></svg>Bier vom Fass</span>
+          <span class="chip"><svg viewBox="0 0 24 24"><use href="#i-flasche"/></svg>Flaschenbier</span>
+          <span class="chip"><svg viewBox="0 0 24 24"><use href="#i-weizen"/></svg>Weißbier</span>
+          <span class="chip"><svg viewBox="0 0 24 24"><use href="#i-alkfrei"/></svg>Alkoholfrei</span>
+          <span class="chip"><svg viewBox="0 0 24 24"><use href="#i-shot"/></svg>Spirituosen</span>
+        </div>
+        <div class="tiles">
+          <div class="tile"><span class="ico"><svg viewBox="0 0 24 24"><use href="#i-fass"/></svg></span><span class="nm">Mönchshof/Veltins</span><span class="pr"><span class="sub">0,3 l · <b class="amt" style="color:var(--text)">3,30 €</b></span><span class="plus">+</span></span></div>
+          <div class="tile"><span class="ico"><svg viewBox="0 0 24 24"><use href="#i-fass"/></svg></span><span class="nm">Mönchshof/Veltins</span><span class="pr"><span class="sub">0,5 l · <b class="amt" style="color:var(--text)">4,20 €</b></span><span class="plus">+</span></span></div>
+          <div class="tile"><span class="ico"><svg viewBox="0 0 24 24"><use href="#i-fass"/></svg></span><span class="nm">Radler</span><span class="pr"><span class="sub">0,5 l · <b class="amt" style="color:var(--text)">4,20 €</b></span><span class="plus">+</span></span></div>
+          <div class="tile"><span class="ico"><svg viewBox="0 0 24 24"><use href="#i-fass"/></svg></span><span class="nm">Diesel</span><span class="pr"><span class="sub">0,5 l · <b class="amt" style="color:var(--text)">4,20 €</b></span><span class="plus">+</span></span></div>
+          <div class="tile"><span class="ico"><svg viewBox="0 0 24 24"><use href="#i-fass"/></svg></span><span class="nm">Krug</span><span class="pr"><span class="sub">1 l · <b class="amt" style="color:var(--text)">7,90 €</b></span><span class="plus">+</span></span></div>
+          <div class="tile"><span class="ico"><svg viewBox="0 0 24 24"><use href="#i-fass"/></svg></span><span class="nm">Pitcher</span><span class="pr"><span class="sub">1,5 l · <b class="amt" style="color:var(--text)">11,50 €</b></span><span class="plus">+</span></span></div>
+        </div>
+      </div>
+      <div class="right">
+        <div><b style="font-size:15px">Deckel</b><div class="sub">3 Getränke</div></div>
+        <div>
+          <div class="line"><span class="qty">− 2 +</span><span>Mönchshof 0,5 l</span><span class="amt">8,40 €</span></div>
+          <div class="line"><span class="qty">− 1 +</span><span>Jägermeister</span><span class="amt">3,00 €</span></div>
+          <div class="pts"><span>★ 140 Punkte frei</span><span class="gold">Einlösen</span></div>
+        </div>
+        <div style="display:grid; gap:8px">
+          <div class="tot"><span>Summe</span><span class="amt">11,40 €</span></div>
+          <div class="sub">+11 Punkte beim Abrechnen</div>
+          <div class="pay">Abrechnen</div>
+          <div class="two"><div class="ghost">Teil zahlen</div><div class="ghost">Löschen</div></div>
+        </div>
+      </div>
+    </div>
+  </div>
+  <p class="text-sm opacity-70 max-w-3xl">Die Karte in der Mitte scrollt, der Deckel rechts bleibt immer stehen. Ein Tipp auf eine Kachel bucht wie bisher. Im Deckel kann man die Menge jetzt direkt mit − und + ändern. Gold steht für Punkte und die Hauptknöpfe, Grün nur für „Abrechnen“ und „Bezahlt“, also für Geld.</p>
+</section>
+
+<section class="space-y-4" data-lavish-revision="r1">
+  <h2 class="text-2xl font-bold">Bar, dunkel (abends, wenn das iPad auf Dunkel steht)</h2>
+  <div class="m dark" id="bar-dunkel">
+    <div class="top"><img class="logo" src="data:image/jpeg;base64,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" alt="Pub 22 Logo"><span class="brandname serif">Pub 22</span>
+      <div class="seg"><span class="on">Bar</span><span>Kunden</span><span>Umsatz</span><span>Einstellungen</span></div></div>
+    <div class="cols">
+      <div class="left">
+        <div class="two"><div class="scan">Karte scannen</div><div class="ghost">+ Deckel</div></div>
+        <p class="h">In der Bar · 3</p>
+        <div class="tab"><span class="av">MK</span><span><b>Murat K.</b><br><span class="sub gold">★ 140 Punkte</span></span><span class="amt">13,20 €</span></div>
+        <div class="tab"><span class="av">MU</span><span><b>Mustafa</b><br><span class="sub gold">★ 20 Punkte</span></span><span class="amt">9,60 €</span></div>
+        <div class="tab sel"><span class="av">T3</span><span><b>Tisch 3</b><br><span class="sub">ohne Karte</span></span><span class="amt">25,50 €</span></div>
+      </div>
+      <div class="mid">
+        <div class="tabtitle"><b>Tisch 3</b><span class="sub">seit 21:40 · ✏️</span></div>
+        <div class="chips">
+          <span class="chip"><svg viewBox="0 0 24 24"><use href="#i-fass"/></svg>Bier vom Fass</span>
+          <span class="chip on"><svg viewBox="0 0 24 24"><use href="#i-shot"/></svg>Spirituosen</span>
+          <span class="chip"><svg viewBox="0 0 24 24"><use href="#i-whisky"/></svg>Whisky</span>
+          <span class="chip"><svg viewBox="0 0 24 24"><use href="#i-cocktail"/></svg>Cocktails</span>
+          <span class="chip"><svg viewBox="0 0 24 24"><use href="#i-wein"/></svg>Wein & Sekt</span>
+        </div>
+        <div class="tiles">
+          <div class="tile"><span class="ico"><svg viewBox="0 0 24 24"><use href="#i-shot"/></svg></span><span class="nm">Jägermeister</span><span class="pr"><span class="sub">2 cl · <b class="amt" style="color:var(--text)">3,00 €</b></span><span class="plus">+</span></span></div>
+          <div class="tile"><span class="ico"><svg viewBox="0 0 24 24"><use href="#i-shot"/></svg></span><span class="nm">Ouzo</span><span class="pr"><span class="sub">2 cl · <b class="amt" style="color:var(--text)">2,80 €</b></span><span class="plus">+</span></span></div>
+          <div class="tile"><span class="ico"><svg viewBox="0 0 24 24"><use href="#i-shot"/></svg></span><span class="nm">Sambuca</span><span class="pr"><span class="sub">2 cl · <b class="amt" style="color:var(--text)">3,00 €</b></span><span class="plus">+</span></span></div>
+          <div class="tile"><span class="ico"><svg viewBox="0 0 24 24"><use href="#i-shot"/></svg></span><span class="nm">Wodka</span><span class="pr"><span class="sub">4 cl · <b class="amt" style="color:var(--text)">4,50 €</b></span><span class="plus">+</span></span></div>
+          <div class="tile"><span class="ico"><svg viewBox="0 0 24 24"><use href="#i-shot"/></svg></span><span class="nm">Mix</span><span class="pr"><span class="sub"><b class="amt" style="color:var(--text)">+0,50 €</b></span><span class="plus">+</span></span></div>
+          <div class="tile"><span class="ico"><svg viewBox="0 0 24 24"><use href="#i-shot"/></svg></span><span class="nm">Tequila</span><span class="pr"><span class="sub">2 cl · <b class="amt" style="color:var(--text)">3,00 €</b></span><span class="plus">+</span></span></div>
+        </div>
+      </div>
+      <div class="right">
+        <div><b style="font-size:15px">Deckel</b><div class="sub">8 Getränke · ohne Karte</div></div>
+        <div>
+          <div class="line"><span class="qty">− 3 +</span><span>Mönchshof 0,3 l</span><span class="amt">9,90 €</span></div>
+          <div class="line"><span class="qty">− 3 +</span><span>Jägermeister</span><span class="amt">9,00 €</span></div>
+          <div class="line"><span class="qty">− 2 +</span><span>Coca Cola 0,3 l</span><span class="amt">6,60 €</span></div>
+        </div>
+        <div style="display:grid; gap:8px">
+          <div class="tot"><span>Summe</span><span class="amt">25,50 €</span></div>
+          <div class="pay">Abrechnen</div>
+          <div class="two"><div class="ghost">Teil zahlen</div><div class="ghost">Löschen</div></div>
+        </div>
+      </div>
+    </div>
+  </div>
+  <p class="text-sm opacity-70 max-w-3xl">Abends ist der Hintergrund fast schwarz wie im Logo, ohne Schatten, die Karten heben sich durch eine feine Linie ab. Gold und Grün sind etwas heller, damit sie im Dunkeln gut lesbar sind.</p>
+</section>
+
+<section class="space-y-4" data-lavish-revision="r1">
+  <h2 class="text-2xl font-bold">Dialoge als Blatt von unten</h2>
+  <div class="grid md:grid-cols-2 gap-4 items-start">
+    <div class="m sheetwrap" id="blatt-abrechnen">
+      <div class="sheet">
+        <div class="grab"></div>
+        <b style="font-size:18px">Abrechnen: Murat K.</b>
+        <span class="sub">Zahlt auch für</span>
+        <div class="check"><span class="box on"></span><span>Mustafa</span><span class="amt">9,60 €</span></div>
+        <div class="check"><span class="box"></span><span>Tisch 3</span><span class="amt">25,50 €</span></div>
+        <span class="sub">Wer zahlt?</span>
+        <div class="seg" style="margin:0"><span class="on">Murat K.</span><span>Mustafa</span></div>
+        <div class="tot" style="font-size:22px"><span>Kassieren</span><span class="amt">22,80 €</span></div>
+        <span class="sub gold">★ Murat K. bekommt +22 Punkte</span>
+        <div class="two"><div class="ghost">Zurück</div><div class="pay">Bezahlt</div></div>
+      </div>
+    </div>
+    <div class="space-y-3 text-sm">
+      <p>Alle Dialoge (Abrechnen, Teil zahlen, + Deckel, Punkte einlösen, Umbenennen, Schicht abschließen) kommen als <b>Blatt von unten</b> mit runden oberen Ecken. Dahinter wird der Bildschirm abgedunkelt. Antippen außerhalb oder „Zurück“ schließt das Blatt.</p>
+      <p><b>Häkchen und Auswahl</b> sind große Flächen statt kleiner Browser-Kästchen: Man tippt die ganze Zeile an.</p>
+      <p><b>Inhalt und Abläufe bleiben genau wie in 0.3</b>, auch die Texte. Nur die Gestaltung ist neu.</p>
+    </div>
+  </div>
+</section>
+
+<section class="space-y-4" data-lavish-revision="r1">
+  <h2 class="text-2xl font-bold">Symbole je Kategorie</h2>
+  <div class="icons">
+    <div><svg viewBox="0 0 24 24"><use href="#i-fass"/></svg><span>Bier vom Fass</span></div>
+    <div><svg viewBox="0 0 24 24"><use href="#i-flasche"/></svg><span>Flaschenbier</span></div>
+    <div><svg viewBox="0 0 24 24"><use href="#i-weizen"/></svg><span>Weißbier</span></div>
+    <div><svg viewBox="0 0 24 24"><use href="#i-alkfrei"/></svg><span>Alkoholfrei</span></div>
+    <div><svg viewBox="0 0 24 24"><use href="#i-saft"/></svg><span>Apfelwein & Säfte</span></div>
+    <div><svg viewBox="0 0 24 24"><use href="#i-energy"/></svg><span>Energy Drinks</span></div>
+    <div><svg viewBox="0 0 24 24"><use href="#i-shot"/></svg><span>Spirituosen</span></div>
+    <div><svg viewBox="0 0 24 24"><use href="#i-whisky"/></svg><span>Whisky</span></div>
+    <div><svg viewBox="0 0 24 24"><use href="#i-cocktail"/></svg><span>Cocktails</span></div>
+    <div><svg viewBox="0 0 24 24"><use href="#i-wein"/></svg><span>Wein & Sekt</span></div>
+    <div><svg viewBox="0 0 24 24"><use href="#i-kiste"/></svg><span>Flaschenverkauf</span></div>
+    <div><svg viewBox="0 0 24 24"><use href="#i-snack"/></svg><span>Snacks</span></div>
+  </div>
+  <p class="text-sm opacity-70 max-w-3xl">Ich zeichne die Symbole selbst, alle mit derselben Strichstärke. Es kommt also keine neue Bibliothek dazu, und die Symbole funktionieren auch offline. Legst du in den Einstellungen eine neue Kategorie an, bekommt sie ein neutrales Glas. Die Kategorien heißen weiter so wie auf deiner Karte.</p>
+</section>
+
+<section class="space-y-4" data-lavish-revision="r1">
+  <h2 class="text-2xl font-bold">Farben und Schrift</h2>
+  <div class="grid md:grid-cols-2 gap-6">
+    <div class="space-y-2">
+      <p class="text-sm font-semibold">Hell</p>
+      <div class="swatch">
+        <div><i style="background:#F6F5F2"></i><span>Grund #F6F5F2</span></div>
+        <div><i style="background:#FFFFFF"></i><span>Karte #FFFFFF</span></div>
+        <div><i style="background:#1C1A17"></i><span>Schrift #1C1A17</span></div>
+        <div><i style="background:#B8913F"></i><span>Gold #B8913F</span></div>
+        <div><i style="background:#2E8B57"></i><span>Geld #2E8B57</span></div>
+      </div>
+      <p class="text-sm font-semibold pt-2">Dunkel</p>
+      <div class="swatch">
+        <div><i style="background:#0F0E0C"></i><span>Grund #0F0E0C</span></div>
+        <div><i style="background:#1A1815"></i><span>Karte #1A1815</span></div>
+        <div><i style="background:#F1ECE2"></i><span>Schrift #F1ECE2</span></div>
+        <div><i style="background:#D2AE62"></i><span>Gold #D2AE62</span></div>
+        <div><i style="background:#3FA36B"></i><span>Geld #3FA36B</span></div>
+      </div>
+    </div>
+    <div class="space-y-3 text-sm">
+      <p><b>Schriftzug „Pub 22“:</b> Didot, eine elegante Schrift mit starken Kontrasten, die zum Logo passt. Sie steht nur neben dem Logo und an wenigen großen Stellen.</p>
+      <p><b>Alles andere:</b> Avenir Next, eine ruhige, sehr gut lesbare Schrift, mit festen Größen für Titel, Text und kleine Hinweise. Beträge stehen immer genau untereinander.</p>
+      <p>Beide Schriften sind auf jedem iPad schon installiert. Die App lädt also nichts nach und bleibt offline schnell.</p>
+      <p><b>Gold</b> ist die einzige Schmuckfarbe: Logo, Punkte, Hauptknöpfe. <b>Grün</b> nur für Geld (Abrechnen, Bezahlt), <b>Rot</b> nur für Löschen.</p>
+    </div>
+  </div>
+</section>
+
+<section class="space-y-4" data-lavish-revision="r1">
+  <h2 class="text-2xl font-bold">Die anderen Seiten</h2>
+  <ul class="list-disc pl-6 space-y-1 text-sm max-w-3xl">
+    <li><b>Kunden:</b> Liste links mit Kürzel-Kachel, Name und Punkten, rechts die Kundenkarte groß wie eine echte Karte in Schwarz-Gold mit dem QR-Code, darunter die letzten Besuche als saubere Liste.</li>
+    <li><b>Umsatz:</b> Oben die laufende Schicht als große Karte mit dem Betrag. Die Reiter sind derselbe Umschalter wie oben in der Leiste, die Tabellen haben ruhige Zeilen ohne Gitterlinien, Beträge rechtsbündig.</li>
+    <li><b>Einstellungen:</b> Gruppen in eigenen Karten (Punkte, Prämien, Getränkekarte, Sichern), wie die iPad-Einstellungen.</li>
+    <li><b>Hinweise</b> wie „Seit über einer Woche nicht gesichert“ werden ein schmaler goldener Streifen unter der Leiste statt eines großen Knopfs.</li>
+  </ul>
+</section>
+
+<section class="space-y-4" data-lavish-revision="r1">
+  <h2 class="text-2xl font-bold">Technik</h2>
+  <div class="overflow-x-auto"><table class="table">
+    <tbody>
+      <tr><th>Umfang</th><td>Nur Aussehen und Bedienung. Daten, Rechnen, Punkte, Sichern und die Abläufe bleiben unverändert. Der Datenstand ändert sich nicht.</td></tr>
+      <tr><th>Farben</th><td>Ein Satz Farbwerte in <code>src/app.css</code> für hell und dunkel. Umgeschaltet wird automatisch über die iPad-Einstellung (<code>prefers-color-scheme</code>). Keine Farbe steht mehr direkt in einem Bildschirm.</td></tr>
+      <tr><th>Symbole</th><td>Eigene Datei <code>src/ui/icons.ts</code> mit den Zeichnungen und einer Zuordnung Kategorie → Symbol, mit neutralem Glas als Rückfall. Keine neue Abhängigkeit.</td></tr>
+      <tr><th>Logo</th><td>Dein Bild liegt als <code>public/logo.jpg</code> in der App und wird offline mitgespeichert. Mit 150 × 150 Pixeln ist es für das Home-Bildschirm-Symbol zu klein, das bleibt deshalb vorerst, wie es ist (siehe Entscheidungen).</td></tr>
+      <tr><th>Layout</th><td>Bar mit drei Spalten (Deckel rechts als eigene Spalte). Auf dem iPad hochkant rutscht der Deckel unter die Karte. Alles bleibt mindestens 44 Punkte groß zum Tippen.</td></tr>
+      <tr><th>Tests</th><td>Ein Test prüft die Zuordnung Kategorie → Symbol (bekannte Kategorien, unbekannte = Glas). Die bestehenden 79 Tests müssen weiter grün sein. Dazu Screenshots aller Seiten und Blätter, hell und dunkel, im iPad-Format.</td></tr>
+    </tbody>
+  </table></div>
+</section>
+
+<section class="space-y-3" data-lavish-revision="r1">
+  <h2 class="text-2xl font-bold">Risiken</h2>
+  <ul class="list-disc pl-6 space-y-1">
+    <li><b>Gewohnheit:</b> Knöpfe sitzen an neuen Stellen (Deckel rechts). Die Namen bleiben gleich, damit man alles sofort wiederfindet.</li>
+    <li><b>Hell in der dunklen Bar:</b> Steht das iPad auf Hell, ist die App abends hell. Lösung: iPad auf „Automatisch“ stellen (Einstellungen → Anzeige & Helligkeit). Dann wird sie mit dem Sonnenuntergang dunkel.</li>
+    <li><b>Schrift am Windows-PC:</b> Didot und Avenir gibt es nur auf Apple-Geräten. Am PC sieht die App etwas anders aus, auf dem iPad stimmt sie.</li>
+    <li><b>Kein Risiko für Geld oder Daten:</b> Die Rechenlogik wird nicht angefasst, und die 79 Tests laufen weiter.</li>
+  </ul>
+</section>
+
+<section class="space-y-3" data-lavish-revision="r1">
+  <h2 class="text-2xl font-bold">Bewusst nicht in 0.4</h2>
+  <ul class="list-disc pl-6 space-y-1">
+    <li>Fotos pro Getränk.</li>
+    <li>Server, Cloud oder mehrere Geräte.</li>
+    <li>Animationen über kurze Übergänge beim Öffnen und Schließen der Blätter hinaus.</li>
+    <li>Eigener Schalter Hell/Dunkel in der App (die iPad-Einstellung entscheidet).</li>
+  </ul>
+</section>
+
+<section class="space-y-6" data-lavish-annotate="off" data-lavish-revision="r1">
+  <h2 class="text-2xl font-bold">Deine Entscheidungen</h2>
+  <div class="card card-border bg-base-200"><div class="card-body text-sm space-y-1">
+    <h3 class="card-title text-base">Schon entschieden (Chat)</h3>
+    <p>✅ Hell oder dunkel automatisch nach der iPad-Einstellung.</p>
+    <p>✅ Symbole je Kategorie statt Fotos.</p>
+    <p>✅ Nur Aussehen und Bedienung, die Daten bleiben auf dem iPad.</p>
+    <p>✅ Farben aus dem Logo: Schwarz und Gold.</p>
+  </div></div>
+
+  <form data-lavish-question="appsymbol" class="card card-border bg-base-200" onsubmit="event.preventDefault(); const v = new FormData(event.currentTarget).get('a'); if (v) window.lavish.queuePrompt('Home-Bildschirm-Symbol: ' + v, { tag: 'choice', text: 'App-Symbol: ' + v, element: event.currentTarget, data: { question: 'appsymbol', answer: v } });">
+    <div class="card-body space-y-2">
+      <h3 class="card-title">Soll das Logo auch das Symbol auf dem Home-Bildschirm werden?</h3>
+      <label class="flex gap-2"><input type="radio" class="radio" name="a" value="Ja, ich schicke das Logo größer (mind. 512 × 512)" checked> <span><b>Ja, ich schicke es größer</b> (empfohlen): Mit einer Datei ab 512 × 512 Pixeln wird das Logo scharf als App-Symbol.</span></label>
+      <label class="flex gap-2"><input type="radio" class="radio" name="a" value="Ja, mit dem kleinen Bild"> <span><b>Ja, mit dem jetzigen Bild</b>: Das geht sofort, ist auf dem iPad aber leicht unscharf.</span></label>
+      <label class="flex gap-2"><input type="radio" class="radio" name="a" value="Nein, Symbol bleibt"> <span><b>Nein</b>: Das Symbol bleibt, wie es ist.</span></label>
+      <button class="btn btn-sm btn-primary w-fit" type="submit">Antwort vormerken</button>
+    </div>
+  </form>
+
+  <form data-lavish-question="freigabe" class="card card-border bg-base-200" onsubmit="event.preventDefault(); const f = new FormData(event.currentTarget); const v = f.get('ok'); const n = (f.get('notiz') || '').trim(); if (v) window.lavish.queuePrompt('Plan 0.4: ' + v + (n ? ' – Anmerkung: ' + n : ''), { tag: 'choice', text: 'Plan 0.4: ' + v, element: event.currentTarget, data: { question: 'freigabe', answer: v, notiz: n } });">
+    <div class="card-body space-y-2">
+      <h3 class="card-title">Passt der Plan?</h3>
+      <label class="flex gap-2"><input type="radio" class="radio" name="ok" value="Ja, los"> <span>Ja, los</span></label>
+      <label class="flex gap-2"><input type="radio" class="radio" name="ok" value="Ja, mit Änderungen (siehe Anmerkung)"> <span>Ja, mit Änderungen</span></label>
+      <label class="flex gap-2"><input type="radio" class="radio" name="ok" value="Nein, nochmal überarbeiten"> <span>Nein, nochmal überarbeiten</span></label>
+      <textarea name="notiz" class="textarea w-full" placeholder="Anmerkungen, z. B. zu Farben, Anordnung oder Symbolen (optional)"></textarea>
+      <button class="btn btn-sm btn-primary w-fit" type="submit">Antwort vormerken</button>
+    </div>
+  </form>
+  <p class="text-sm opacity-70">Bitte beide Fragen vormerken und dann oben auf <b>„Send to Agent“</b> klicken. Du kannst auch direkt in die Entwürfe klicken und etwas anmerken.</p>
+</section>
+
+<footer class="text-xs opacity-50 space-y-1 pt-6">
+  <p>Grundlage: Code-Stand 0.3.1 nach PR #8, dein Logo aus dem Chat, Antworten vom 22.10.2026. Die Entwürfe sind Skizzen mit den echten Farben und Schriften. Auf dem iPad sieht die Schrift genau so aus, am Windows-PC etwas anders.</p>
+</footer>
+</main>
+</body>
+</html>

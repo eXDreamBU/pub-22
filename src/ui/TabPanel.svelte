@@ -4,6 +4,7 @@
     addItem,
     availablePoints,
     cancelTab,
+    incrementLine,
     payPart,
     redeemReward,
     removeItem,
@@ -14,6 +15,8 @@
   } from '../lib/db';
   import { formatEuro, pointsFor, tabTotal } from '../lib/money';
   import { formatTime } from './format';
+  import Icon from './Icon.svelte';
+  import { categoryIcon, icons } from './icons';
 
   let { tab }: { tab: Tab } = $props();
 
@@ -23,6 +26,7 @@
   // Falls back to the first category when the picked one has no visible drinks (left).
   let category = $derived(categories.includes(picked) ? picked : categories[0]);
   let summary = $derived(tabSummary(app.db, tab));
+  let count = $derived(tab.lines.reduce((sum, l) => sum + l.qty, 0));
 
   let redeemDialog: HTMLDialogElement;
   let settleDialog: HTMLDialogElement;
@@ -101,71 +105,91 @@
 </script>
 
 <div class="panel-grid">
-  <header class="row">
-    <h2>{tab.label}</h2>
-    <button class="small" aria-label="Deckel umbenennen" onclick={showRename}>✏️</button>
-    <span class="grow"></span>
-    {#if tab.customerId}<span class="muted">⭐ {availablePoints(app.db, tab)} Punkte frei</span>{/if}
-    <span class="muted">seit {formatTime(tab.openedAt)}</span>
-  </header>
+  <div class="menu">
+    <header class="row">
+      <h2>{tab.label}</h2>
+      <button class="small icon-only" aria-label="Deckel umbenennen" onclick={showRename}><Icon svg={icons.pen} size={18} /></button>
+      <span class="grow"></span>
+      <span class="muted">seit {formatTime(tab.openedAt)}</span>
+    </header>
 
-  <div class="cats">
-    {#each categories as c (c)}
-      <button class="small" class:primary={c === category} onclick={() => (picked = c)}>{c}</button>
-    {/each}
+    <div class="cats">
+      {#each categories as c (c)}
+        <button class="chip" class:active={c === category} onclick={() => (picked = c)}
+          ><Icon svg={categoryIcon(c)} size={18} />{c}</button
+        >
+      {/each}
+    </div>
+
+    <div class="tiles">
+      {#each products.filter((p) => p.category === category) as p (p.id)}
+        <button class="tile" onclick={() => addItem(tab, p)}>
+          <span class="tile-icon"><Icon svg={categoryIcon(p.category)} /></span>
+          <span class="tile-name">{p.name.replaceAll('/', '/​')}</span>
+          <span class="tile-foot">
+            <span><span class="muted">{p.size ? `${p.size} · ` : ''}</span><b class="num">{formatEuro(p.priceCents)}</b></span>
+            <span class="plus" aria-hidden="true">+</span>
+          </span>
+        </button>
+      {/each}
+    </div>
   </div>
 
-  <div class="tiles">
-    {#each products.filter((p) => p.category === category) as p (p.id)}
-      <button class="tile" onclick={() => addItem(tab, p)}>
-        <span>{p.name.replaceAll('/', '/​')}</span>
-        <span><span class="muted">{p.size ?? ''}</span> <b>{formatEuro(p.priceCents)}</b></span>
-      </button>
-    {/each}
-  </div>
-
-  <div class="lines panel">
+  <aside class="deckel">
+    <div>
+      <h3>Deckel</h3>
+      <span class="muted">{count} {count === 1 ? 'Getränk' : 'Getränke'}{tab.customerId ? '' : ' · ohne Karte'}</span>
+    </div>
     <div class="scroll">
       {#each tab.lines as line, i (i)}
-        <div class="row line">
-          <span class="grow">{line.qty}× {line.name} {line.size ?? ''}</span>
+        <div class="line">
+          <span class="stepper">
+            <button class="small" aria-label="Eins entfernen" onclick={() => removeItem(tab, i)}>−</button>
+            <b>{line.qty}</b>
+            <button class="small" aria-label="Eins mehr" onclick={() => incrementLine(tab, i)}>+</button>
+          </span>
+          <span class="grow">{line.name} <span class="muted">{line.size ?? ''}</span></span>
           <span class="num">{formatEuro(line.priceCents * line.qty)}</span>
-          <button class="small" aria-label="Eins entfernen" onclick={() => removeItem(tab, i)}>−</button>
         </div>
       {:else}
-        <p class="muted">Getränk antippen = auf den Deckel.</p>
+        <p class="muted empty">Getränk antippen, dann steht es hier.</p>
       {/each}
       {#each tab.rewards as r, i (i)}
-        <div class="row line">
-          <span class="grow">🎁 {r.name}</span>
+        <div class="line">
+          <span class="gold"><Icon svg={icons.gift} size={18} /></span>
+          <span class="grow">{r.name}</span>
           <span class="muted">−{r.points} P.</span>
           <button class="small" aria-label="Prämie zurücknehmen" onclick={() => tab.rewards.splice(i, 1)}>−</button>
         </div>
       {/each}
       {#if summary.discountCents}
-        <div class="row line">
+        <div class="line">
           <span class="grow">Rabatt ({tab.discountSteps * app.db.settings.discountPoints} P.)</span>
           <span class="num">−{formatEuro(summary.discountCents)}</span>
         </div>
       {/if}
+      {#if tab.customerId}
+        <button class="points" onclick={() => redeemDialog.showModal()}>
+          <span class="gold">★ {availablePoints(app.db, tab)} Punkte frei</span>
+          <span class="gold">Einlösen</span>
+        </button>
+      {/if}
     </div>
-    <div class="row total">
-      <b class="grow">Summe</b>
-      <b class="num">{formatEuro(summary.paidCents)}</b>
+    <div class="foot">
+      <div class="row total">
+        <span class="grow">Summe</span>
+        <span class="num">{formatEuro(summary.paidCents)}</span>
+      </div>
+      {#if tab.customerId}
+        <span class="muted">+{summary.pointsEarned} Punkte beim Abrechnen</span>
+      {/if}
+      <button class="ok pay" onclick={showSettle}>Abrechnen</button>
+      <div class="row">
+        <button class="grow" onclick={showPart} disabled={!tab.lines.length}>Teil zahlen</button>
+        <button class="danger grow" onclick={doCancel}>Löschen</button>
+      </div>
     </div>
-    {#if tab.customerId}
-      <span class="muted">+{summary.pointsEarned} Punkte beim Abrechnen</span>
-    {/if}
-  </div>
-
-  <div class="row actions">
-    <button class="danger" onclick={doCancel}>Deckel löschen</button>
-    {#if tab.customerId}
-      <button class="grow" onclick={() => redeemDialog.showModal()}>🎁 Punkte einlösen</button>
-    {/if}
-    <button class="grow" onclick={showPart} disabled={!tab.lines.length}>Teil zahlen</button>
-    <button class="ok grow" onclick={showSettle}>Abrechnen</button>
-  </div>
+  </aside>
 </div>
 
 <dialog bind:this={redeemDialog} onclose={() => (error = '')}>
@@ -231,16 +255,16 @@
       <div class="row"><span class="grow">Rabatt</span><span class="num">−{formatEuro(summary.discountCents)}</span></div>
     {/if}
   {/if}
-  <div class="row pay"><b class="grow">Kassieren</b><b class="num">{formatEuro(groupPaid)}</b></div>
+  <div class="row kassieren"><b class="grow">Kassieren</b><b class="num">{formatEuro(groupPaid)}</b></div>
   <p class="muted">Zählt in die laufende Schicht.</p>
   {#each group as t (t.id)}
     {#each t.rewards as r, i (i)}
-      <p>🎁 Gratis ausgeben: {r.name}{#if group.length > 1} ({t.label}){/if}</p>
+      <p>Gratis ausgeben: {r.name}{#if group.length > 1} ({t.label}){/if}</p>
     {/each}
   {/each}
   {#if group.length > 1}
     <p>
-      {#if payer.customerId}⭐ {payer.label} bekommt +{groupPoints} Punkte (für alle {group.length} Deckel){:else}Keine Punkte:
+      {#if payer.customerId}★ {payer.label} bekommt +{groupPoints} Punkte (für alle {group.length} Deckel){:else}Keine Punkte:
         {payer.label} zahlt ohne Karte.{/if}
     </p>
   {:else if tab.customerId}
@@ -266,7 +290,7 @@
       <span class="num part">{partQtys[i] ? formatEuro(line.priceCents * partQtys[i]) : '–'}</span>
     </div>
   {/each}
-  <div class="row pay"><b class="grow">Kassieren</b><b class="num">{formatEuro(partCents)}</b></div>
+  <div class="row kassieren"><b class="grow">Kassieren</b><b class="num">{formatEuro(partCents)}</b></div>
   <div class="row muted"><span class="grow">Bleibt offen</span><span class="num">{formatEuro(summary.totalCents - partCents)}</span></div>
   <p class="muted">Teilzahlung ohne Punkte. Zählt in die laufende Schicht.</p>
   {#if error}<p class="error">{error}</p>{/if}
@@ -291,54 +315,162 @@
   .panel-grid {
     height: 100%;
     display: grid;
-    grid-template-rows: auto auto fit-content(45%) minmax(0, 1fr) auto;
-    gap: 0.7rem;
+    grid-template-columns: minmax(0, 1fr) minmax(280px, 320px);
+  }
+  .menu {
+    min-height: 0;
+    padding: 1rem 1.2rem;
+    display: grid;
+    grid-template-rows: auto auto minmax(0, 1fr);
+    gap: 0.9rem;
   }
   h2 {
     margin: 0;
+    font-size: 1.6rem;
+  }
+  h3 {
+    margin: 0;
+    font-size: 1.15rem;
+  }
+  .icon-only {
+    min-width: 40px;
+    display: grid;
+    place-items: center;
+    color: var(--muted);
+    background: none;
+    border-color: transparent;
   }
   .cats {
     display: flex;
-    flex-wrap: wrap;
-    gap: 0.4rem;
-  }
-  .cats button {
-    white-space: nowrap;
+    gap: 0.45rem;
+    overflow-x: auto;
+    scrollbar-width: none;
+    padding-bottom: 2px;
   }
   .tiles {
     display: grid;
-    grid-template-columns: repeat(auto-fill, minmax(130px, 1fr));
+    grid-template-columns: repeat(auto-fill, minmax(150px, 1fr));
     grid-auto-rows: min-content;
-    gap: 0.5rem;
+    gap: 0.7rem;
     overflow-y: auto;
+    padding: 2px 2px 1rem;
   }
   .tile {
     display: grid;
-    gap: 0.15rem;
-    background: #6b4718;
-    border-color: #7d5520;
-    padding: 0.6rem;
-    text-align: center;
+    gap: 0.45rem;
+    padding: 0.75rem;
+    text-align: left;
+    border: 1px solid var(--card-border);
+    border-radius: var(--radius);
+    box-shadow: var(--shadow);
+    font-weight: 500;
     overflow-wrap: anywhere;
   }
-  .lines {
+  .tile-icon {
+    width: 36px;
+    height: 36px;
+    border-radius: 10px;
+    background: var(--panel-2);
+    color: var(--accent-ink);
     display: grid;
-    grid-template-rows: minmax(0, 1fr) auto auto;
+    place-items: center;
+  }
+  .tile-name {
+    font-weight: 600;
+    line-height: 1.25;
+  }
+  .tile-foot {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    gap: 0.4rem;
+    font-size: 0.9rem;
+  }
+  .plus {
+    width: 30px;
+    height: 30px;
+    flex: none;
+    border-radius: 50%;
+    background: var(--accent);
+    color: var(--accent-text);
+    display: grid;
+    place-items: center;
+    font-size: 1.2rem;
+    font-weight: 700;
+  }
+  .deckel {
+    min-height: 0;
+    background: var(--panel);
+    border-left: 1px solid var(--line);
+    padding: 1rem;
+    display: grid;
+    grid-template-rows: auto minmax(0, 1fr) auto;
+    gap: 0.8rem;
   }
   .scroll {
     overflow-y: auto;
   }
-  .total {
-    border-top: 1px solid var(--line);
-    padding-top: 0.5rem;
-    margin-top: 0.4rem;
-    font-size: 1.2rem;
-  }
   .line {
-    padding: 0.15rem 0;
+    display: flex;
+    align-items: center;
+    gap: 0.6rem;
+    padding: 0.45rem 0;
+    border-bottom: 1px solid var(--line);
   }
-  .actions button {
+  .stepper {
+    display: inline-flex;
+    align-items: center;
+    gap: 0.15rem;
+    background: var(--panel-2);
+    border-radius: 99px;
+    padding: 2px;
+  }
+  .stepper button {
+    min-width: 32px;
+    min-height: 32px;
+    padding: 0;
+    border-radius: 50%;
+    background: none;
+    border-color: transparent;
+  }
+  .stepper b {
+    min-width: 1.5ch;
+    text-align: center;
+  }
+  .empty {
+    margin-top: 2rem;
+    text-align: center;
+  }
+  .points {
+    width: 100%;
+    margin-top: 0.8rem;
+    display: flex;
+    justify-content: space-between;
+    background: var(--panel-2);
+    border-color: transparent;
+  }
+  .foot {
+    display: grid;
+    gap: 0.5rem;
+  }
+  .total {
+    font-size: 1.35rem;
+    font-weight: 600;
+  }
+  .pay {
     min-height: 56px;
+    font-size: 1.1rem;
+  }
+  @media (max-width: 900px) {
+    .panel-grid {
+      grid-template-columns: 1fr;
+      grid-template-rows: minmax(0, 1fr) auto;
+    }
+    .deckel {
+      border-left: none;
+      border-top: 1px solid var(--line);
+      max-height: 45dvh;
+    }
   }
   .center {
     text-align: center;
@@ -349,19 +481,6 @@
   .full {
     width: 100%;
     margin-top: 1rem;
-  }
-  .check {
-    display: flex;
-    flex-direction: row;
-    align-items: center;
-    gap: 0.6rem;
-    color: var(--text);
-    font-size: 1rem;
-    padding: 0.2rem 0;
-  }
-  .check input {
-    width: 24px;
-    min-height: 24px;
   }
   .wrap {
     flex-wrap: wrap;
@@ -379,8 +498,9 @@
     min-width: 5rem;
     text-align: right;
   }
-  .pay {
-    font-size: 1.4rem;
-    margin: 0.6rem 0;
+  .kassieren {
+    font-size: 1.45rem;
+    font-weight: 600;
+    margin: 0.8rem 0 0.4rem;
   }
 </style>

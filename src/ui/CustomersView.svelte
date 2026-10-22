@@ -3,6 +3,7 @@
   import { addCustomer, checkIn, lastVisits, renameCustomer } from '../lib/db';
   import { formatEuro } from '../lib/money';
   import CardImage from './CardImage.svelte';
+  import { initials } from './icons';
   import { formatDate } from './format';
 
   let search = $state('');
@@ -57,8 +58,9 @@
       {#each customers as c (c.id)}
         <li>
           <button class="item" class:selected={c.id === app.selectedCustomerId} onclick={() => (app.selectedCustomerId = c.id)}>
+            <span class="avatar">{initials(c.name)}</span>
             <b class="grow">{c.name}</b>
-            <span class="muted">⭐ {c.points}</span>
+            <span class="gold">★ {c.points}</span>
           </button>
         </li>
       {:else}
@@ -81,14 +83,14 @@
             /></label
           >
           <label>Telefon (optional) <input type="tel" bind:value={selected.phone} /></label>
-          <p class="points">⭐ <b>{selected.points}</b> Punkte</p>
+          <p class="points"><span class="gold">★</span> <b>{selected.points}</b> Punkte</p>
           <div class="row">
             <label class="grow">Punkte korrigieren (+/−) <input type="number" step="1" bind:value={adjust} /></label>
             <button onclick={applyAdjust} disabled={!adjust}>Übernehmen</button>
           </div>
           <h3>Letzte Besuche</h3>
           {#each lastVisits(app.db, selected.id, 5) as v (v.id)}
-            <div class="row">
+            <div class="row visit">
               <span class="grow">{formatDate(v.closedAt)}</span>
               <span class="num">{formatEuro(v.paidCents)}</span>
               <span class="muted">+{v.pointsEarned} P.</span>
@@ -145,14 +147,23 @@
   .item {
     width: 100%;
     display: flex;
+    align-items: center;
+    gap: 0.7rem;
     text-align: left;
-    background: var(--panel);
+    padding: 0.6rem;
+    border: 1.5px solid var(--card-border);
+    border-radius: var(--radius);
+    box-shadow: var(--shadow);
   }
   .item.selected {
-    border: 2px solid var(--accent);
+    border-color: var(--accent);
+  }
+  .visit {
+    padding: 0.5rem 0;
+    border-bottom: 1px solid var(--line);
   }
   section {
-    padding: 1rem;
+    padding: 1.2rem 1.5rem;
     overflow-y: auto;
   }
   .detail {

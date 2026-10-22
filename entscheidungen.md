@@ -30,3 +30,7 @@
 | E-026 | 22.10.2026 | Jeder offene Deckel lässt sich umbenennen, ohne den Kundennamen zu ändern; ein neuer Kundenname geht auf den offenen Deckel, solange der noch den alten Namen trägt | Stufe 0, Plan 0.3 | Ilker | gilt |
 | E-027 | 22.10.2026 | „+ Gast“ heißt „+ Deckel“ mit Reitern „Kunde mit Karte“ (Suche) und „Gast ohne Karte“ | Plan 0.3 | Ilker | gilt |
 | E-028 | 22.10.2026 | Bei Zusammen zahlen zählt der Umsatz in der Kunden-Rangliste bei dem, der getrunken hat; die Schicht zeigt „bezahlt von …“ | Plan 0.3 (Vorschlag, im Formular vorausgewählt und nicht geändert) | Claude, Ilker „Ja, los“ | gilt |
+| E-029 | 22.10.2026 | Neues Aussehen: Farben aus dem Logo (Schwarz, Gold als einzige Akzentfarbe, Grün nur für Geld), hell oder dunkel automatisch nach der iPad-Einstellung | Stufe 0, Plan 0.4 | Ilker | gilt |
+| E-030 | 22.10.2026 | Getränke-Kacheln mit eigenen Strich-Symbolen je Kategorie statt Fotos, neue Kategorien bekommen ein neutrales Glas; keine Icon-Bibliothek | Stufe 0, Plan 0.4 | Ilker (selbst gezeichnet: Claude) | gilt |
+| E-031 | 22.10.2026 | 0.4 ändert nur Aussehen und Bedienung, keinen Server; Schriften Didot (Schriftzug) und Avenir Next, beide auf dem iPad vorhanden, nichts wird nachgeladen | Stufe 0, Plan 0.4 | Ilker (Schriften: Claude) | gilt |
+| E-032 | 22.10.2026 | Logo (150 × 150) wird auch Home-Bildschirm-Symbol, leicht unscharf in Kauf genommen | Plan 0.4 | Ilker | gilt |
