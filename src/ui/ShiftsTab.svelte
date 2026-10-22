@@ -1,6 +1,6 @@
 <script lang="ts">
   import { app } from '../state.svelte';
-  import type { Shift } from '../lib/db';
+  import { deleteShift, shiftDeleteBlocker, type Shift } from '../lib/db';
   import { formatEuro } from '../lib/money';
   import { formatDay, formatTime } from './format';
 
@@ -16,6 +16,14 @@
   function show(shift: Shift) {
     shown = shift;
     dialog.showModal();
+  }
+
+  function remove() {
+    const blocker = shiftDeleteBlocker(app.db, shown!.id);
+    if (blocker) return alert(blocker);
+    if (!confirm('Schicht mit allen Deckeln löschen? Die gesammelten Punkte werden zurückgebucht.')) return;
+    deleteShift(app.db, shown!.id);
+    dialog.close();
   }
 </script>
 
@@ -77,6 +85,7 @@
       {/each}
     </div>
     <button class="primary full" onclick={() => dialog.close()}>Schließen</button>
+    <button class="danger full" onclick={remove}>Schicht löschen</button>
   {/if}
 </dialog>
 
