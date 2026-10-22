@@ -3,13 +3,12 @@
 Die eine Liste offener Punkte. Erledigtes fliegt raus (die Geschichte steht in git).
 
 ## 1. Für Ilker
-- Am Ende auf dem iPad in der Bar testen: Kamera-Scan, Home-Bildschirm, Offline, Sichern in iCloud Drive.
+- GitHub Pages einschalten: Repo → Settings → Pages → Source „GitHub Actions“. Danach läuft der Workflow `pages.yml` bei jedem Merge auf `main`.
+- Auf dem iPad in der Bar testen: Seite in Safari öffnen → Teilen → „Zum Home-Bildschirm“; dann Kamera-Scan einer gedruckten Karte, Flugmodus (offline), Sichern in iCloud Drive und Wiederherstellen, Karte drucken / als Bild senden.
 
 ## 2. Technik
-- v0.1 bauen laut `docs/plan-0.1.html`: Datenmodell + Speicher, Deckel, Scannen (jsQR), Kunden/Karten (qrcode, drucken), Prämien/Rabatt, Einstellungen, Sichern/Wiederherstellen.
-- PWA: Manifest, Icon, kleiner Service Worker; GitHub-Pages-Deploy-Workflow.
-- `navigator.storage.persist()` beim Start anfragen; Erinnerung, wenn länger nicht gesichert.
-- Graphify über das Projekt laufen lassen, sobald die ersten Funktionen stehen (beim Anlegen übersprungen: nur 5 Mini-Dateien).
+- Graphify über das Projekt laufen lassen (jetzt gibt es genug Code).
 
 ## 3. Ideen
 - Statistiken (Besuche, Umsatz pro Stammgast) – bewusst nicht in 0.1.
+- Kundenname ändern benennt den schon offenen Deckel nicht um (erst beim nächsten Einchecken).

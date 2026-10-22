@@ -63,9 +63,8 @@
   <div class="tiles">
     {#each products.filter((p) => p.category === category) as p (p.id)}
       <button class="tile" onclick={() => addItem(tab, p)}>
-        <span>{p.name}</span>
-        {#if p.size}<span class="muted">{p.size}</span>{/if}
-        <b>{formatEuro(p.priceCents)}</b>
+        <span>{p.name.replaceAll('/', '/​')}</span>
+        <span><span class="muted">{p.size ?? ''}</span> <b>{formatEuro(p.priceCents)}</b></span>
       </button>
     {/each}
   </div>
@@ -172,7 +171,7 @@
   .panel-grid {
     height: 100%;
     display: grid;
-    grid-template-rows: auto auto minmax(0, 1fr) minmax(0, 1fr) auto;
+    grid-template-rows: auto auto fit-content(45%) minmax(0, 1fr) auto;
     gap: 0.7rem;
   }
   h2 {
@@ -200,6 +199,7 @@
     border-color: #7d5520;
     padding: 0.6rem;
     text-align: center;
+    overflow-wrap: anywhere;
   }
   .lines {
     display: grid;

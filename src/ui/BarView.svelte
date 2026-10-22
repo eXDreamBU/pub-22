@@ -108,6 +108,9 @@
     display: grid;
     gap: 0.2rem;
   }
+  .tab .badge {
+    justify-self: start;
+  }
   .tab.selected {
     border: 2px solid var(--accent);
   }
