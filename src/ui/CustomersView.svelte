@@ -1,6 +1,6 @@
 <script lang="ts">
   import { app, now } from '../state.svelte';
-  import { addCustomer, checkIn, lastVisits } from '../lib/db';
+  import { addCustomer, checkIn, lastVisits, renameCustomer } from '../lib/db';
   import { formatEuro } from '../lib/money';
   import CardImage from './CardImage.svelte';
   import { formatDate } from './format';
@@ -71,7 +71,15 @@
     {#if selected}
       <div class="detail">
         <div class="col">
-          <label>Name <input bind:value={selected.name} /></label>
+          <label
+            >Name <input
+              value={selected.name}
+              onchange={(e) => {
+                renameCustomer(app.db, selected!.id, e.currentTarget.value);
+                e.currentTarget.value = selected!.name;
+              }}
+            /></label
+          >
           <label>Telefon (optional) <input type="tel" bind:value={selected.phone} /></label>
           <p class="points">⭐ <b>{selected.points}</b> Punkte</p>
           <div class="row">

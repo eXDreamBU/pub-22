@@ -6,8 +6,17 @@
   import TabPanel from './TabPanel.svelte';
 
   let scanning = $state(false);
-  let guestDialog: HTMLDialogElement;
+  let openDialog: HTMLDialogElement;
+  let withCard = $state(true);
+  let search = $state('');
+  let searchInput = $state<HTMLInputElement>();
   let guestName = $state('');
+
+  let found = $derived(
+    app.db.customers
+      .filter((c) => c.name.toLowerCase().includes(search.trim().toLowerCase()))
+      .sort((a, b) => a.name.localeCompare(b.name, 'de')),
+  );
 
   let selected = $derived(app.db.tabs.find((t) => t.id === app.selectedTabId));
 
@@ -16,11 +25,31 @@
     app.selectedTabId = checkIn(app.db, customerId, now()).id;
   }
 
+  function showOpenDialog() {
+    withCard = true;
+    search = guestName = '';
+    openDialog.showModal();
+    searchInput?.focus();
+  }
+
+  function pickCustomer(customerId: string) {
+    app.selectedTabId = checkIn(app.db, customerId, now()).id;
+    openDialog.close();
+  }
+
+  function asGuest() {
+    guestName = search;
+    withCard = false;
+  }
+
   function addGuest(e: SubmitEvent) {
     e.preventDefault();
     app.selectedTabId = openGuestTab(app.db, guestName, now()).id;
-    guestName = '';
-    guestDialog.close();
+    openDialog.close();
+  }
+
+  function hasTab(customerId: string) {
+    return app.db.tabs.some((t) => t.customerId === customerId);
   }
 
   function points(customerId?: string) {
@@ -32,7 +61,7 @@
   <aside>
     <div class="row">
       <button class="primary grow" onclick={() => (scanning = true)}>📷 Karte scannen</button>
-      <button class="grow" onclick={() => guestDialog.showModal()}>+ Gast</button>
+      <button class="grow" onclick={showOpenDialog}>+ Deckel</button>
     </div>
     <p class="muted">In der Bar ({app.db.tabs.length})</p>
     <ul>
@@ -62,7 +91,7 @@
         <TabPanel tab={selected} />
       {/key}
     {:else}
-      <p class="muted hint">Karte scannen, „+ Gast“ tippen oder links einen Deckel wählen.</p>
+      <p class="muted hint">Karte scannen, „+ Deckel“ tippen oder links einen Deckel wählen.</p>
     {/if}
   </section>
 </div>
@@ -71,16 +100,42 @@
   <Scanner onCard={onCard} onClose={() => (scanning = false)} />
 {/if}
 
-<dialog bind:this={guestDialog}>
-  <form onsubmit={addGuest}>
-    <h2>Gast ohne Karte</h2>
-    <label>Name oder Tisch <input bind:value={guestName} placeholder="z. B. Tisch 3" /></label>
-    <p class="muted">Deckel ohne Punkte.</p>
-    <div class="row">
-      <button type="button" class="grow" onclick={() => guestDialog.close()}>Abbrechen</button>
-      <button type="submit" class="primary grow">Deckel öffnen</button>
-    </div>
-  </form>
+<dialog bind:this={openDialog}>
+  <h2>Deckel öffnen</h2>
+  <div class="row modes">
+    <button class="small grow" class:primary={withCard} onclick={() => (withCard = true)}>Kunde mit Karte</button>
+    <button class="small grow" class:primary={!withCard} onclick={() => (withCard = false)}>Gast ohne Karte</button>
+  </div>
+  {#if withCard}
+    <input placeholder="Kunde suchen" aria-label="Kunde suchen" bind:value={search} bind:this={searchInput} />
+    <ul class="found">
+      {#each found as c (c.id)}
+        <li>
+          <button class="tab" onclick={() => pickCustomer(c.id)}>
+            <span class="row">
+              <b class="grow">{c.name}</b>
+              {#if hasTab(c.id)}<span class="badge">schon in der Bar</span>{:else}<span class="muted">⭐ {c.points} Punkte</span>{/if}
+            </span>
+          </button>
+        </li>
+      {:else}
+        <li class="muted empty">Kein Kunde gefunden.</li>
+      {/each}
+    </ul>
+    {#if search.trim()}
+      <button class="full" onclick={asGuest}>Als Gast ohne Karte öffnen: {search.trim()}</button>
+    {/if}
+    <button class="full" onclick={() => openDialog.close()}>Abbrechen</button>
+  {:else}
+    <form onsubmit={addGuest}>
+      <label>Name oder Tisch <input bind:value={guestName} placeholder="z. B. Tisch 3" /></label>
+      <p class="muted">Deckel ohne Punkte.</p>
+      <div class="row">
+        <button type="button" class="grow" onclick={() => openDialog.close()}>Abbrechen</button>
+        <button type="submit" class="primary grow">Deckel öffnen</button>
+      </div>
+    </form>
+  {/if}
 </dialog>
 
 <style>
@@ -120,6 +175,18 @@
   section {
     min-height: 0;
     padding: 1rem;
+  }
+  .modes {
+    margin-bottom: 0.8rem;
+  }
+  .found {
+    max-height: 40vh;
+    overflow-y: auto;
+    margin: 0.6rem 0;
+  }
+  .full {
+    width: 100%;
+    margin-top: 0.5rem;
   }
   .hint {
     margin-top: 30vh;

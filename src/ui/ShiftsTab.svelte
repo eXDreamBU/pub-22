@@ -62,7 +62,7 @@
       {#each tabs as t (t.id)}
         <div class="row">
           <span class="muted">{formatTime(t.closedAt)}</span>
-          <span class="grow">{t.label}</span>
+          <span class="grow">{t.label}{#if t.paidBy}<span class="muted">{` · bezahlt von ${t.paidBy}`}</span>{/if}</span>
           <span class="num">{formatEuro(t.paidCents)}</span>
         </div>
       {/each}

@@ -10,4 +10,4 @@ Die eine Liste offener Punkte. Erledigtes fliegt raus (die Geschichte steht in g
 - Graphify über das Projekt laufen lassen (jetzt gibt es genug Code).
 
 ## 3. Ideen
-- Kundenname ändern benennt den schon offenen Deckel nicht um (erst beim nächsten Einchecken).
+- (keine)
