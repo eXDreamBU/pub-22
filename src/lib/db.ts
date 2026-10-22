@@ -453,9 +453,19 @@ export function closeShift(db: Db, note: string, now: string): Shift {
   return shift;
 }
 
+/** Why a closed shift cannot be deleted yet, or null: tabs credited in it would move into the running shift. */
+export function shiftDeleteBlocker(db: Db, shiftId: string): string | null {
+  const shift = db.shifts.find((s) => s.id === shiftId);
+  if (!shift) return 'Schicht nicht gefunden';
+  const previousClose = db.shifts.map((s) => s.closedAt).filter((c) => c < shift.closedAt).sort().at(-1) ?? '';
+  const credited = db.tabs.filter((t) => t.creditedAt && t.creditedAt > previousClose && t.creditedAt <= shift.closedAt);
+  return credited.length ? 'Erst die angeschriebenen Deckel abrechnen oder löschen' : null;
+}
+
 /** Delete a closed shift with its tabs, e.g. a test run; the points its tabs booked are taken back. */
 export function deleteShift(db: Db, shiftId: string): void {
-  if (!db.shifts.some((s) => s.id === shiftId)) throw new Error('Schicht nicht gefunden');
+  const blocker = shiftDeleteBlocker(db, shiftId);
+  if (blocker) throw new Error(blocker);
   for (const tab of db.history) {
     if (tab.shiftId !== shiftId) continue;
     const customer = customerOf(db, tab);

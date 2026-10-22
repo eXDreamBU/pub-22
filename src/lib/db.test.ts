@@ -9,6 +9,7 @@ import {
   createDb,
   creditTab,
   creditTotal,
+  creditedThisShift,
   deleteShift,
   inBar,
   incrementLine,
@@ -372,6 +373,24 @@ describe('deleteShift', () => {
     expect(db.history.map((t) => t.label)).toEqual(['bleibt']);
     expect(db.customers[0].points).toBe(150);
     expect(() => deleteShift(db, first.id)).toThrow('nicht gefunden');
+  });
+
+  it('waits until the tabs credited in the shift are settled', () => {
+    const { db, id } = dbWithCustomer(0);
+    settle(db, openGuestTab(db, 'Test', '2026-10-20T20:00:00.000Z').id, '2026-10-20T21:00:00.000Z');
+    const owed = checkIn(db, id, '2026-10-20T20:00:00.000Z');
+    addItem(owed, { id: 'x', category: 'Bier', name: 'Pils', priceCents: 400 });
+    const test = closeShift(db, '', '2026-10-21T01:00:00.000Z');
+    const tonight = openGuestTab(db, 'heute', '2026-10-23T20:00:00.000Z');
+
+    expect(() => deleteShift(db, test.id)).toThrow('Erst die angeschriebenen Deckel abrechnen oder löschen');
+    expect(db.shifts).toEqual([test]);
+
+    settle(db, owed.id, '2026-10-23T20:30:00.000Z');
+    deleteShift(db, test.id);
+    expect(db.shifts).toEqual([]);
+    expect(creditedThisShift(db)).toEqual([]);
+    expect(db.tabs).toEqual([tonight]);
   });
 });
 
