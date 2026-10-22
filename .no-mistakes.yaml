@@ -1,3 +1,4 @@
 commands:
+  prepare: npm ci
   test: npm test
   lint: npm run check
