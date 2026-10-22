@@ -1,0 +1,198 @@
+<!doctype html>
+<html lang="de" data-theme="luxury" data-lavish-annotate="on">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>Pub 22 – Plan</title>
+<link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/daisyui@5.5.19/daisyui.css">
+<link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/daisyui@5.5.19/themes.css">
+<script src="https://cdn.jsdelivr.net/npm/@tailwindcss/browser@4.2.4/dist/index.global.js"></script>
+<style>
+  *, *::before, *::after { box-sizing: border-box; }
+  .grid > *, .flex > * { min-width: 0; }
+  p, li, td, th, h1, h2, h3 { overflow-wrap: anywhere; }
+  svg { max-width: 100%; height: auto; }
+  .ipad { border: 10px solid #222; border-radius: 22px; background: #15120f; aspect-ratio: 4/3; }
+</style>
+</head>
+<script type="application/json" data-lavish-revisions>
+[{ "id": "r1", "label": "Runde 1", "timestamp": "2026-10-22T12:00:00Z", "summary": "Getränkekarte-Abschnitt ergänzt, Erklärung zum öffentlichen Repo" }]
+</script>
+<body class="bg-base-100 text-base-content">
+<main class="max-w-5xl mx-auto px-4 py-10 space-y-12">
+
+<header class="space-y-3">
+  <p class="text-sm opacity-60">Plan · Version 0.1 · 22.10.2026</p>
+  <h1 class="text-4xl font-bold">Pub 22 – Kundenkarten-App fürs iPad</h1>
+  <p class="text-lg opacity-80 max-w-3xl">Stammgäste bekommen eine Karte mit QR-Code. Scannen = eingecheckt. Getränke landen auf ihrem Deckel, beim Abrechnen gibt es automatisch Punkte, die man gegen Prämien oder Rabatt eintauscht. Gäste ohne Karte bekommen einen normalen Deckel. Vorbild: das Mankido-Video, nur mit Deckel dazu.</p>
+</header>
+
+<section class="space-y-4">
+  <h2 class="text-2xl font-bold">So läuft ein Abend</h2>
+  <svg viewBox="0 0 900 170" class="w-full" role="img" aria-label="Ablauf: Karte scannen, eingecheckt, Getränke buchen, abrechnen, Punkte">
+    <defs><marker id="a" markerWidth="10" markerHeight="10" refX="8" refY="5" orient="auto"><path d="M0,0 L10,5 L0,10 z" fill="currentColor"/></marker></defs>
+    <g font-family="sans-serif" font-size="15" fill="currentColor" text-anchor="middle">
+      <g><rect x="5" y="30" width="150" height="70" rx="12" fill="none" stroke="currentColor"/><text x="80" y="62">QR-Karte</text><text x="80" y="82" font-size="12" opacity=".7">scannen</text></g>
+      <g><rect x="190" y="30" width="150" height="70" rx="12" fill="none" stroke="currentColor"/><text x="265" y="62">Eingecheckt</text><text x="265" y="82" font-size="12" opacity=".7">steht in der Liste</text></g>
+      <g><rect x="375" y="30" width="150" height="70" rx="12" fill="none" stroke="currentColor"/><text x="450" y="62">Getränke</text><text x="450" y="82" font-size="12" opacity=".7">antippen = gebucht</text></g>
+      <g><rect x="560" y="30" width="150" height="70" rx="12" fill="none" stroke="currentColor"/><text x="635" y="62">Abrechnen</text><text x="635" y="82" font-size="12" opacity=".7">Summe, evtl. Bonus</text></g>
+      <g><rect x="745" y="30" width="150" height="70" rx="12" fill="none" stroke="currentColor"/><text x="820" y="62">Punkte</text><text x="820" y="82" font-size="12" opacity=".7">gutgeschrieben</text></g>
+      <g stroke="currentColor" marker-end="url(#a)"><line x1="155" y1="65" x2="186" y2="65"/><line x1="340" y1="65" x2="371" y2="65"/><line x1="525" y1="65" x2="556" y2="65"/><line x1="710" y1="65" x2="741" y2="65"/></g>
+      <text x="450" y="140" font-size="13" opacity=".7">Gast ohne Karte: „+ Gast“ tippen, Name/Tisch eingeben, gleicher Ablauf ohne Punkte</text>
+    </g>
+  </svg>
+</section>
+
+<section class="space-y-4">
+  <h2 class="text-2xl font-bold">Hauptbildschirm (Skizze, iPad quer)</h2>
+  <div class="ipad p-4 text-sm flex gap-4 text-stone-200">
+    <div class="w-1/3 flex flex-col gap-2">
+      <div class="flex gap-2"><button class="btn btn-primary flex-1">📷 Karte scannen</button><button class="btn btn-outline flex-1">+ Gast</button></div>
+      <p class="opacity-60 mt-2">In der Bar (4)</p>
+      <div class="bg-stone-800 rounded-lg p-3 border-2 border-amber-500"><b>Murat K.</b><span class="float-right">18,50 €</span><br><span class="opacity-60">⭐ 142 Punkte</span></div>
+      <div class="bg-stone-800 rounded-lg p-3"><b>Sabine</b><span class="float-right">7,00 €</span><br><span class="opacity-60">⭐ 37 Punkte</span></div>
+      <div class="bg-stone-800 rounded-lg p-3"><b>Tisch 3</b> <span class="badge badge-sm">ohne Karte</span><span class="float-right">24,00 €</span></div>
+      <div class="bg-stone-800 rounded-lg p-3"><b>Jonas</b><span class="float-right">3,50 €</span><br><span class="opacity-60">⭐ 210 Punkte</span></div>
+      <div class="mt-auto flex gap-2 opacity-70"><span>👥 Kunden</span><span>⚙️ Einstellungen</span></div>
+    </div>
+    <div class="w-2/3 flex flex-col gap-3">
+      <div class="flex justify-between items-baseline"><b class="text-lg">Murat K.</b><span class="opacity-60">seit 19:42</span></div>
+      <div class="grid grid-cols-4 gap-2">
+        <div class="bg-amber-700/60 rounded-lg p-3 text-center">Pils 0,4<br><b>3,80 €</b></div>
+        <div class="bg-amber-700/60 rounded-lg p-3 text-center">Weizen<br><b>4,20 €</b></div>
+        <div class="bg-amber-700/60 rounded-lg p-3 text-center">Cola<br><b>2,90 €</b></div>
+        <div class="bg-amber-700/60 rounded-lg p-3 text-center">Raki 2cl<br><b>3,00 €</b></div>
+      </div>
+      <div class="bg-stone-800 rounded-lg p-3 flex-1">
+        2× Pils 0,4 <span class="float-right">7,60 €</span><br>1× Weizen <span class="float-right">4,20 €</span><br>1× Raki 2cl <span class="float-right">3,00 €</span><br>1× Cola <span class="float-right">2,90 €</span>
+        <hr class="my-2 opacity-20"><b>Summe</b><b class="float-right">18,50 €</b><br><span class="opacity-60">+18 Punkte beim Abrechnen</span>
+      </div>
+      <div class="flex gap-2"><button class="btn btn-outline flex-1">🎁 Bonus einlösen</button><button class="btn btn-success flex-1">Abrechnen</button></div>
+    </div>
+  </div>
+  <p class="text-sm opacity-60">Große Knöpfe, dunkel, für die Theke. Rechts oben ist die Getränkekarte als Kacheln mit Preis, nach Kategorie sortiert: antippen = auf den Deckel. Farben und Feinschliff kommen beim Bauen.</p>
+</section>
+
+<section class="space-y-4" data-lavish-revision="r1">
+  <h2 class="text-2xl font-bold">Getränkekarte / Preisliste</h2>
+  <p class="opacity-80 max-w-3xl">Die Preisliste erscheint an zwei Stellen: <b>beim Buchen</b> als Kacheln (oben, mit Reitern für die Kategorien) und <b>zum Pflegen</b> unter ⚙️ Einstellungen → Getränkekarte. Dort legt dein Vater Getränke an, ändert Preise, sortiert sie in Kategorien und blendet aus, was es gerade nicht gibt. Eine Preisänderung gilt nur für neue Buchungen, offene Deckel behalten ihren Preis.</p>
+  <div class="grid md:grid-cols-2 gap-4">
+    <div class="ipad p-4 text-sm flex flex-col gap-3 text-stone-200" style="aspect-ratio:auto">
+      <p class="opacity-60">Beim Buchen (rechte Seite des Hauptbildschirms)</p>
+      <div class="flex gap-2 flex-wrap"><span class="badge badge-warning">Bier</span><span class="badge badge-outline">Softdrinks</span><span class="badge badge-outline">Schnaps</span><span class="badge badge-outline">Cocktails</span><span class="badge badge-outline">Heißes</span></div>
+      <div class="grid grid-cols-3 gap-2">
+        <div class="bg-amber-700/60 rounded-lg p-3 text-center">Pils 0,3<br><b>3,20 €</b></div>
+        <div class="bg-amber-700/60 rounded-lg p-3 text-center">Pils 0,4<br><b>3,80 €</b></div>
+        <div class="bg-amber-700/60 rounded-lg p-3 text-center">Pils 0,5<br><b>4,50 €</b></div>
+        <div class="bg-amber-700/60 rounded-lg p-3 text-center">Weizen<br><b>4,20 €</b></div>
+        <div class="bg-amber-700/60 rounded-lg p-3 text-center">Alkoholfrei<br><b>3,50 €</b></div>
+        <div class="bg-amber-700/60 rounded-lg p-3 text-center">Radler<br><b>3,60 €</b></div>
+      </div>
+    </div>
+    <div class="ipad p-4 text-sm flex flex-col gap-2 text-stone-200" style="aspect-ratio:auto">
+      <div class="flex justify-between"><p class="opacity-60">⚙️ Einstellungen → Getränkekarte</p><button class="btn btn-xs btn-primary">+ Getränk</button></div>
+      <table class="table table-sm">
+        <thead><tr class="text-stone-400"><th>Getränk</th><th>Kategorie</th><th class="text-right">Preis</th><th></th></tr></thead>
+        <tbody>
+          <tr><td>Pils 0,4</td><td>Bier</td><td class="text-right">3,80 €</td><td>✏️</td></tr>
+          <tr><td>Weizen</td><td>Bier</td><td class="text-right">4,20 €</td><td>✏️</td></tr>
+          <tr><td>Cola 0,33</td><td>Softdrinks</td><td class="text-right">2,90 €</td><td>✏️</td></tr>
+          <tr><td>Raki 2cl</td><td>Schnaps</td><td class="text-right">3,00 €</td><td>✏️</td></tr>
+          <tr class="opacity-40"><td>Glühwein <span class="badge badge-xs">ausgeblendet</span></td><td>Heißes</td><td class="text-right">3,50 €</td><td>✏️</td></tr>
+        </tbody>
+      </table>
+    </div>
+  </div>
+</section>
+
+<section class="space-y-4">
+  <h2 class="text-2xl font-bold">Was Version 0.1 kann</h2>
+  <ul class="list-disc pl-6 space-y-1">
+    <li><b>Kunden anlegen</b> (Name, optional Telefon) → die App erzeugt die Karte mit QR-Code. Drucken oder als Bild aufs Handy des Kunden.</li>
+    <li><b>Einchecken per Scan</b> mit der iPad-Kamera. Der Kunde steht dann in „In der Bar“.</li>
+    <li><b>Deckel führen:</b> Getränk antippen = gebucht, falsch getippt = wieder entfernen.</li>
+    <li><b>Gäste ohne Karte:</b> eigener Deckel mit Name oder Tischnummer, ohne Punkte.</li>
+    <li><b>Abrechnen:</b> Summe anzeigen, Punkte gutschreiben (Start: 1 € = 1 Punkt, in den Einstellungen änderbar).</li>
+    <li><b>Punkte einlösen:</b> feste Prämien (z. B. 100 P. = Freigetränk) <i>oder</i> Rabatt in € (z. B. 100 P. = 5 €). Beides legt dein Vater selbst fest.</li>
+    <li><b>Kundenliste:</b> Punktestand, letzte Besuche, Karte neu drucken, Punkte von Hand korrigieren.</li>
+    <li><b>Sichern und Wiederherstellen:</b> ein Knopf speichert alles als Datei (z. B. in iCloud Drive), ein Knopf spielt sie zurück.</li>
+  </ul>
+</section>
+
+<section class="space-y-4">
+  <h2 class="text-2xl font-bold">Technik – und warum</h2>
+  <div class="grid md:grid-cols-2 gap-4">
+    <div class="card card-border bg-base-200"><div class="card-body">
+      <h3 class="card-title">Web-App auf dem Home-Bildschirm</h3>
+      <p>Echte iPad-Apps (App Store, TestFlight) lassen sich nur auf einem Mac mit Xcode bauen. Wir haben Windows. Darum: eine Web-App, die man in Safari öffnet und mit „Zum Home-Bildschirm“ wie eine App ablegt. Danach läuft sie im Vollbild <b>ohne Internet</b>. <span class="opacity-70">(Hast du doch einen Mac? Dann rechne ich neu.)</span></p>
+    </div></div>
+    <div class="card card-border bg-base-200"><div class="card-body">
+      <h3 class="card-title">Daten nur auf dem iPad</h3>
+      <p>Alles liegt im Speicher der App auf dem iPad. Apple löscht die Daten von Home-Bildschirm-Apps laut WebKit nicht, das Risiko ist ein kaputtes oder verlorenes iPad. Deshalb ist <b>Sichern</b> von Anfang an dabei, und die App erinnert daran, wenn länger nicht gesichert wurde.</p>
+    </div></div>
+  </div>
+  <div class="overflow-x-auto"><table class="table">
+    <tbody>
+      <tr><th>Bauen</th><td>Vite + TypeScript + Svelte. Kleine, schnelle Seite, einfach zu lesen.</td></tr>
+      <tr><th>QR scannen</th><td>iPad-Kamera + Bibliothek <code>jsQR</code>. Safari kann QR-Codes nicht selbst erkennen (BarcodeDetector ist dort weiterhin aus).</td></tr>
+      <tr><th>QR erzeugen</th><td>Bibliothek <code>qrcode</code>. Im Code steht nur eine zufällige Kunden-ID, nichts Persönliches.</td></tr>
+      <tr><th>Offline</th><td>Kleiner Service Worker, der die App einmal zwischenspeichert.</td></tr>
+      <tr><th>Speicher</th><td>localStorage (ein JSON-Paket). Reicht für Hunderte Kunden und Tausende Deckel. Bei über ca. 5 MB auf IndexedDB umstellen.</td></tr>
+      <tr><th>Test</th><td>Vitest für die Rechnerei (Summe, Punkte, Rabatt, Rundung). Kamera und Speicher prüfen wir am Ende <b>auf dem iPad in der Bar</b>, weil der PC das nicht nachstellen kann.</td></tr>
+      <tr><th>Geld</th><td>Beträge intern in Cent, damit nichts falsch gerundet wird.</td></tr>
+    </tbody>
+  </table></div>
+</section>
+
+<section class="space-y-3">
+  <h2 class="text-2xl font-bold">Bewusst nicht in 0.1</h2>
+  <ul class="list-disc pl-6 space-y-1">
+    <li><b>Keine Kasse.</b> „Abrechnen“ zeigt Summe und Punkte. Bezahlt und gebucht wird weiter über die normale Kasse mit TSE. Die App ersetzt sie nicht.</li>
+    <li>Keine Statistiken (die +50 % im Video sind Werbung). Kommt später, wenn gewünscht.</li>
+    <li>Keine Cloud, kein zweites Gerät, keine Anmeldeseite für Kunden, kein Login.</li>
+  </ul>
+</section>
+
+<section class="space-y-6" data-lavish-annotate="off">
+  <h2 class="text-2xl font-bold">Deine Entscheidungen</h2>
+
+  <form data-lavish-question="hosting" class="card card-border bg-base-200" onsubmit="event.preventDefault(); const v = new FormData(event.currentTarget).get('hosting'); if (v) window.lavish.queuePrompt('Hosting: ' + v, { tag: 'choice', text: 'Hosting: ' + v, element: event.currentTarget, data: { question: 'hosting', answer: v } });">
+    <div class="card-body space-y-2">
+      <h3 class="card-title">Woher lädt das iPad die App einmalig?</h3>
+      <p class="text-sm opacity-70">Das iPad braucht einmal eine Internetadresse zum Installieren und für Updates. Die Daten bleiben trotzdem nur auf dem iPad.</p>
+      <div role="note" class="alert alert-soft alert-info text-sm" data-lavish-revision="r1"><span><b>Warum öffentlich?</b> Das Repo muss nicht öffentlich sein. Nur GitHub Pages ist im kostenlosen GitHub-Konto auf öffentliche Repos beschränkt. Für Pages mit privatem Repo braucht man GitHub Pro (ca. 4 $/Monat). Öffentlich heißt hier nur: Jeder könnte den Programmcode lesen. Kundendaten, Punkte und Umsätze liegen nie im Repo, nur auf dem iPad.</span></div>
+      <label class="flex gap-2"><input type="radio" class="radio" name="hosting" value="GitHub Pages, öffentliches Repo (kostenlos)" checked> <span><b>GitHub Pages, öffentliches Repo</b> (empfohlen) – kostenlos, ohne neues Konto. Der Programmcode ist öffentlich sichtbar, Kundendaten nie.</span></label>
+      <label class="flex gap-2"><input type="radio" class="radio" name="hosting" value="Privates Repo + Cloudflare Pages (kostenlos, neues Konto)"> <span><b>Privates Repo + Cloudflare Pages</b> – Code bleibt privat, kostenlos, braucht aber ein Cloudflare-Konto (legst du selbst an).</span></label>
+      <label class="flex gap-2"><input type="radio" class="radio" name="hosting" value="Privates Repo + GitHub Pro (ca. 4 $/Monat)"> <span><b>Privates Repo + GitHub Pro</b> – alles bei GitHub, kostet ca. 4 $ im Monat.</span></label>
+      <button class="btn btn-sm btn-primary w-fit" type="submit">Antwort vormerken</button>
+    </div>
+  </form>
+
+  <form data-lavish-question="getraenke" class="card card-border bg-base-200" onsubmit="event.preventDefault(); const v = new FormData(event.currentTarget).get('getraenke'); if (v) window.lavish.queuePrompt('Getränkekarte: ' + v, { tag: 'choice', text: 'Getränkekarte: ' + v, element: event.currentTarget, data: { question: 'getraenke', answer: v } });">
+    <div class="card-body space-y-2">
+      <h3 class="card-title">Getränkekarte</h3>
+      <label class="flex gap-2"><input type="radio" class="radio" name="getraenke" value="Vater tippt sie in der App ein" checked> <span>Dein Vater tippt sie in den Einstellungen ein</span></label>
+      <label class="flex gap-2"><input type="radio" class="radio" name="getraenke" value="Ich schicke ein Foto/Liste, du trägst sie vorab ein"> <span>Ich schicke dir ein Foto oder eine Liste, du trägst sie vorab ein</span></label>
+      <button class="btn btn-sm btn-primary w-fit" type="submit">Antwort vormerken</button>
+    </div>
+  </form>
+
+  <form data-lavish-question="freigabe" class="card card-border bg-base-200" onsubmit="event.preventDefault(); const f = new FormData(event.currentTarget); const v = f.get('ok'); const n = (f.get('notiz') || '').trim(); if (v) window.lavish.queuePrompt('Plan: ' + v + (n ? ' – Anmerkung: ' + n : ''), { tag: 'choice', text: 'Plan: ' + v, element: event.currentTarget, data: { question: 'freigabe', answer: v, notiz: n } });">
+    <div class="card-body space-y-2">
+      <h3 class="card-title">Passt der Plan?</h3>
+      <label class="flex gap-2"><input type="radio" class="radio" name="ok" value="Ja, los"> <span>Ja, los</span></label>
+      <label class="flex gap-2"><input type="radio" class="radio" name="ok" value="Ja, mit Änderungen (siehe Anmerkung)"> <span>Ja, mit Änderungen</span></label>
+      <label class="flex gap-2"><input type="radio" class="radio" name="ok" value="Nein, nochmal überarbeiten"> <span>Nein, nochmal überarbeiten</span></label>
+      <textarea name="notiz" class="textarea w-full" placeholder="Anmerkungen (optional)"></textarea>
+      <button class="btn btn-sm btn-primary w-fit" type="submit">Antwort vormerken</button>
+    </div>
+  </form>
+  <p class="text-sm opacity-70">Danach oben auf <b>„Send to Agent“</b> klicken.</p>
+</section>
+
+<footer class="text-xs opacity-50 space-y-1 pt-6">
+  <p>Quellen: <a class="link" href="https://caniuse.com/mdn-api_barcodedetector">caniuse BarcodeDetector</a> · <a class="link" href="https://bugs.webkit.org/show_bug.cgi?id=211775">WebKit-Bug 211775 (Home-Bildschirm-Apps behalten ihre Daten)</a> · <a class="link" href="https://webkit.org/?p=14403">WebKit Storage Policy</a></p>
+</footer>
+</main>
+</body>
+</html>

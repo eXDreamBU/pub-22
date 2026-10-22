@@ -1,0 +1,29 @@
+{
+  "permissions": {
+    "allow": [
+      "Bash(node .claude/tools/papierkorb.js *)",
+      "PowerShell(node .claude/tools/papierkorb.js *)"
+    ]
+  },
+  "autoMode": {
+    "allow": [
+      "$defaults",
+      "Deleting inside the project with node .claude/tools/papierkorb.js <paths> is allowed: it only moves the files to .papierkorb/<time>/ (reversible, the owner empties it), and the script refuses paths outside the project, .git and .claude.",
+      "git rm (also -r, -q, --cached) on files tracked by git inside this project is allowed: the content stays recoverable from git history."
+    ]
+  },
+  "hooks": {
+    "SessionStart": [
+      { "matcher": "", "hooks": [{ "type": "command", "command": "node \"$CLAUDE_PROJECT_DIR/.claude/hooks/start.js\"", "timeout": 10 }] }
+    ],
+    "PreCompact": [
+      { "matcher": "", "hooks": [{ "type": "command", "command": "node \"$CLAUDE_PROJECT_DIR/.claude/hooks/start.js\"", "timeout": 10 }] }
+    ],
+    "PostCompact": [
+      { "matcher": "", "hooks": [{ "type": "command", "command": "node \"$CLAUDE_PROJECT_DIR/.claude/hooks/start.js\"", "timeout": 10 }] }
+    ],
+    "PreToolUse": [
+      { "matcher": "Bash|PowerShell", "hooks": [{ "type": "command", "command": "node \"$CLAUDE_PROJECT_DIR/.claude/hooks/push-guard.js\"", "timeout": 10 }] }
+    ]
+  }
+}
