@@ -34,3 +34,7 @@
 | E-030 | 22.10.2026 | Getränke-Kacheln mit eigenen Strich-Symbolen je Kategorie statt Fotos, neue Kategorien bekommen ein neutrales Glas; keine Icon-Bibliothek | Stufe 0, Plan 0.4 | Ilker (selbst gezeichnet: Claude) | gilt |
 | E-031 | 22.10.2026 | 0.4 ändert nur Aussehen und Bedienung, keinen Server; Schriften Didot (Schriftzug) und Avenir Next, beide auf dem iPad vorhanden, nichts wird nachgeladen | Stufe 0, Plan 0.4 | Ilker (Schriften: Claude) | gilt |
 | E-032 | 22.10.2026 | Logo (150 × 150) wird auch Home-Bildschirm-Symbol, leicht unscharf in Kauf genommen | Plan 0.4 | Ilker | gilt |
+| E-038 | 23.10.2026 | „Aufs Haus“: Nachlass vom Chef im Abrechnen-Dialog als €-Betrag oder „Alles aufs Haus“, höchstens der Rest nach dem Punkte-Rabatt; kein Prozent, kein „Gast zahlt“-Feld, nicht bei Teil zahlen | Stufe 0, Plan Aufs Haus | Ilker (Obergrenze: Claude) | gilt |
+| E-039 | 23.10.2026 | Punkte gibt es nur auf das, was der Gast nach dem Nachlass bezahlt | Stufe 0, Plan Aufs Haus | Ilker | gilt |
+| E-040 | 23.10.2026 | „Aufs Haus“ steht in Schichtabschluss, Umsatz und CSV in einer eigenen Zeile/Spalte, getrennt vom Punkte-Rabatt; „Gesamt“ bleibt das Geld in der Kasse | Stufe 0, Plan Aufs Haus | Ilker | gilt |
+| E-041 | 23.10.2026 | Freiwilliger Grund zum Nachlass, steht am Deckel im Verlauf und im CSV; beim Zusammen zahlen trägt zuerst der Deckel des Zahlenden den Nachlass, dann die anderen | Stufe 0, Plan Aufs Haus | Ilker (Verteilung: Claude) | gilt |

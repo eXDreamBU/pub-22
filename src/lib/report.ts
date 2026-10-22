@@ -55,6 +55,7 @@ export interface PeriodTotal {
   label: string;
   paidCents: number;
   discountCents: number;
+  houseCents: number;
   tabCount: number;
 }
 
@@ -62,9 +63,10 @@ export function periodTotals(shifts: Shift[], by: 'week' | 'month'): PeriodTotal
   const groups = new Map<string, PeriodTotal>();
   for (const shift of shifts) {
     const { key, label } = (by === 'week' ? weekOf : monthOf)(shiftDay(shift));
-    const g = groups.get(key) ?? { key, label, paidCents: 0, discountCents: 0, tabCount: 0 };
+    const g = groups.get(key) ?? { key, label, paidCents: 0, discountCents: 0, houseCents: 0, tabCount: 0 };
     g.paidCents += shift.paidCents;
     g.discountCents += shift.discountCents;
+    g.houseCents += shift.houseCents ?? 0;
     g.tabCount += shift.tabCount;
     groups.set(key, g);
   }
@@ -176,7 +178,7 @@ const csv = (rows: (string | number)[][]) => '﻿' + rows.map((r) => r.map(csvFi
 export function shiftsCsv(shifts: Shift[]): string {
   const categories = [...new Set(shifts.flatMap((s) => s.byCategory.map((c) => c.category)))];
   const rows: (string | number)[][] = [
-    ['Tag', 'Beginn', 'Ende', 'Deckel', 'Getränke', 'Rabatt', 'Kassiert', ...categories, 'Freigetränke', 'Notiz'],
+    ['Tag', 'Beginn', 'Ende', 'Deckel', 'Getränke', 'Rabatt', 'Aufs Haus', 'Kassiert', ...categories, 'Freigetränke', 'Notiz'],
   ];
   for (const s of shifts) {
     rows.push([
@@ -186,6 +188,7 @@ export function shiftsCsv(shifts: Shift[]): string {
       s.tabCount,
       csvEuro(s.totalCents),
       csvEuro(s.discountCents),
+      csvEuro(s.houseCents ?? 0),
       csvEuro(s.paidCents),
       ...categories.map((c) => csvEuro(s.byCategory.find((x) => x.category === c)?.cents ?? 0)),
       s.rewards.map((r) => `${r.count}× ${r.name}`).join(', '),
@@ -197,7 +200,7 @@ export function shiftsCsv(shifts: Shift[]): string {
 
 export function tabsCsv(tabs: ClosedTab[]): string {
   const rows: (string | number)[][] = [
-    ['Datum', 'Geöffnet', 'Bezahlt', 'Name', 'Kunde', 'Summe', 'Rabatt', 'Bezahlt €', 'Punkte +', 'Punkte −'],
+    ['Datum', 'Geöffnet', 'Bezahlt', 'Name', 'Kunde', 'Summe', 'Rabatt', 'Aufs Haus', 'Bezahlt €', 'Punkte +', 'Punkte −', 'Grund'],
   ];
   for (const t of tabs) {
     rows.push([
@@ -208,9 +211,11 @@ export function tabsCsv(tabs: ClosedTab[]): string {
       t.customerId ? 'ja' : 'nein',
       csvEuro(t.totalCents),
       csvEuro(t.discountCents),
+      csvEuro(t.houseCents ?? 0),
       csvEuro(t.paidCents),
       t.pointsEarned,
       t.pointsSpent,
+      t.houseReason ?? '',
     ]);
   }
   return csv(rows);

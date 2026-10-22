@@ -51,6 +51,9 @@
         {#if summary.discountCents}
           <tr><td>Rabatt (Punkte)</td><td class="num">−{formatEuro(summary.discountCents)}</td></tr>
         {/if}
+        {#if summary.houseCents}
+          <tr class="gold"><td>Aufs Haus</td><td class="num">−{formatEuro(summary.houseCents)}</td></tr>
+        {/if}
         <tr class="total"><th>Gesamt</th><th class="num">{formatEuro(summary.paidCents)}</th></tr>
       </tbody>
     </table>

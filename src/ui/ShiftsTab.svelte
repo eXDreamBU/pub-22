@@ -21,7 +21,7 @@
 
 <table class="report">
   <thead>
-    <tr><th>Tag</th><th>Zeit</th><th class="num">Deckel</th><th class="num">Rabatt</th><th class="num">Umsatz</th></tr>
+    <tr><th>Tag</th><th>Zeit</th><th class="num">Deckel</th><th class="num">Rabatt</th><th class="num">Aufs Haus</th><th class="num">Umsatz</th></tr>
   </thead>
   <tbody>
     {#each shifts as s (s.id)}
@@ -30,10 +30,11 @@
         <td>{formatTime(s.startedAt)}–{formatTime(s.closedAt)}</td>
         <td class="num">{s.tabCount}</td>
         <td class="num">{s.discountCents ? `−${formatEuro(s.discountCents)}` : '–'}</td>
+        <td class="num">{s.houseCents ? `−${formatEuro(s.houseCents)}` : '–'}</td>
         <td class="num"><b>{formatEuro(s.paidCents)}</b></td>
       </tr>
     {:else}
-      <tr><td colspan="5" class="muted">Noch keine abgeschlossene Schicht.</td></tr>
+      <tr><td colspan="6" class="muted">Noch keine abgeschlossene Schicht.</td></tr>
     {/each}
   </tbody>
 </table>
@@ -50,6 +51,9 @@
         {#if shown.discountCents}
           <tr><td>Rabatt (Punkte)</td><td class="num">−{formatEuro(shown.discountCents)}</td></tr>
         {/if}
+        {#if shown.houseCents}
+          <tr class="gold"><td>Aufs Haus</td><td class="num">−{formatEuro(shown.houseCents)}</td></tr>
+        {/if}
         <tr><th>Gesamt</th><th class="num">{formatEuro(shown.paidCents)}</th></tr>
       </tbody>
     </table>
@@ -62,7 +66,11 @@
       {#each tabs as t (t.id)}
         <div class="row">
           <span class="muted">{formatTime(t.closedAt)}</span>
-          <span class="grow">{t.label}{#if t.paidBy}<span class="muted">{` · bezahlt von ${t.paidBy}`}</span>{/if}</span>
+          <span class="grow"
+            >{t.label}{#if t.paidBy}<span class="muted">{` · bezahlt von ${t.paidBy}`}</span>{/if}{#if t.houseCents}<span class="gold"
+                >{` · aufs Haus ${formatEuro(t.houseCents)}${t.houseReason ? ` · ${t.houseReason}` : ''}`}</span
+              >{/if}</span
+          >
           <span class="num">{formatEuro(t.paidCents)}</span>
         </div>
       {/each}

@@ -109,6 +109,13 @@ describe('periodTotals', () => {
       ['September 2026', 700, 100],
     ]);
   });
+  it('sums the house discount, old shifts without it count 0', () => {
+    const withHouse = [fakeShift(at(2026, 10, 19, 18), 1000, { houseCents: 400 }), ...shifts];
+    expect(periodTotals(withHouse, 'month').map((p) => [p.label, p.houseCents])).toEqual([
+      ['Oktober 2026', 400],
+      ['September 2026', 0],
+    ]);
+  });
   it('puts the year boundary in the right ISO week', () => {
     expect(periodTotals([fakeShift(at(2027, 1, 1), 1)], 'week')[0].label).toBe('KW 53 / 2026');
   });
@@ -232,17 +239,23 @@ describe('CSV', () => {
       fakeShift(at(2026, 10, 19, 18), 5, { byCategory: [{ category: 'Snacks', cents: 105, qty: 1 }] }),
     ];
     expect(shiftsCsv(shifts)).toBe(
-      '﻿Tag;Beginn;Ende;Deckel;Getränke;Rabatt;Kassiert;Bier;Snacks;Freigetränke;Notiz\r\n' +
-        '18.10.2026;17:55;02:40;41;1260,50;10,00;1250,50;1260,50;0,00;4× Frei;"Abweichung; ""5 €"""\r\n' +
-        '19.10.2026;18:00;18:00;2;1,05;1,00;0,05;0,00;1,05;;\r\n',
+      '﻿Tag;Beginn;Ende;Deckel;Getränke;Rabatt;Aufs Haus;Kassiert;Bier;Snacks;Freigetränke;Notiz\r\n' +
+        '18.10.2026;17:55;02:40;41;1260,50;10,00;0,00;1250,50;1260,50;0,00;4× Frei;"Abweichung; ""5 €"""\r\n' +
+        '19.10.2026;18:00;18:00;2;1,05;1,00;0,00;0,05;0,00;1,05;;\r\n',
     );
   });
   it('writes tabs', () => {
     const { tabs } = history();
     const lines = tabsCsv(tabs.slice(0, 1)).split('\r\n');
-    expect(lines[0]).toBe('﻿Datum;Geöffnet;Bezahlt;Name;Kunde;Summe;Rabatt;Bezahlt €;Punkte +;Punkte −');
-    expect(lines[1]).toBe('20.10.2026;19:00;23:00;Murat;ja;8,00;0,00;8,00;8;100');
+    expect(lines[0]).toBe('﻿Datum;Geöffnet;Bezahlt;Name;Kunde;Summe;Rabatt;Aufs Haus;Bezahlt €;Punkte +;Punkte −;Grund');
+    expect(lines[1]).toBe('20.10.2026;19:00;23:00;Murat;ja;8,00;0,00;0,00;8,00;8;100;');
     expect(lines[2]).toBe('');
+  });
+  it('writes the house discount and its reason', () => {
+    const tab = { ...history().tabs[0], houseCents: 300, paidCents: 500, houseReason: 'Geburtstag' };
+    expect(tabsCsv([tab]).split('\r\n')[1]).toBe('20.10.2026;19:00;23:00;Murat;ja;8,00;0,00;3,00;5,00;8;100;Geburtstag');
+    const shift = fakeShift(at(2026, 10, 19, 18), 5, { houseCents: 250 });
+    expect(shiftsCsv([shift]).split('\r\n')[1]).toBe('19.10.2026;18:00;18:00;2;1,05;1,00;2,50;0,05;;');
   });
   it('defuses typed text that Excel would run as a formula', () => {
     const tab = { ...history().tabs[0], label: '=HYPERLINK("x")' };

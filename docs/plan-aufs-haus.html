@@ -1,0 +1,203 @@
+<!doctype html>
+<html lang="de" data-theme="luxury" data-lavish-annotate="on">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>Pub 22 – Plan Aufs Haus</title>
+<link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/daisyui@5.5.19/daisyui.css">
+<link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/daisyui@5.5.19/themes.css">
+<script src="https://cdn.jsdelivr.net/npm/@tailwindcss/browser@4.2.4/dist/index.global.js"></script>
+<style>
+  *, *::before, *::after { box-sizing: border-box; }
+  .grid > *, .flex > * { min-width: 0; }
+  p, li, td, th, h1, h2, h3 { overflow-wrap: anywhere; }
+  svg { max-width: 100%; height: auto; }
+  .ipad { border: 10px solid #222; border-radius: 22px; background: #15120f; }
+  .tile { background: #241f1a; border-radius: 10px; padding: .75rem; }
+  .gold { color: #c9a24a; }
+  .money { color: #5fb878; }
+</style>
+</head>
+<script type="application/json" data-lavish-revisions>
+[{ "id": "r1", "label": "Entwurf", "timestamp": "2026-10-23T00:10:00Z", "summary": "Erster Entwurf mit deinen vier Antworten aus dem Chat" }]
+</script>
+<body class="bg-base-100 text-base-content">
+<main class="max-w-5xl mx-auto px-4 py-10 space-y-12">
+
+<header class="space-y-3" data-lavish-revision="r1">
+  <p class="text-sm opacity-60">Plan · Aufs Haus · 23.10.2026 · baut auf 0.4 auf</p>
+  <h1 class="text-4xl font-bold">„Aufs Haus“: Nachlass vom Chef beim Abrechnen</h1>
+  <p class="text-lg opacity-80 max-w-3xl">Manchmal ist der Chef gut gelaunt: Er rundet ab, schenkt die letzte Runde oder sagt „heute zahlt das Haus“. Heute kennt die App nur den Rabatt, den der Gast mit Punkten kauft. Diese Version gibt dem Chef im Abrechnen-Dialog ein eigenes Feld <b>„Aufs Haus“</b>: einen Betrag in € oder den ganzen Deckel, dazu auf Wunsch einen kurzen Grund. Der Nachlass steht im Schichtabschluss und im Umsatz in einer eigenen Zeile.</p>
+  <p class="text-sm opacity-60">Läuft getrennt: die laufende Summe aller offenen Deckel (eigener Branch) und das Anschreiben (Plan 0.5).</p>
+</header>
+
+<section class="space-y-4" data-lavish-revision="r1">
+  <h2 class="text-2xl font-bold">Heute und mit „Aufs Haus“</h2>
+  <div class="grid md:grid-cols-2 gap-4">
+    <div class="card card-border bg-base-200"><div class="card-body">
+      <h3 class="card-title">Heute</h3>
+      <ul class="list-disc pl-5 space-y-1 text-sm">
+        <li>Beim Abrechnen gibt es nur den Punkte-Rabatt; den kann nur ein Kunde mit Karte und genug Punkten nutzen.</li>
+        <li>Will der Chef etwas nachlassen, nimmt er einfach weniger Geld. Die App zählt dann den vollen Betrag in die Schicht, und der Kassenbericht stimmt nicht mehr mit der Kasse.</li>
+        <li>Ein Getränk aufs Haus müsste man vom Deckel löschen; dann fehlt es in der Getränke-Statistik.</li>
+      </ul>
+    </div></div>
+    <div class="card card-border bg-base-200 border-success/40"><div class="card-body">
+      <h3 class="card-title">Mit „Aufs Haus“</h3>
+      <ul class="list-disc pl-5 space-y-1 text-sm">
+        <li>Im Abrechnen-Dialog: Feld <b>„Aufs Haus“</b> für einen €-Betrag und ein Knopf <b>„Alles aufs Haus“</b>.</li>
+        <li>Freiwilliges Feld <b>„Grund“</b> (z. B. Geburtstag, Stammgast).</li>
+        <li>„Kassieren“ zeigt sofort den Betrag, den der Gast wirklich zahlt; nur der zählt als Kasse.</li>
+        <li>Die Getränke bleiben auf dem Deckel, die Statistik stimmt weiter.</li>
+        <li>Punkte gibt es nur auf das, was der Gast selbst zahlt.</li>
+      </ul>
+    </div></div>
+  </div>
+</section>
+
+<section class="space-y-4" data-lavish-revision="r1">
+  <h2 class="text-2xl font-bold">So wird gerechnet</h2>
+  <svg viewBox="0 0 900 200" class="w-full" role="img" aria-label="Summe der Getränke minus Punkte-Rabatt minus Aufs Haus ergibt den Betrag zum Kassieren; nur darauf gibt es Punkte">
+    <defs><marker id="a" markerWidth="10" markerHeight="10" refX="8" refY="5" orient="auto"><path d="M0,0 L10,5 L0,10 z" fill="currentColor"/></marker></defs>
+    <g font-family="sans-serif" font-size="15" fill="currentColor" text-anchor="middle">
+      <g id="r-sum"><title>Wert aller Getränke auf dem Deckel</title><rect x="10" y="60" width="170" height="70" rx="12" fill="none" stroke="currentColor"/><text x="95" y="92">Summe</text><text x="95" y="112" font-size="12" opacity=".7">z. B. 38,50 €</text></g>
+      <g id="r-points"><title>Wie bisher: Rabatt, den der Kunde mit Punkten kauft</title><rect x="235" y="60" width="170" height="70" rx="12" fill="none" stroke="currentColor"/><text x="320" y="92">− Punkte-Rabatt</text><text x="320" y="112" font-size="12" opacity=".7">z. B. 5,00 €</text></g>
+      <g id="r-house"><title>Neu: was der Chef nachlässt, höchstens der Rest</title><rect x="460" y="60" width="170" height="70" rx="12" fill="none" stroke="#c9a24a" stroke-width="2"/><text x="545" y="92">− Aufs Haus</text><text x="545" y="112" font-size="12" opacity=".7">z. B. 3,50 €</text></g>
+      <g id="r-cash"><title>Was in die Kasse geht und Punkte bringt</title><rect x="690" y="60" width="200" height="70" rx="12" fill="none" stroke="#5fb878" stroke-width="2"/><text x="790" y="92">= Kassieren</text><text x="790" y="112" font-size="12" opacity=".7">30,00 € → 30 Punkte</text></g>
+      <g stroke="currentColor" fill="none" marker-end="url(#a)"><line x1="180" y1="95" x2="231" y2="95"/><line x1="405" y1="95" x2="456" y2="95"/><line x1="630" y1="95" x2="686" y2="95"/></g>
+      <text x="545" y="165" font-size="12" opacity=".7">höchstens so viel wie nach dem Punkte-Rabatt übrig ist</text>
+    </g>
+  </svg>
+</section>
+
+<section class="space-y-4" data-lavish-revision="r1">
+  <h2 class="text-2xl font-bold">Abrechnen-Dialog</h2>
+  <div class="grid md:grid-cols-2 gap-4 items-start">
+    <div class="ipad p-5 text-sm text-stone-200 space-y-2" id="dialog-einzeln">
+      <b class="text-lg">Abrechnen: Murat K.</b>
+      <div class="flex justify-between pt-1"><span>Summe</span><span>38,50 €</span></div>
+      <div class="flex justify-between"><span>Rabatt</span><span>−5,00 €</span></div>
+      <div class="tile space-y-2">
+        <div class="flex items-center gap-2"><span class="gold flex-1">Aufs Haus</span><input class="input input-sm w-28 text-right" value="3,50"><span>€</span></div>
+        <button class="btn btn-xs w-full">Alles aufs Haus</button>
+        <input class="input input-sm w-full" placeholder="Grund (freiwillig), z. B. Geburtstag" value="Stammgast">
+      </div>
+      <div class="flex justify-between text-lg border-t border-stone-700 pt-2"><b>Kassieren</b><b class="money">30,00 €</b></div>
+      <p class="opacity-60">Zählt in die laufende Schicht.</p>
+      <p>★ +30 Punkte, −100 eingelöst</p>
+      <div class="flex gap-2"><button class="btn btn-sm flex-1">Zurück</button><button class="btn btn-sm btn-success flex-1">Bezahlt</button></div>
+    </div>
+    <div class="space-y-3 text-sm">
+      <p><b>Das Feld ist immer da</b>, bei Kunden mit Karte und bei Gästen ohne Karte. Leer heißt: kein Nachlass.</p>
+      <p><b>Eintippen</b> wie bei den Preisen in den Einstellungen: „3,50“, „3.5“ oder „3 €“. „Kassieren“ und die Punkte ändern sich beim Tippen.</p>
+      <p><b>„Alles aufs Haus“</b> trägt den ganzen Rest ein; „Kassieren“ zeigt dann 0,00 € und es gibt keine Punkte. Eingelöste Prämien und der Punkte-Rabatt bleiben, wie sie sind.</p>
+      <p><b>Zu viel eingetippt</b> (mehr als übrig) oder ungültig: rote Zeile „Höchstens 33,50 €“ bzw. „Bitte einen Betrag wie 3,50 eintippen“, „Bezahlt“ ist dann gesperrt.</p>
+      <p><b>Abrunden</b> („mach 30“): der Chef rechnet die Differenz selbst. Ein eigenes Feld „Gast zahlt“ habe ich weggelassen, siehe unten.</p>
+    </div>
+  </div>
+</section>
+
+<section class="space-y-4" data-lavish-revision="r1">
+  <h2 class="text-2xl font-bold">Zusammen zahlen</h2>
+  <div class="grid md:grid-cols-2 gap-4 items-start">
+    <div class="ipad p-5 text-sm text-stone-200 space-y-2" id="dialog-zusammen">
+      <b class="text-lg">Abrechnen: Murat K.</b>
+      <p class="opacity-60">… Deckel dazu, wer zahlt (wie bisher) …</p>
+      <div class="border-t border-stone-700 pt-2 space-y-1">
+        <div class="flex justify-between"><span>Murat K.</span><span>18,50 €</span></div>
+        <div class="flex justify-between"><span>Jonas</span><span>12,40 €</span></div>
+        <div class="flex justify-between"><span>Tisch 5</span><span>9,90 €</span></div>
+      </div>
+      <div class="tile flex items-center gap-2"><span class="gold flex-1">Aufs Haus</span><input class="input input-sm w-28 text-right" value="10,80"><span>€</span></div>
+      <div class="flex justify-between text-lg"><b>Kassieren</b><b class="money">30,00 €</b></div>
+      <p>★ Murat K. bekommt +30 Punkte (für alle drei Deckel)</p>
+    </div>
+    <div class="space-y-3 text-sm">
+      <p>Der Nachlass gilt für die <b>ganze Summe</b> der angehakten Deckel. Der Zahlende bekommt Punkte nur auf den Betrag nach dem Nachlass.</p>
+      <p>Intern verteilt die App den Nachlass auf die Deckel: zuerst auf den Deckel des Zahlenden, dann auf die anderen in der angezeigten Reihenfolge. So hat kein Deckel einen Betrag unter 0 €, und die Kunden-Rangliste zählt weiter bei dem, der getrunken hat (wie E-028).</p>
+      <p><b>Teil zahlen</b> bekommt kein „Aufs Haus“: der Chef lässt am Ende beim Abrechnen des Rests nach.</p>
+    </div>
+  </div>
+</section>
+
+<section class="space-y-4" data-lavish-revision="r1">
+  <h2 class="text-2xl font-bold">Schichtabschluss, Umsatz, Verlauf</h2>
+  <div class="grid md:grid-cols-2 gap-4 items-start">
+    <div class="ipad p-5 text-sm text-stone-200 space-y-1" id="schicht">
+      <b class="text-lg">Schicht abschließen</b>
+      <div class="flex justify-between pt-2"><span>Getränke</span><span>412,30 €</span></div>
+      <div class="flex justify-between"><span>Rabatt (Punkte)</span><span>−15,00 €</span></div>
+      <div class="flex justify-between gold"><span>Aufs Haus</span><span>−22,80 €</span></div>
+      <div class="flex justify-between text-lg border-t border-stone-700 pt-1"><b>Gesamt</b><b class="money">374,50 €</b></div>
+      <p class="opacity-60 pt-1">„Gesamt“ ist das Geld in der Kasse, wie bisher.</p>
+    </div>
+    <div class="space-y-2 text-sm">
+      <p><b>Schichtabschluss und Schicht-Ansicht:</b> neue Zeile „Aufs Haus“ unter „Rabatt (Punkte)“, nur wenn es in der Schicht welchen gab.</p>
+      <p><b>Umsatz → Schichten und Zeiträume:</b> neue Spalte „Aufs Haus“ neben „Rabatt“.</p>
+      <p><b>Deckel im Verlauf einer Schicht:</b> „Aufs Haus 3,50 € · Stammgast“ unter dem Betrag.</p>
+      <p><b>CSV-Export:</b> Schichten bekommen eine Spalte „Aufs Haus“, Deckel die Spalten „Aufs Haus“ und „Grund“.</p>
+      <p><b>Kunden-Rangliste:</b> bleibt wie sie ist; Umsatz dort ist das, was der Kunde bezahlt hat.</p>
+    </div>
+  </div>
+</section>
+
+<section class="space-y-4" data-lavish-revision="r1">
+  <h2 class="text-2xl font-bold">Daten und alte Sicherungen</h2>
+  <ul class="list-disc pl-5 space-y-1 text-sm">
+    <li>Ein abgerechneter Deckel bekommt zwei neue Felder: <code>houseCents</code> (Nachlass in Cent) und <code>houseReason</code> (Grund). Eine Schicht bekommt <code>houseCents</code>.</li>
+    <li><code>paidCents</code> = Summe − Punkte-Rabatt − Aufs Haus; das bleibt der Betrag in der Kasse.</li>
+    <li>Der Nachlass wird erst beim „Bezahlt“ gespeichert, nicht am offenen Deckel. Wer den Dialog mit „Zurück“ verlässt, verliert die Eingabe.</li>
+    <li>Alte Deckel, Schichten und Sicherungen haben die Felder nicht; die App liest sie als 0 €. Keine Umwandlung nötig, alte Sicherungen lassen sich weiter einspielen.</li>
+    <li>Festgeschriebene Schichten bleiben unverändert.</li>
+  </ul>
+</section>
+
+<section class="space-y-4" data-lavish-revision="r1">
+  <h2 class="text-2xl font-bold">Wie getestet wird</h2>
+  <ul class="list-disc pl-5 space-y-1 text-sm">
+    <li>Automatische Tests (Vitest): Nachlass einzeln und beim Zusammen zahlen, Verteilung auf die Deckel, „alles aufs Haus“ ergibt 0 € und 0 Punkte, zu viel oder negativ wird abgelehnt, Punkte nur auf den Rest, Schichtsumme und CSV mit der neuen Spalte, alte Daten ohne Feld zählen als 0.</li>
+    <li>Bildschirmfotos vom Abrechnen-Dialog und vom Schichtabschluss, hell und dunkel.</li>
+    <li>Danach dein Test auf dem iPad wie bisher.</li>
+  </ul>
+</section>
+
+<section class="space-y-4" data-lavish-revision="r1">
+  <h2 class="text-2xl font-bold">Risiken</h2>
+  <ul class="list-disc pl-5 space-y-1 text-sm">
+    <li><b>Steuer:</b> Was aufs Haus geht, ist kein Umsatz in der Kasse, aber die Getränke wurden ausgegeben. Wie das im Kassenbericht und in der Buchhaltung stehen muss (Rabatt, Werbung, Bewirtung), weiß der Steuerberater. Die App hält es getrennt fest, damit jede Antwort passt. Ich ergänze die Frage in der Steuerberater-Liste.</li>
+    <li><b>Falsche Summe:</b> Ein Tippfehler (35 statt 3,50) würde viel verschenken. Schutz: höchstens der Rest, und „Kassieren“ steht groß direkt darunter, bevor man „Bezahlt“ tippt.</li>
+    <li><b>Kein Rückgängig:</b> Wie jedes Abrechnen lässt sich ein Nachlass danach nicht mehr ändern.</li>
+  </ul>
+</section>
+
+<section class="space-y-4" data-lavish-revision="r1">
+  <h2 class="text-2xl font-bold">Bewusst weggelassen</h2>
+  <ul class="list-disc pl-5 space-y-1 text-sm">
+    <li>Prozent-Knöpfe (10 %, 20 % …) und einzelne Getränke aufs Haus: du hast „Betrag + Alles aufs Haus“ gewählt.</li>
+    <li>Feld „Gast zahlt“ zum Abrunden auf einen Wunschbetrag.</li>
+    <li>Nachlass bei „Teil zahlen“ und auf dem offenen Deckel.</li>
+    <li>Höchstbetrag oder PIN für den Nachlass (nur der Chef bedient das iPad).</li>
+  </ul>
+</section>
+
+<section class="space-y-4" data-lavish-revision="r1" data-lavish-question="plan">
+  <h2 class="text-2xl font-bold">Passt der Plan?</h2>
+  <form class="space-y-3" onsubmit="event.preventDefault(); const f = new FormData(event.currentTarget); const roundUp = f.get('abrunden'); const ok = f.get('ok'); const note = (f.get('note') || '').trim(); window.lavish.queuePrompt('Plan Aufs Haus: ' + ok + '. Feld Gast zahlt: ' + roundUp + (note ? '. Anmerkung: ' + note : ''), { tag: 'choice', text: 'Plan Aufs Haus: ' + ok, element: event.currentTarget, data: { ok, roundUp, note } });">
+    <fieldset class="space-y-1">
+      <legend class="font-bold text-sm">Abrunden auf einen Wunschbetrag</legend>
+      <label class="flex gap-2 items-center"><input type="radio" class="radio radio-sm" name="abrunden" value="weglassen" checked> Weglassen, der Chef tippt die Differenz bei „Aufs Haus“ ein (empfohlen)</label>
+      <label class="flex gap-2 items-center"><input type="radio" class="radio radio-sm" name="abrunden" value="dazu"> Zweites Feld „Gast zahlt“: man tippt 30 ein, die App rechnet „Aufs Haus“ aus</label>
+    </fieldset>
+    <fieldset class="space-y-1">
+      <legend class="font-bold text-sm">Gesamt</legend>
+      <label class="flex gap-2 items-center"><input type="radio" class="radio radio-sm" name="ok" value="Ja, los" checked> Ja, los</label>
+      <label class="flex gap-2 items-center"><input type="radio" class="radio radio-sm" name="ok" value="Ändern"> Ändern (bitte unten schreiben)</label>
+    </fieldset>
+    <textarea name="note" class="textarea w-full" rows="3" placeholder="Anmerkung (freiwillig)"></textarea>
+    <button type="submit" class="btn btn-primary">Antwort senden</button>
+  </form>
+</section>
+
+</main>
+</body>
+</html>
