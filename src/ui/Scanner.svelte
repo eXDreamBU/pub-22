@@ -76,7 +76,7 @@
   <video bind:this={video} playsinline muted class:mirror={facing === 'user'}></video>
   <p class="muted">{message}</p>
   <div class="row">
-    <button class="grow" onclick={flip}>🔄 Kamera wechseln</button>
+    <button class="grow" onclick={flip}>Kamera wechseln</button>
     <button class="grow" onclick={() => dialog.close()}>Schließen</button>
   </div>
 </dialog>

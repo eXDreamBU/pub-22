@@ -1,16 +1,46 @@
+/* Pub 22 look: black and gold from the logo. Light by day, dark when the iPad is set to dark.
+   Every color lives here; screens use the variables only. */
+
 :root {
-  --bg: #15120f;
-  --panel: #241f1a;
-  --panel-2: #2f2822;
-  --line: #3d342c;
-  --text: #f3ece4;
-  --muted: #a89a8b;
-  --accent: #e0a040;
-  --accent-text: #1c1408;
-  --ok: #4fae6a;
-  --danger: #d0583f;
-  --radius: 12px;
-  color-scheme: dark;
+  --bg: #f6f5f2;
+  --panel: #ffffff; /* cards, columns, sheets */
+  --panel-2: #efede8; /* chips, steppers, quiet fills */
+  --line: #e3e0d9;
+  --text: #1c1a17;
+  --muted: #6f6960;
+  --accent: #b8913f; /* gold: logo, points, main buttons */
+  --accent-ink: #8a6a24; /* gold as text on light surfaces */
+  --accent-text: #1c1a17; /* text on gold */
+  --ok: #2e8b57; /* money: Abrechnen, Bezahlt */
+  --danger: #c2482f;
+  --backdrop: rgb(28 26 23 / 0.45);
+  --shadow: 0 1px 2px rgb(60 45 20 / 0.06), 0 4px 14px rgb(60 45 20 / 0.07);
+  --card-border: transparent;
+  --radius: 14px;
+  --radius-sm: 10px;
+  --font: 'Avenir Next', 'Segoe UI', system-ui, -apple-system, sans-serif;
+  --font-brand: Didot, 'Bodoni 72', 'Bodoni MT', Georgia, serif;
+  color-scheme: light;
+}
+
+@media (prefers-color-scheme: dark) {
+  :root {
+    --bg: #0f0e0c;
+    --panel: #1a1815;
+    --panel-2: #23201b;
+    --line: #2f2b25;
+    --text: #f1ece2;
+    --muted: #9c9487;
+    --accent: #d2ae62;
+    --accent-ink: #d2ae62;
+    --accent-text: #17140e;
+    --ok: #3fa36b;
+    --danger: #e0664c;
+    --backdrop: rgb(0 0 0 / 0.6);
+    --shadow: none;
+    --card-border: var(--line);
+    color-scheme: dark;
+  }
 }
 
 * {
@@ -23,7 +53,8 @@ body {
   height: 100%;
   background: var(--bg);
   color: var(--text);
-  font: 17px/1.35 system-ui, -apple-system, sans-serif;
+  font: 500 16px/1.4 var(--font);
+  -webkit-font-smoothing: antialiased;
   -webkit-tap-highlight-color: transparent;
   -webkit-user-select: none;
   user-select: none;
@@ -39,87 +70,162 @@ textarea {
   height: 100%;
 }
 
+h1,
+h2,
+h3 {
+  font-weight: 600;
+  letter-spacing: -0.01em;
+  line-height: 1.2;
+}
+
+/* --- Buttons --- */
+
 button {
   font: inherit;
+  font-weight: 600;
   color: inherit;
-  background: var(--panel-2);
+  background: var(--panel);
   border: 1px solid var(--line);
-  border-radius: var(--radius);
+  border-radius: var(--radius-sm);
   padding: 0.7rem 1rem;
   min-height: 48px;
   cursor: pointer;
   touch-action: manipulation;
+  transition:
+    transform 0.12s ease,
+    background-color 0.15s ease,
+    opacity 0.15s ease;
 }
 
-button:active {
-  filter: brightness(1.3);
+button:active:not(:disabled) {
+  transform: scale(0.97);
+}
+
+button:focus-visible,
+input:focus-visible {
+  outline: 2px solid var(--accent);
+  outline-offset: 2px;
 }
 
 button:disabled {
   opacity: 0.4;
+  cursor: default;
 }
 
 button.primary {
   background: var(--accent);
   border-color: var(--accent);
   color: var(--accent-text);
-  font-weight: 600;
 }
 
 button.ok {
   background: var(--ok);
   border-color: var(--ok);
-  color: #0c1a10;
-  font-weight: 600;
+  color: #fff;
 }
 
 button.danger {
   background: none;
-  border-color: var(--danger);
+  border-color: transparent;
   color: var(--danger);
 }
 
 button.small {
   min-height: 36px;
-  padding: 0.3rem 0.7rem;
+  padding: 0.3rem 0.8rem;
   font-size: 0.9rem;
 }
+
+/* --- Form fields --- */
 
 input,
 select {
   font: inherit;
+  font-weight: 500;
   color: var(--text);
-  background: var(--bg);
-  border: 1px solid var(--line);
-  border-radius: 8px;
-  padding: 0.6rem 0.7rem;
-  min-height: 44px;
+  background: var(--panel-2);
+  border: 1px solid transparent;
+  border-radius: var(--radius-sm);
+  padding: 0.65rem 0.8rem;
+  min-height: 46px;
   width: 100%;
+}
+
+input:focus {
+  background: var(--panel);
+  border-color: var(--accent);
+  outline: none;
+}
+
+input[type='checkbox'] {
+  width: 22px;
+  min-height: 22px;
+  height: 22px;
+  accent-color: var(--accent);
 }
 
 label {
   display: grid;
-  gap: 0.3rem;
+  gap: 0.35rem;
   color: var(--muted);
   font-size: 0.9rem;
 }
 
+/* --- Dialogs come up from the bottom as a sheet --- */
+
 dialog {
   background: var(--panel);
   color: var(--text);
-  border: 1px solid var(--line);
-  border-radius: var(--radius);
-  padding: 1.5rem;
-  width: min(520px, 92vw);
+  border: none;
+  border-radius: 22px 22px 0 0;
+  padding: 0.8rem 1.5rem calc(1.5rem + env(safe-area-inset-bottom));
+  width: min(560px, 100vw);
+  max-width: 100vw;
+  max-height: 88dvh;
+  margin: auto auto 0;
+  overflow-y: auto;
+}
+
+dialog::before {
+  content: '';
+  display: block;
+  width: 40px;
+  height: 5px;
+  border-radius: 5px;
+  background: var(--line);
+  margin: 0 auto 0.9rem;
+}
+
+dialog[open] {
+  animation: sheet-up 0.22s ease-out;
 }
 
 dialog::backdrop {
-  background: rgb(0 0 0 / 0.6);
+  background: var(--backdrop);
+}
+
+@keyframes sheet-up {
+  from {
+    transform: translateY(40px);
+    opacity: 0;
+  }
+}
+
+@media (prefers-reduced-motion: reduce) {
+  dialog[open] {
+    animation: none;
+  }
+  button {
+    transition: none;
+  }
 }
 
 dialog h2 {
-  margin-top: 0;
+  margin: 0 0 0.8rem;
+  font-size: 1.35rem;
 }
+
+/* --- Building blocks --- */
 
 .muted {
   color: var(--muted);
@@ -137,18 +243,25 @@ dialog h2 {
 
 .panel {
   background: var(--panel);
+  border: 1px solid var(--card-border);
   border-radius: var(--radius);
+  box-shadow: var(--shadow);
   padding: 1rem;
 }
 
 .badge {
   display: inline-block;
   font-size: 0.75rem;
-  padding: 0.1rem 0.45rem;
-  border-radius: 99px;
-  border: 1px solid var(--line);
+  font-weight: 600;
+  padding: 0.15rem 0.5rem;
+  border-radius: 6px;
+  background: var(--panel-2);
   color: var(--muted);
   vertical-align: middle;
+}
+
+.gold {
+  color: var(--accent-ink);
 }
 
 .num {
@@ -156,6 +269,81 @@ dialog h2 {
   text-align: right;
   white-space: nowrap;
 }
+
+.avatar {
+  width: 38px;
+  height: 38px;
+  flex: none;
+  border-radius: 11px;
+  background: var(--panel-2);
+  color: var(--accent-ink);
+  display: grid;
+  place-items: center;
+  font-size: 0.85rem;
+  font-weight: 700;
+}
+
+.icon {
+  flex: none;
+}
+
+/* Segmented switch: top navigation and the tabs on the revenue page */
+.seg {
+  display: flex;
+  gap: 2px;
+  padding: 3px;
+  background: var(--panel-2);
+  border-radius: 13px;
+}
+
+.seg button {
+  background: none;
+  border-color: transparent;
+  color: var(--muted);
+  min-height: 40px;
+  padding: 0.4rem 0.95rem;
+}
+
+.seg button.active {
+  background: var(--panel);
+  color: var(--text);
+  box-shadow: var(--shadow);
+  border-color: var(--card-border);
+}
+
+/* Category chips */
+.chip {
+  display: inline-flex;
+  align-items: center;
+  gap: 0.45rem;
+  border-radius: 99px;
+  min-height: 40px;
+  padding: 0.35rem 0.9rem;
+  white-space: nowrap;
+  font-weight: 500;
+}
+
+.chip.active {
+  background: var(--text);
+  border-color: var(--text);
+  color: var(--bg);
+}
+
+/* A full-width choice row in sheets (checkbox + label + amount) */
+.check {
+  display: flex;
+  flex-direction: row;
+  align-items: center;
+  gap: 0.7rem;
+  color: var(--text);
+  font-size: 1rem;
+  padding: 0.65rem 0.8rem;
+  border-radius: var(--radius-sm);
+  background: var(--panel-2);
+  margin-bottom: 0.4rem;
+}
+
+/* --- Report tables --- */
 
 table.report {
   width: 100%;
@@ -165,7 +353,7 @@ table.report {
 table.report th {
   text-align: left;
   color: var(--muted);
-  font-weight: normal;
+  font-weight: 500;
   font-size: 0.85rem;
 }
 
@@ -176,7 +364,7 @@ table.report td.num {
 
 table.report td,
 table.report th {
-  padding: 0.55rem 0.5rem;
+  padding: 0.7rem 0.6rem;
   border-bottom: 1px solid var(--line);
 }
 

@@ -11,15 +11,19 @@
     canvas.width = 1012;
     canvas.height = 638;
     const ctx = canvas.getContext('2d')!;
-    ctx.fillStyle = '#15120f';
+    ctx.fillStyle = '#0f0e0c';
     ctx.fillRect(0, 0, canvas.width, canvas.height);
-    ctx.fillStyle = '#e0a040';
-    ctx.font = 'bold 84px system-ui, sans-serif';
-    ctx.fillText('Pub 22', 60, 140);
-    ctx.fillStyle = '#f3ece4';
-    ctx.font = '40px system-ui, sans-serif';
-    ctx.fillText('Kundenkarte', 60, 200);
-    ctx.font = 'bold 52px system-ui, sans-serif';
+    const logo = new Image();
+    logo.src = './logo.jpg';
+    await logo.decode().catch(() => {}); // card still works without the logo
+    if (logo.naturalWidth) ctx.drawImage(logo, 50, 50, 150, 150);
+    ctx.fillStyle = '#d2ae62';
+    ctx.font = '600 80px Didot, "Bodoni 72", Georgia, serif';
+    ctx.fillText('Pub 22', 225, 140);
+    ctx.font = '500 36px "Avenir Next", system-ui, sans-serif';
+    ctx.fillText('Kundenkarte', 228, 192);
+    ctx.fillStyle = '#f1ece2';
+    ctx.font = '600 52px "Avenir Next", system-ui, sans-serif';
     ctx.fillText(c.name, 60, 540, 470);
     const qr = document.createElement('canvas');
     await QRCode.toCanvas(qr, cardPayload(c.id), { width: 420, margin: 2, errorCorrectionLevel: 'M' });
@@ -47,8 +51,8 @@
 {#if src}
   <img class="card print-only-card" {src} alt="Kundenkarte {customer.name}" />
   <div class="row">
-    <button class="grow" onclick={() => window.print()}>🖨️ Drucken</button>
-    <button class="grow" onclick={share}>📤 Als Bild senden</button>
+    <button class="grow" onclick={() => window.print()}>Drucken</button>
+    <button class="grow" onclick={share}>Als Bild senden</button>
   </div>
 {/if}
 

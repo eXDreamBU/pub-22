@@ -130,7 +130,7 @@
     </p>
     <p class="muted">Am iPad: „Sichern“ → „In Dateien sichern“ → iCloud Drive.</p>
     <div class="row">
-      <button class="primary grow" onclick={backup}>💾 Sichern</button>
+      <button class="primary grow" onclick={backup}>Sichern</button>
       <button class="grow" onclick={() => restoreInput.click()}>Wiederherstellen</button>
     </div>
     <input type="file" accept="application/json,.json" bind:this={restoreInput} onchange={restore} hidden />

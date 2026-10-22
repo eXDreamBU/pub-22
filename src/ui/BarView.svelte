@@ -4,6 +4,8 @@
   import { formatEuro } from '../lib/money';
   import Scanner from './Scanner.svelte';
   import TabPanel from './TabPanel.svelte';
+  import Icon from './Icon.svelte';
+  import { icons, initials } from './icons';
 
   let scanning = $state(false);
   let openDialog: HTMLDialogElement;
@@ -59,24 +61,25 @@
 
 <div class="bar">
   <aside>
-    <div class="row">
-      <button class="primary grow" onclick={() => (scanning = true)}>📷 Karte scannen</button>
-      <button class="grow" onclick={showOpenDialog}>+ Deckel</button>
+    <div class="start">
+      <button class="primary iconbtn" onclick={() => (scanning = true)}><Icon svg={icons.camera} /> Karte scannen</button>
+      <button onclick={showOpenDialog}>+ Deckel</button>
     </div>
-    <p class="muted">In der Bar ({app.db.tabs.length})</p>
+    <p class="muted heading">In der Bar · {app.db.tabs.length}</p>
     <ul>
       {#each app.db.tabs as tab (tab.id)}
         <li>
           <button class="tab" class:selected={tab.id === app.selectedTabId} onclick={() => (app.selectedTabId = tab.id)}>
-            <span class="row">
-              <b class="grow">{tab.label}</b>
-              <span class="num">{formatEuro(tabSummary(app.db, tab).paidCents)}</span>
+            <span class="avatar">{initials(tab.label)}</span>
+            <span class="who">
+              <b>{tab.label}</b>
+              {#if tab.customerId}
+                <span class="gold small-text">★ {points(tab.customerId)} Punkte</span>
+              {:else}
+                <span class="muted small-text">ohne Karte</span>
+              {/if}
             </span>
-            {#if tab.customerId}
-              <span class="muted">⭐ {points(tab.customerId)} Punkte</span>
-            {:else}
-              <span class="badge">ohne Karte</span>
-            {/if}
+            <span class="num amount">{formatEuro(tabSummary(app.db, tab).paidCents)}</span>
           </button>
         </li>
       {:else}
@@ -102,9 +105,9 @@
 
 <dialog bind:this={openDialog}>
   <h2>Deckel öffnen</h2>
-  <div class="row modes">
-    <button class="small grow" class:primary={withCard} onclick={() => (withCard = true)}>Kunde mit Karte</button>
-    <button class="small grow" class:primary={!withCard} onclick={() => (withCard = false)}>Gast ohne Karte</button>
+  <div class="seg modes">
+    <button class="grow" class:active={withCard} onclick={() => (withCard = true)}>Kunde mit Karte</button>
+    <button class="grow" class:active={!withCard} onclick={() => (withCard = false)}>Gast ohne Karte</button>
   </div>
   {#if withCard}
     <input placeholder="Kunde suchen" aria-label="Kunde suchen" bind:value={search} bind:this={searchInput} />
@@ -112,10 +115,9 @@
       {#each found as c (c.id)}
         <li>
           <button class="tab" onclick={() => pickCustomer(c.id)}>
-            <span class="row">
-              <b class="grow">{c.name}</b>
-              {#if hasTab(c.id)}<span class="badge">schon in der Bar</span>{:else}<span class="muted">⭐ {c.points} Punkte</span>{/if}
-            </span>
+            <span class="avatar">{initials(c.name)}</span>
+            <b class="who">{c.name}</b>
+            {#if hasTab(c.id)}<span class="badge">schon in der Bar</span>{:else}<span class="gold small-text">★ {c.points} Punkte</span>{/if}
           </button>
         </li>
       {:else}
@@ -141,13 +143,30 @@
 <style>
   .bar {
     display: grid;
-    grid-template-columns: minmax(260px, 1fr) 2fr;
+    grid-template-columns: minmax(250px, 290px) 1fr;
     height: 100%;
   }
   aside {
     border-right: 1px solid var(--line);
     padding: 1rem;
     overflow-y: auto;
+  }
+  .start {
+    display: grid;
+    gap: 0.5rem;
+  }
+  .start .primary {
+    min-height: 54px;
+  }
+  .iconbtn {
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+    gap: 0.4rem;
+  }
+  .heading {
+    font-size: 0.85rem;
+    margin: 1.1rem 0 0.5rem;
   }
   ul {
     list-style: none;
@@ -158,23 +177,41 @@
   }
   .tab {
     width: 100%;
+    display: flex;
+    align-items: center;
+    gap: 0.7rem;
     text-align: left;
-    background: var(--panel);
-    display: grid;
-    gap: 0.2rem;
-  }
-  .tab .badge {
-    justify-self: start;
+    padding: 0.6rem;
+    border: 1.5px solid var(--card-border);
+    border-radius: var(--radius);
+    box-shadow: var(--shadow);
   }
   .tab.selected {
-    border: 2px solid var(--accent);
+    border-color: var(--accent);
+  }
+  .who {
+    flex: 1;
+    min-width: 0;
+    display: grid;
+    gap: 0.1rem;
+    overflow-wrap: anywhere;
+  }
+  .small-text {
+    font-size: 0.82rem;
+    font-weight: 500;
+  }
+  .amount {
+    font-weight: 600;
   }
   .empty {
     padding: 1rem 0;
   }
   section {
     min-height: 0;
-    padding: 1rem;
+  }
+  .hint {
+    margin-top: 30vh;
+    text-align: center;
   }
   .modes {
     margin-bottom: 0.8rem;
@@ -184,12 +221,13 @@
     overflow-y: auto;
     margin: 0.6rem 0;
   }
+  .found .tab {
+    box-shadow: none;
+    background: var(--panel-2);
+    border-color: transparent;
+  }
   .full {
     width: 100%;
     margin-top: 0.5rem;
-  }
-  .hint {
-    margin-top: 30vh;
-    text-align: center;
   }
 </style>

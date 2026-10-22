@@ -55,9 +55,9 @@
     {/if}
   </div>
 
-  <div class="row chips">
+  <div class="seg chips">
     {#each tabs as [id, label] (id)}
-      <button class:primary={active === id} onclick={() => (active = id)}>{label}</button>
+      <button class:active={active === id} onclick={() => (active = id)}>{label}</button>
     {/each}
   </div>
 
@@ -83,21 +83,25 @@
     height: 100%;
     display: grid;
     grid-template-rows: auto auto minmax(0, 1fr);
-    gap: 0.8rem;
-    padding: 1rem;
+    gap: 1rem;
+    padding: 1.2rem 1.5rem;
   }
   .head {
     display: flex;
     flex-wrap: wrap;
     align-items: center;
     gap: 1.5rem;
-    border: 1px solid var(--accent);
+    border-color: var(--accent);
+    padding: 1.2rem 1.4rem;
   }
   .head p {
     margin: 0;
   }
   .big {
-    font-size: 1.8rem;
+    font-size: 2.1rem;
+    font-weight: 600;
+    font-variant-numeric: tabular-nums;
+    letter-spacing: -0.02em;
   }
   .close {
     display: grid;
@@ -112,6 +116,7 @@
     flex-wrap: wrap;
   }
   .chips {
+    justify-self: start;
     flex-wrap: wrap;
   }
   .body {

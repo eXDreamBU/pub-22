@@ -55,7 +55,7 @@
       </tbody>
     </table>
     {#if summary.rewards.length}
-      <p>🎁 Freigetränke ausgegeben: {summary.rewards.map((r) => `${r.count}× ${r.name}`).join(', ')}</p>
+      <p>Freigetränke ausgegeben: {summary.rewards.map((r) => `${r.count}× ${r.name}`).join(', ')}</p>
     {/if}
     <input
       bind:value={note}
