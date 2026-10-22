@@ -3,7 +3,6 @@
 Die eine Liste offener Punkte. Erledigtes fliegt raus (die Geschichte steht in git).
 
 ## 1. Für Ilker
-- Foto der Getränkekarte (Getränke, Größen, Preise) schicken, dann trage ich sie vorab ein.
 - Am Ende auf dem iPad in der Bar testen: Kamera-Scan, Home-Bildschirm, Offline, Sichern in iCloud Drive.
 
 ## 2. Technik

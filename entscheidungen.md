@@ -12,3 +12,4 @@
 | E-008 | 22.10.2026 | Hosting: GitHub Pages mit öffentlichem Repo (nur Code, nie Kundendaten) | Plan 0.1, Rückfrage im Chat | Ilker | gilt |
 | E-009 | 22.10.2026 | Getränkekarte: Ilker schickt ein Foto, Claude trägt sie vorab ein; danach pflegt der Inhaber sie in den Einstellungen | Chat | Ilker | gilt |
 | E-010 | 22.10.2026 | Keine Kasse: „Abrechnen“ zeigt Summe und Punkte, Zahlung läuft weiter über die TSE-Kasse | Plan 0.1 | Claude, Ilker bestätigt | gilt |
+| E-011 | 22.10.2026 | Getränkekarte vom 11.04.2026 komplett als Startdaten (`src/lib/menu.ts`), inkl. Snacks, Flaschenverkauf, Wein 0,5 l; „Mix +0,50 €“ als eigene Kachel bei Spirituosen und Whisky | Chat | Ilker | gilt |
