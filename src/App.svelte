@@ -1,19 +1,19 @@
 <script lang="ts">
+  import { backupDue } from './lib/backup';
   import { app, type View } from './state.svelte';
   import BarView from './ui/BarView.svelte';
   import CustomersView from './ui/CustomersView.svelte';
+  import RevenueView from './ui/RevenueView.svelte';
   import SettingsView from './ui/SettingsView.svelte';
 
   const views: [View, string][] = [
     ['bar', '🍺 Bar'],
     ['customers', '👥 Kunden'],
+    ['revenue', '📊 Umsatz'],
     ['settings', '⚙️ Einstellungen'],
   ];
 
-  const WEEK = 7 * 24 * 60 * 60 * 1000;
-  let backupDue = $derived(
-    app.db.customers.length > 0 && Date.now() - Date.parse(app.db.lastBackupAt ?? app.db.createdAt) > WEEK,
-  );
+  let due = $derived(backupDue(app.db));
 </script>
 
 <div class="shell">
@@ -24,7 +24,7 @@
     {/each}
   </nav>
 
-  {#if backupDue}
+  {#if due}
     <button class="reminder" onclick={() => (app.view = 'settings')}>
       Seit über einer Woche nicht gesichert. Jetzt unter Einstellungen → Sichern.
     </button>
@@ -35,6 +35,8 @@
       <BarView />
     {:else if app.view === 'customers'}
       <CustomersView />
+    {:else if app.view === 'revenue'}
+      <RevenueView />
     {:else}
       <SettingsView />
     {/if}

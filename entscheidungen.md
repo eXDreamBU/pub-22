@@ -11,7 +11,7 @@
 | E-007 | 22.10.2026 | Kundenkarte drucken oder als Bild aufs Handy; QR enthält nur eine zufällige Kunden-ID | Plan 0.1 | Claude | gilt |
 | E-008 | 22.10.2026 | Hosting: GitHub Pages mit öffentlichem Repo (nur Code, nie Kundendaten) | Plan 0.1, Rückfrage im Chat | Ilker | gilt |
 | E-009 | 22.10.2026 | Getränkekarte: Ilker schickt ein Foto, Claude trägt sie vorab ein; danach pflegt der Inhaber sie in den Einstellungen | Chat | Ilker | gilt |
-| E-010 | 22.10.2026 | Keine Kasse: „Abrechnen“ zeigt Summe und Punkte, Zahlung läuft weiter über die TSE-Kasse | Plan 0.1 | Claude, Ilker bestätigt | gilt |
+| E-010 | 22.10.2026 | Keine Kasse: „Abrechnen“ zeigt Summe und Punkte, Zahlung läuft weiter über die TSE-Kasse | Plan 0.1 | Claude, Ilker bestätigt | ersetzt durch E-019 |
 | E-011 | 22.10.2026 | Getränkekarte vom 11.04.2026 komplett als Startdaten (`src/lib/menu.ts`), inkl. Snacks, Flaschenverkauf, Wein 0,5 l; „Mix +0,50 €“ als eigene Kachel bei Spirituosen und Whisky | Chat | Ilker | gilt |
 | E-012 | 22.10.2026 | QR-Inhalt `PUB22:<zufällige ID>`; fremde QR-Codes werden beim Scannen ignoriert | Bau 0.1 | Claude | gilt |
 | E-013 | 22.10.2026 | Einlösen: Punkte werden erst beim Abrechnen abgezogen; €-Rabatt in Stufen (Start 100 P. = 5 €), höchstens bis zur Summe; Prämien werden gratis ausgegeben und nicht gebucht; Punkte nur auf den bezahlten Betrag | Bau 0.1, Plan 0.1 | Claude | gilt |
@@ -20,3 +20,8 @@
 | E-016 | 22.10.2026 | Scanner startet mit der Vorderkamera (Gast hält die Karte vors iPad), Umschalten per Knopf | Chat | Ilker | gilt |
 | E-017 | 22.10.2026 | Start-Werte Einlösen bestätigt: 100 P. = Freigetränk bis 3,30 €, 100 P. = 5 € Rabatt | Chat | Ilker | gilt |
 | E-018 | 22.10.2026 | GitHub Pages eingeschaltet (Quelle GitHub Actions, Workflow `pages.yml`) | Chat | Ilker | gilt |
+| E-019 | 22.10.2026 | Die Bar hat keine TSE-Kasse, sondern eine offene Ladenkasse; „Abrechnen“ heißt kassieren (Knopf „Bezahlt“), die Schichtsumme geht in den Kassenbericht | Chat, Plan 0.2 | Ilker | gilt |
+| E-020 | 22.10.2026 | Schichtabschluss per Knopf, erst wenn kein Deckel offen ist; zeigt Gesamtsumme, Summe je Kategorie, Rabatt, Freigetränke, dazu eine Notiz; danach festgeschrieben | Plan 0.2 | Ilker | gilt |
+| E-021 | 22.10.2026 | Neue Seite „Umsatz“ ohne PIN: Schichten, Woche/Monat, meistverkaufte Getränke, Kunden-Rangliste (Umsatz, Deckel, Rabatt), CSV-Export | Plan 0.2 | Ilker | gilt |
+| E-022 | 22.10.2026 | 0.2 wird gebaut und auf dem iPad getestet; in der Bar ersetzt die App die Papier-Deckel erst nach Antwort des Steuerberaters (App als elektronisches Aufzeichnungssystem, recherche/_eingang/kassensichv-offene-ladenkasse-app.md) | Chat | Ilker | gilt |
+| E-023 | 22.10.2026 | Die App löscht abgerechnete Deckel und Schichten nie von selbst (Aufbewahrungspflicht wahrscheinlich 10 Jahre) | Plan 0.2, Recherche | Claude | gilt |

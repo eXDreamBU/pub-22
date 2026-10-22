@@ -3,6 +3,7 @@
   import { newId, parseBackup, type Product } from '../lib/db';
   import { formatEuro, parseEuro } from '../lib/money';
   import { formatDate, formatTime } from './format';
+  import { shareOrDownload } from './share';
 
   let categories = $derived([...new Set(app.db.products.map((p) => p.category))]);
   let picked = $state('');
@@ -44,20 +45,10 @@
     const at = now();
     const name = `pub22-sicherung-${at.slice(0, 10)}.json`;
     const file = new File([JSON.stringify({ ...app.db, lastBackupAt: at }, null, 1)], name, { type: 'application/json' });
-    if (navigator.canShare?.({ files: [file] })) {
-      // iPad: share sheet → "In Dateien sichern" → iCloud Drive. Cancelling it rejects: then nothing was saved.
-      try {
-        await navigator.share({ files: [file] });
-      } catch {
-        message = 'Nicht gesichert (abgebrochen).';
-        return;
-      }
-    } else {
-      const a = document.createElement('a');
-      a.href = URL.createObjectURL(file);
-      a.download = name;
-      a.click();
-      URL.revokeObjectURL(a.href);
+    // Cancelling the share sheet means nothing was saved.
+    if (!(await shareOrDownload(file))) {
+      message = 'Nicht gesichert (abgebrochen).';
+      return;
     }
     app.db.lastBackupAt = at;
     message = 'Sicherung erstellt.';

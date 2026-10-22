@@ -19,6 +19,7 @@ export interface Customer {
 
 export interface TabLine {
   productId: string;
+  category: string; // snapshot: renaming a category later does not move old numbers
   name: string;
   size?: string;
   priceCents: number; // snapshot: a later price change does not touch open tabs
@@ -51,6 +52,21 @@ export interface Summary {
 
 export interface ClosedTab extends Tab, Summary {
   closedAt: string;
+  shiftId?: string; // missing = belongs to the running shift
+}
+
+/** A closed shift: the numbers are frozen at close, they are what goes into the paper Kassenbericht. */
+export interface Shift {
+  id: string;
+  startedAt: string; // earliest openedAt of its tabs
+  closedAt: string;
+  tabCount: number;
+  totalCents: number; // value of the drinks (sum of the categories)
+  discountCents: number; // points discount, not spread over the categories
+  paidCents: number; // totalCents - discountCents = cash actually taken
+  byCategory: { category: string; cents: number; qty: number }[];
+  rewards: { name: string; count: number }[]; // free drinks handed out, no money involved
+  note: string;
 }
 
 export interface Settings {
@@ -60,11 +76,12 @@ export interface Settings {
 }
 
 export interface Db {
-  version: 1;
+  version: 2;
   products: Product[];
   customers: Customer[];
   tabs: Tab[];
   history: ClosedTab[];
+  shifts: Shift[];
   rewards: Reward[];
   settings: Settings;
   createdAt: string;
@@ -78,11 +95,12 @@ export function newId(): string {
 
 export function createDb(now: string): Db {
   return {
-    version: 1,
+    version: 2,
     products: seedMenu.map((item) => ({ ...item, id: newId() })),
     customers: [],
     tabs: [],
     history: [],
+    shifts: [],
     rewards: [{ id: newId(), name: 'Freigetränk (bis 3,30 €)', points: 100 }],
     settings: { pointsPerEuro: 1, discountPoints: 100, discountCents: 500 },
     createdAt: now,
@@ -130,7 +148,7 @@ export function openGuestTab(db: Db, label: string, now: string): Tab {
 export function addItem(tab: Tab, product: Product): void {
   const line = tab.lines.find((l) => l.productId === product.id && l.priceCents === product.priceCents);
   if (line) line.qty++;
-  else tab.lines.push({ productId: product.id, name: product.name, size: product.size, priceCents: product.priceCents, qty: 1 });
+  else tab.lines.push({ productId: product.id, category: product.category, name: product.name, size: product.size, priceCents: product.priceCents, qty: 1 });
 }
 
 export function removeItem(tab: Tab, lineIndex: number): void {
@@ -180,7 +198,7 @@ export function tabSummary(db: Db, tab: Tab): Summary {
   };
 }
 
-/** Close the tab: book points, move it to the history. Payment itself runs through the TSE register. */
+/** Close the tab: book points, move it to the history. Payment itself goes into the bar's open cash box. */
 export function settle(db: Db, tabId: string, now: string): ClosedTab {
   const index = db.tabs.findIndex((t) => t.id === tabId);
   if (index < 0) throw new Error('Deckel nicht gefunden');
@@ -205,6 +223,79 @@ export function lastVisits(db: Db, customerId: string, count: number): ClosedTab
     .slice(0, count);
 }
 
+/** Closed tabs of the running shift (not yet stamped with a shift id). */
+export function runningTabs(db: Db): ClosedTab[] {
+  return db.history.filter((t) => !t.shiftId);
+}
+
+/** The frozen numbers of a shift, computed from its closed tabs (ISO timestamps compare as strings). */
+export function summarizeShift(tabs: ClosedTab[]): Omit<Shift, 'id' | 'note'> {
+  const categories = new Map<string, { cents: number; qty: number }>();
+  const rewards = new Map<string, number>();
+  let totalCents = 0;
+  let discountCents = 0;
+  for (const tab of tabs) {
+    totalCents += tab.totalCents;
+    discountCents += tab.discountCents;
+    for (const line of tab.lines) {
+      const entry = categories.get(line.category) ?? { cents: 0, qty: 0 };
+      entry.cents += line.priceCents * line.qty;
+      entry.qty += line.qty;
+      categories.set(line.category, entry);
+    }
+    for (const r of tab.rewards) rewards.set(r.name, (rewards.get(r.name) ?? 0) + 1);
+  }
+  return {
+    startedAt: tabs.map((t) => t.openedAt).reduce((a, b) => (b < a ? b : a)),
+    closedAt: tabs.map((t) => t.closedAt).reduce((a, b) => (b > a ? b : a)),
+    tabCount: tabs.length,
+    totalCents,
+    discountCents,
+    paidCents: totalCents - discountCents,
+    byCategory: [...categories].map(([category, v]) => ({ category, ...v })).sort((a, b) => b.cents - a.cents),
+    rewards: [...rewards].map(([name, count]) => ({ name, count })),
+  };
+}
+
+/** Close the running shift: freeze its numbers and stamp its tabs. Only possible once no tab is open. */
+export function closeShift(db: Db, note: string, now: string): Shift {
+  if (db.tabs.length > 0) throw new Error('Erst alle Deckel abrechnen');
+  const tabs = runningTabs(db);
+  if (tabs.length === 0) throw new Error('Die Schicht hat noch keinen bezahlten Deckel');
+  const shift: Shift = { id: newId(), ...summarizeShift(tabs), closedAt: now, note: note.trim() };
+  for (const tab of tabs) tab.shiftId = shift.id;
+  db.shifts.push(shift);
+  return shift;
+}
+
+/** Bring a parsed backup to the current version, or throw if it is not one of ours. */
+export function migrate(data: unknown): Db {
+  const db = data as Db | undefined;
+  const version = (db as { version?: number } | undefined)?.version;
+  const arrays = [db?.products, db?.customers, db?.tabs, db?.history, db?.rewards];
+  if ((version !== 1 && version !== 2) || !arrays.every(Array.isArray) || typeof db?.settings !== 'object') {
+    throw new Error('Keine Pub-22-Sicherung');
+  }
+  if (version === 2) {
+    if (!Array.isArray(db.shifts)) throw new Error('Keine Pub-22-Sicherung');
+    return db;
+  }
+  // v1 -> v2: lines get a category, past tabs go into one "vor 0.2" shift.
+  const categoryOf = (productId: string) => db.products.find((p) => p.id === productId)?.category ?? 'Sonstiges';
+  for (const tab of [...db.tabs, ...db.history]) {
+    for (const line of tab.lines) line.category ??= categoryOf(line.productId);
+  }
+  const migrated = db as unknown as Db;
+  migrated.version = 2;
+  migrated.shifts = [];
+  if (db.history.length > 0) {
+    const shift: Shift = { id: newId(), ...summarizeShift(db.history), note: 'vor 0.2' };
+    for (const tab of db.history) tab.shiftId = shift.id;
+    migrated.shifts.push(shift);
+  }
+  return migrated;
+}
+
 export function parseBackup(json: string): Db {
   let data: unknown;
   try {
@@ -212,10 +303,5 @@ export function parseBackup(json: string): Db {
   } catch {
     throw new Error('Keine Pub-22-Sicherung');
   }
-  const db = data as Db;
-  const arrays = [db?.products, db?.customers, db?.tabs, db?.history, db?.rewards];
-  if (db?.version !== 1 || !arrays.every(Array.isArray) || typeof db.settings !== 'object') {
-    throw new Error('Keine Pub-22-Sicherung');
-  }
-  return db;
+  return migrate(data);
 }

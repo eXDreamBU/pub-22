@@ -1,0 +1,290 @@
+<!doctype html>
+<html lang="de" data-theme="luxury" data-lavish-annotate="on">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>Pub 22 – Plan 0.2</title>
+<link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/daisyui@5.5.19/daisyui.css">
+<link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/daisyui@5.5.19/themes.css">
+<script src="https://cdn.jsdelivr.net/npm/@tailwindcss/browser@4.2.4/dist/index.global.js"></script>
+<style>
+  *, *::before, *::after { box-sizing: border-box; }
+  .grid > *, .flex > * { min-width: 0; }
+  p, li, td, th, h1, h2, h3 { overflow-wrap: anywhere; }
+  svg { max-width: 100%; height: auto; }
+  .ipad { border: 10px solid #222; border-radius: 22px; background: #15120f; }
+  .tile { background: #241f1a; border-radius: 10px; padding: .75rem; }
+</style>
+</head>
+<script type="application/json" data-lavish-revisions>
+[{ "id": "r1", "label": "Runde 1", "timestamp": "2026-10-22T19:30:00Z", "summary": "Deine Antworten eingearbeitet: Abschluss erst ohne offene Deckel, neuer Reiter Kunden" },
+ { "id": "r2", "label": "Runde 2", "timestamp": "2026-10-22T19:50:00Z", "summary": "Korrektur: offene Ladenkasse, keine TSE-Kasse. Schichtsumme für den Kassenbericht, Abrechnen = kassieren" }]
+</script>
+<body class="bg-base-100 text-base-content">
+<main class="max-w-5xl mx-auto px-4 py-10 space-y-12">
+
+<header class="space-y-3" data-lavish-revision="r2">
+  <p class="text-sm opacity-60">Plan · Version 0.2 · 22.10.2026 · baut auf 0.1 auf</p>
+  <h1 class="text-4xl font-bold">Schichtabschluss und Umsatz</h1>
+  <p class="text-lg opacity-80 max-w-3xl">Heute schreibt dein Vater für jeden Gast einen Papier-Deckel, kassiert bar in die offene Ladenkasse und trägt am Schichtende die Summe aller Deckel in den Kassenbericht ein. Version 0.2 holt genau das in die App: „Abrechnen“ heißt nur noch kassieren, und am Schichtende rechnet die App alles zusammen. Alle Schichten bleiben gespeichert. Auf einer neuen Seite <b>📊 Umsatz</b> sieht man Tage, Wochen, Monate, die beliebtesten Getränke und die besten Kunden.</p>
+</header>
+
+<section id="recht" class="space-y-3" data-lavish-revision="r2">
+  <div role="alert" class="alert alert-warning alert-soft items-start">
+    <div class="space-y-1">
+      <b>Kassenrecht: offene Ladenkasse, eine Frage bleibt</b>
+      <p class="text-sm">Pub 22 hat keine TSE-Kasse, sondern eine offene Ladenkasse. Dort ist die Tagessumme im Kassenbericht der übliche Weg; die Pflicht, jeden Verkauf einzeln aufzuzeichnen, hat dafür eine Ausnahme (§ 146 Abs. 1 AO). <i>(Meine erste Recherche ging fälschlich von einer TSE-Kasse aus, das ist korrigiert.)</i></p>
+      <p class="text-sm"><b>Aber:</b> Laut Anwendungserlass gilt diese Ausnahme nur, solange <b>kein elektronisches Aufzeichnungssystem</b> benutzt wird (AEAO zu § 146 Nr. 2.2.2; offene Ladenkasse = „ohne technische Hilfsmittel“). Die App erfasst jedes Getränk elektronisch, und zwar schon in Version 0.1. Das hat zwei mögliche Folgen:</p>
+      <ul class="text-sm list-disc pl-5">
+        <li><b>Die App gilt als Kasse</b> (sie hat eine „Kassenfunktion“): dann sind TSE, Beleg und Meldung beim Finanzamt nötig.</li>
+        <li><b>Die App gilt nicht als Kasse:</b> Dann ist keine TSE nötig, aber die Einzelaufzeichnungen existieren und müssen aufbewahrt werden (wahrscheinlich 10 Jahre). Die reine Tagessumme ist dann kaum noch haltbar.</li>
+      </ul>
+      <p class="text-sm">Amtliche Aussagen oder Urteile genau zu diesem Fall gibt es nach der Recherche nicht. <b>Darum: Bevor die App in der Bar die Papier-Deckel ersetzt, muss der Steuerberater das beantworten.</b> Sechs fertige Fragen an ihn stehen in <code>recherche/_eingang/kassensichv-offene-ladenkasse-app.md</code> (Entwurf, keine Rechtsberatung). Bauen und auf dem iPad testen kann man trotzdem schon. Die App löscht nie etwas von selbst.</p>
+    </div>
+  </div>
+</section>
+
+<section class="space-y-4" data-lavish-revision="r1">
+  <h2 class="text-2xl font-bold">Heute und mit 0.2</h2>
+  <div class="grid md:grid-cols-2 gap-4">
+    <div class="card card-border bg-base-200"><div class="card-body">
+      <h3 class="card-title">Heute</h3>
+      <ul class="list-disc pl-5 space-y-1 text-sm">
+        <li>Ein Deckel pro Gast, auf Papier oder in der App.</li>
+        <li>Die App sagt beim Abrechnen „Bitte in der Kasse buchen“, obwohl es nur die offene Ladenkasse gibt.</li>
+        <li>Am Schichtende alle Deckel per Hand zusammenzählen und die Summe in den Kassenbericht eintragen.</li>
+        <li>Keine Übersicht, was an welchem Tag lief oder wer die besten Gäste sind.</li>
+      </ul>
+    </div></div>
+    <div class="card card-border bg-base-200 border-success/40"><div class="card-body">
+      <h3 class="card-title">Mit 0.2</h3>
+      <ul class="list-disc pl-5 space-y-1 text-sm">
+        <li>„Abrechnen“ zeigt den Betrag zum <b>Kassieren</b>, Knopf „Bezahlt“.</li>
+        <li><b>„Schicht abschließen“</b> geht erst, wenn kein Deckel mehr offen ist. Die App zeigt Gesamtsumme, Summe je Kategorie, Rabatt und Freigetränke <b>für den Kassenbericht</b>.</li>
+        <li>Neue Seite <b>📊 Umsatz</b> mit den Reitern Schichten, Woche/Monat, Getränke, Kunden und Export.</li>
+      </ul>
+    </div></div>
+  </div>
+</section>
+
+<section class="space-y-4" data-lavish-revision="r1">
+  <h2 class="text-2xl font-bold">So läuft eine Schicht</h2>
+  <svg viewBox="0 0 900 200" class="w-full" role="img" aria-label="Ablauf einer Schicht: Deckel führen, bar kassieren, Schicht abschließen, Summe in den Kassenbericht, Umsatz-Übersicht">
+    <defs><marker id="a" markerWidth="10" markerHeight="10" refX="8" refY="5" orient="auto"><path d="M0,0 L10,5 L0,10 z" fill="currentColor"/></marker></defs>
+    <g font-family="sans-serif" font-size="15" fill="currentColor" text-anchor="middle">
+      <g id="s1"><title>Deckel führen wie bisher</title><rect x="5" y="30" width="150" height="70" rx="12" fill="none" stroke="currentColor"/><text x="80" y="62">Deckel</text><text x="80" y="82" font-size="12" opacity=".7">wie bisher</text></g>
+      <g id="s2"><title>Gast zahlt bar, Geld in die offene Ladenkasse</title><rect x="190" y="30" width="150" height="70" rx="12" fill="none" stroke="currentColor"/><text x="265" y="62">Bezahlt</text><text x="265" y="82" font-size="12" opacity=".7">bar kassiert</text></g>
+      <g id="s3"><title>Erst möglich, wenn kein Deckel mehr offen ist</title><rect x="375" y="30" width="150" height="70" rx="12" fill="none" stroke="#e0a040" stroke-width="2"/><text x="450" y="62">Schicht</text><text x="450" y="82" font-size="12" opacity=".7">abschließen</text></g>
+      <g id="s4"><title>Summe in den Kassenbericht eintragen</title><rect x="560" y="30" width="150" height="70" rx="12" fill="none" stroke="currentColor"/><text x="635" y="62">Kassenbericht</text><text x="635" y="82" font-size="12" opacity=".7">Summe eintragen</text></g>
+      <g id="s5"><title>Schicht ist gespeichert und in der Übersicht</title><rect x="745" y="30" width="150" height="70" rx="12" fill="none" stroke="currentColor"/><text x="820" y="62">📊 Umsatz</text><text x="820" y="82" font-size="12" opacity=".7">aufgehoben</text></g>
+      <g stroke="currentColor" marker-end="url(#a)"><line x1="155" y1="65" x2="186" y2="65"/><line x1="340" y1="65" x2="371" y2="65"/><line x1="525" y1="65" x2="556" y2="65"/><line x1="710" y1="65" x2="741" y2="65"/></g>
+      <path d="M265,100 C265,140 80,140 80,104" fill="none" stroke="currentColor" stroke-dasharray="4 4" marker-end="url(#a)" opacity=".6"/>
+      <text x="172" y="152" font-size="12" opacity=".7">nächster Gast</text>
+      <text x="450" y="185" font-size="13" opacity=".7">Abschließen geht erst, wenn alle Deckel abgerechnet sind</text>
+    </g>
+  </svg>
+</section>
+
+<section class="space-y-4" data-lavish-revision="r2">
+  <h2 class="text-2xl font-bold">Abrechnen-Dialog (geändert)</h2>
+  <div class="grid md:grid-cols-2 gap-4 items-start">
+    <div class="ipad p-5 text-sm text-stone-200 space-y-2">
+      <p class="opacity-50 text-xs">heute</p>
+      <b class="text-lg">Abrechnen: Murat K.</b>
+      <div class="flex justify-between"><span>Summe</span><span>18,50 €</span></div>
+      <div class="flex justify-between text-lg"><b>Zu zahlen</b><b>18,50 €</b></div>
+      <p class="opacity-60">Bitte in der Kasse buchen.</p>
+      <div class="flex gap-2"><button class="btn btn-sm flex-1">Zurück</button><button class="btn btn-sm btn-success flex-1">Abgerechnet</button></div>
+    </div>
+    <div class="ipad p-5 text-sm text-stone-200 space-y-2">
+      <p class="opacity-50 text-xs">mit 0.2</p>
+      <b class="text-lg">Abrechnen: Murat K.</b>
+      <div class="flex justify-between"><span>Summe</span><span>18,50 €</span></div>
+      <div class="flex justify-between text-lg"><b>Kassieren</b><b>18,50 €</b></div>
+      <p class="opacity-60">Zählt in die laufende Schicht.</p>
+      <p>+18 Punkte</p>
+      <div class="flex gap-2"><button class="btn btn-sm flex-1">Zurück</button><button class="btn btn-sm btn-success flex-1">Bezahlt</button></div>
+    </div>
+  </div>
+</section>
+
+<section class="space-y-4" data-lavish-revision="r1">
+  <h2 class="text-2xl font-bold">Neue Seite 📊 Umsatz (Skizze, iPad quer)</h2>
+  <div class="ipad p-4 text-sm text-stone-200 space-y-3">
+    <div class="flex gap-4 items-center border-b border-stone-700 pb-2"><b class="text-amber-400 mr-auto">Pub 22</b><span>🍺 Bar</span><span>👥 Kunden</span><span class="bg-stone-700 rounded px-2">📊 Umsatz</span><span>⚙️ Einstellungen</span></div>
+    <div class="tile flex flex-wrap gap-6 items-center border border-amber-500/60">
+      <div><p class="opacity-60">Laufende Schicht seit 18:04</p><b class="text-2xl">412,30 €</b> <span class="opacity-60">bezahlt · 23 Deckel</span></div>
+      <div class="opacity-80">Noch offen: 3 Deckel, 41,80 €</div>
+      <button class="btn btn-warning ml-auto btn-disabled" tabindex="-1" aria-disabled="true">Schicht abschließen</button>
+    </div>
+    <p class="text-xs opacity-60 -mt-1">Der Knopf ist grau, solange Deckel offen sind („Erst alle Deckel abrechnen“).</p>
+    <div class="flex gap-2 flex-wrap"><span class="badge badge-warning">Schichten</span><span class="badge badge-outline">Woche / Monat</span><span class="badge badge-outline">Getränke</span><span class="badge badge-outline">Kunden</span><span class="badge badge-outline">Export</span></div>
+    <table class="table table-sm">
+      <thead><tr class="text-stone-400"><th>Tag</th><th>Zeit</th><th class="text-right">Deckel</th><th class="text-right">Rabatt</th><th class="text-right">Umsatz</th></tr></thead>
+      <tbody>
+        <tr><td>Sa 18.10.</td><td>17:55–02:40</td><td class="text-right">41</td><td class="text-right">−10,00 €</td><td class="text-right"><b>896,20 €</b></td></tr>
+        <tr><td>Fr 17.10.</td><td>18:10–01:55</td><td class="text-right">35</td><td class="text-right">−5,00 €</td><td class="text-right"><b>731,40 €</b></td></tr>
+        <tr><td>Do 16.10.</td><td>18:00–00:30</td><td class="text-right">19</td><td class="text-right">–</td><td class="text-right"><b>322,60 €</b></td></tr>
+      </tbody>
+    </table>
+    <p class="opacity-50 text-xs">Tippt man eine Zeile an, sieht man alle Deckel der Schicht, die Summen je Kategorie, die Freigetränke und eine Notiz.</p>
+  </div>
+  <p class="text-sm opacity-60">Eine Schicht gehört zu dem Tag, an dem ihr erster Deckel aufging. Eine Schicht bis 2:40 Uhr steht also beim Samstag, nicht beim Sonntag.</p>
+</section>
+
+<section class="space-y-4" data-lavish-revision="r1">
+  <h2 class="text-2xl font-bold">Schicht abschließen (Dialog)</h2>
+  <div class="grid md:grid-cols-2 gap-4 items-start">
+    <div class="ipad p-5 text-sm text-stone-200 space-y-2">
+      <b class="text-lg">Schicht abschließen</b>
+      <p class="opacity-60">Sa 18.10., 17:55 – 02:40 · 41 Deckel</p>
+      <p class="opacity-60 pt-1">In den Kassenbericht eintragen:</p>
+      <table class="table table-xs">
+        <tbody>
+          <tr><td>Bier vom Fass</td><td class="text-right">312,00 €</td></tr>
+          <tr><td>Flaschenbier</td><td class="text-right">161,70 €</td></tr>
+          <tr><td>Spirituosen</td><td class="text-right">228,00 €</td></tr>
+          <tr><td>Alkoholfrei</td><td class="text-right">118,80 €</td></tr>
+          <tr><td>Snacks</td><td class="text-right">85,70 €</td></tr>
+          <tr><td>Rabatt (Punkte)</td><td class="text-right">−10,00 €</td></tr>
+          <tr class="text-base"><th>Gesamt</th><th class="text-right">896,20 €</th></tr>
+        </tbody>
+      </table>
+      <p>🎁 Freigetränke ausgegeben: 4× Freigetränk (bis 3,30 €)</p>
+      <input class="input input-sm w-full" placeholder="Notiz, z. B. Abweichung zum gezählten Kassenbestand (optional)">
+      <div class="flex gap-2"><button class="btn btn-sm flex-1">Zurück</button><button class="btn btn-sm btn-success flex-1">Schicht abschließen</button></div>
+    </div>
+    <div class="space-y-3 text-sm">
+      <p><b>Kategorien</b> sind die aus der Getränkekarte. Jede Buchung merkt sich ihre Kategorie. Benennt man später eine Kategorie um, ändern sich alte Schichten deshalb nicht.</p>
+      <p><b>Rabatt:</b> Die Kategorien zeigen den Wert der Getränke, der Punkte-Rabatt steht als eigene Minus-Zeile. Gesamt ist das Geld, das wirklich kassiert wurde: die Zahl für den Kassenbericht.</p>
+      <p><b>Freigetränke</b> (Prämien) erscheinen nur als Anzahl, nicht in der Summe, weil dafür kein Geld geflossen ist.</p>
+      <p><b>Notiz:</b> Passt der gezählte Kassenbestand nicht zur Summe, schreibt man es hier hinein. Die Notiz bleibt bei der Schicht.</p>
+      <p><b>Nach dem Abschluss</b> ist die Schicht fest gespeichert und ändert sich nicht mehr. Die nächste Schicht beginnt mit dem nächsten bezahlten Deckel.</p>
+    </div>
+  </div>
+</section>
+
+<section class="space-y-4" data-lavish-revision="r1">
+  <h2 class="text-2xl font-bold">Weitere Reiter auf der Umsatz-Seite</h2>
+  <div class="grid md:grid-cols-2 gap-4">
+    <div class="ipad p-4 text-xs text-stone-200 space-y-2">
+      <b class="text-sm">Woche / Monat</b>
+      <table class="table table-xs"><tbody>
+        <tr><td>KW 42</td><td class="text-right">2.611,40 €</td></tr>
+        <tr><td>KW 41</td><td class="text-right">2.380,10 €</td></tr>
+        <tr><td>Oktober</td><td class="text-right">8.902,50 €</td></tr>
+        <tr><td>September</td><td class="text-right">10.144,00 €</td></tr>
+      </tbody></table>
+    </div>
+    <div class="ipad p-4 text-xs text-stone-200 space-y-2">
+      <b class="text-sm">Getränke: meistverkauft</b>
+      <div class="flex gap-1"><span class="badge badge-xs badge-warning">Schicht</span><span class="badge badge-xs badge-outline">Woche</span><span class="badge badge-xs badge-outline">Monat</span><span class="badge badge-xs badge-outline">Alles</span></div>
+      <table class="table table-xs"><tbody>
+        <tr><td>Mönchshof/Veltins 0,5 l</td><td class="text-right">48×</td></tr>
+        <tr><td>Coca Cola 0,3 l</td><td class="text-right">21×</td></tr>
+        <tr><td>Jägermeister 2 cl</td><td class="text-right">17×</td></tr>
+      </tbody></table>
+    </div>
+    <div class="ipad p-4 text-xs text-stone-200 space-y-2 md:col-span-2" id="reiter-kunden">
+      <b class="text-sm">Kunden: wer bringt am meisten?</b>
+      <div class="flex gap-1"><span class="badge badge-xs badge-outline">Woche</span><span class="badge badge-xs badge-warning">Monat</span><span class="badge badge-xs badge-outline">Jahr</span><span class="badge badge-xs badge-outline">Alles</span></div>
+      <table class="table table-xs">
+        <thead><tr class="text-stone-400"><th>Kunde</th><th class="text-right">Umsatz ▼</th><th class="text-right">Deckel</th><th class="text-right">Ø pro Deckel</th><th class="text-right">Rabatt</th><th class="text-right">Freigetränke</th></tr></thead>
+        <tbody>
+          <tr><td>Murat K.</td><td class="text-right">312,40 €</td><td class="text-right">14</td><td class="text-right">22,31 €</td><td class="text-right">−10,00 €</td><td class="text-right">2</td></tr>
+          <tr><td>Jonas</td><td class="text-right">208,90 €</td><td class="text-right">11</td><td class="text-right">18,99 €</td><td class="text-right">–</td><td class="text-right">1</td></tr>
+          <tr><td>Sabine</td><td class="text-right">96,50 €</td><td class="text-right">6</td><td class="text-right">16,08 €</td><td class="text-right">−5,00 €</td><td class="text-right">–</td></tr>
+          <tr class="opacity-60"><td>Gäste ohne Karte (zusammen)</td><td class="text-right">5.120,00 €</td><td class="text-right">402</td><td class="text-right">12,74 €</td><td class="text-right">–</td><td class="text-right">–</td></tr>
+        </tbody>
+      </table>
+      <p class="opacity-60">Spaltenkopf antippen = danach sortieren (Umsatz, Deckel, Rabatt). Name antippen = Kunde in 👥 Kunden öffnen.</p>
+    </div>
+    <div class="ipad p-4 text-xs text-stone-200 space-y-2 md:col-span-2">
+      <b class="text-sm">Export</b>
+      <p>Zeitraum wählen, dann eine Datei für Excel (CSV) über das Teilen-Menü, wie beim Sichern:</p>
+      <ul class="list-disc pl-4">
+        <li><b>Schichten</b>: eine Zeile pro Schicht mit den Summen je Kategorie und der Notiz</li>
+        <li><b>Deckel</b>: eine Zeile pro Deckel (Zeit, Name, Summe, Rabatt, Punkte)</li>
+      </ul>
+    </div>
+  </div>
+</section>
+
+<section class="space-y-4" data-lavish-revision="r1">
+  <h2 class="text-2xl font-bold">Was Version 0.2 kann</h2>
+  <ul class="list-disc pl-6 space-y-1">
+    <li><b>Abrechnen = kassieren:</b> neuer Text, Knopf „Bezahlt“, Punkte wie bisher.</li>
+    <li><b>Laufende Schicht</b> immer sichtbar auf der Umsatz-Seite: bezahlt, Anzahl Deckel, noch offen.</li>
+    <li><b>Schicht abschließen</b> (erst ohne offene Deckel): Gesamtsumme, Summe je Kategorie, Rabatt und Freigetränke für den Kassenbericht, dazu eine Notiz. Danach fest gespeichert.</li>
+    <li><b>Schichten-Liste</b> mit Details, <b>Woche/Monat</b>, <b>meistverkaufte Getränke</b>.</li>
+    <li><b>Kunden-Rangliste</b> nach Umsatz, Anzahl Deckel, Rabatt und Freigetränken pro Zeitraum; Gäste ohne Karte als eine Sammelzeile.</li>
+    <li><b>Export als CSV</b> (Schichten und Deckel), lässt sich sauber in Excel öffnen (Semikolon, Komma als Dezimalzeichen).</li>
+    <li>Schichten sind Teil der normalen <b>Sicherung</b>. Die App löscht nichts von selbst.</li>
+  </ul>
+</section>
+
+<section class="space-y-4" data-lavish-revision="r1">
+  <h2 class="text-2xl font-bold">Technik</h2>
+  <div class="overflow-x-auto"><table class="table">
+    <tbody>
+      <tr><th>Neue Daten</th><td><code>shifts</code>: pro abgeschlossener Schicht Beginn, Ende, Anzahl Deckel, Summe, Rabatt, Summen je Kategorie, Freigetränke und Notiz. Die Summen werden beim Abschluss <b>festgeschrieben</b>. Jeder abgerechnete Deckel bekommt die Nummer seiner Schicht; ein Deckel ohne Nummer gehört zur laufenden Schicht.</td></tr>
+      <tr><th>Kategorie je Buchung</th><td>Jede Zeile auf dem Deckel speichert ihre Kategorie mit, so wie heute schon den Preis. Umbenennen verschiebt deshalb keine alten Zahlen.</td></tr>
+      <tr><th>Bestehende Daten</th><td>Der Datenstand geht einmalig von Version 1 auf 2, beim Start und beim Wiederherstellen alter Sicherungen. <code>shifts</code> wird leer angelegt. Deckel, die schon in 0.1 abgerechnet wurden, kommen in eine Schicht „vor 0.2“, damit sie nicht in der ersten echten Schicht landen. Fehlende Kategorien kommen aus der Getränkekarte, sonst „Sonstiges“. Alte Sicherungen lassen sich weiter einlesen.</td></tr>
+      <tr><th>Kunden-Rangliste</th><td>Wird aus den abgerechneten Deckeln berechnet und nicht extra gespeichert. Der Name kommt aus der aktuellen Kundenliste, gelöschte Kunden erscheinen mit dem Namen, der auf dem Deckel steht.</td></tr>
+      <tr><th>Rechnen</th><td>Alles in Cent, nur am Bildschirm in Euro. Schichten, Zeiträume und Ranglisten sind reine Logik in <code>src/lib/</code> ohne Oberfläche und deshalb vollständig testbar.</td></tr>
+      <tr><th>Export</th><td>CSV ohne neue Bibliothek, mit BOM, Semikolon und deutschem Zahlenformat, damit Excel Umlaute und Beträge richtig liest. Geteilt wird wie beim Sichern.</td></tr>
+      <tr><th>Speicher</th><td>Bei 40 Deckeln pro Abend und 300 Abenden im Jahr reicht localStorage weiter. Wird es eng (ca. 5 MB), ziehen die Daten auf IndexedDB um; die App warnt vorher.</td></tr>
+      <tr><th>Tests</th><td>Vitest prüft: Schicht abschließen (Summen, Kategorien, Rabatt, Freigetränke, Notiz; mit offenen Deckeln abgelehnt; zweimal abschließen geht nicht), Tag einer Schicht über Mitternacht, Woche/Monat, Top-Getränke, Kunden-Rangliste und Sortierung, CSV-Format, Datenstand 1 → 2 mit einer alten Sicherung. Dazu Screenshots der neuen Seite und der Dialoge. Der echte Test bleibt auf dem iPad in der Bar.</td></tr>
+    </tbody>
+  </table></div>
+</section>
+
+<section class="space-y-3" data-lavish-revision="r1">
+  <h2 class="text-2xl font-bold">Risiken</h2>
+  <ul class="list-disc pl-6 space-y-1">
+    <li><b>Kassenrecht:</b> Ob die App selbst eine TSE nötig macht (siehe oben), klärt der Steuerberater, bevor sie die Papier-Deckel ersetzt.</li>
+    <li><b>Datenverlust:</b> Die Umsätze liegen nur auf dem iPad. Die Erinnerung ans Sichern bleibt, zusätzlich fragt der Schichtabschluss einmal pro Woche „Jetzt sichern?“.</li>
+    <li><b>Vergessener Deckel:</b> Steht noch ein Deckel offen, lässt sich die Schicht nicht abschließen. Der Dialog zeigt, welche Deckel noch offen sind, und führt mit einem Tipp zu ihnen.</li>
+    <li><b>Uhr des iPads:</b> Eine falsche Uhrzeit ergibt einen falschen Tag. Das iPad stellt die Zeit automatisch, das reicht.</li>
+  </ul>
+</section>
+
+<section class="space-y-3" data-lavish-revision="r1">
+  <h2 class="text-2xl font-bold">Bewusst nicht in 0.2</h2>
+  <ul class="list-disc pl-6 space-y-1">
+    <li>Bar und EC-Karte getrennt (lässt sich später ergänzen).</li>
+    <li>Steuersätze (7 % / 19 %) und Netto-Beträge: das rechnet die Kasse.</li>
+    <li>Diagramme, Personal/Kellner pro Schicht, PIN für die Umsatz-Seite.</li>
+    <li>Abgeschlossene Schichten nachträglich ändern oder wieder öffnen.</li>
+  </ul>
+</section>
+
+<section class="space-y-6" data-lavish-annotate="off" data-lavish-revision="r1">
+  <h2 class="text-2xl font-bold">Deine Entscheidungen</h2>
+  <div class="card card-border bg-base-200"><div class="card-body text-sm space-y-1">
+    <h3 class="card-title text-base">Schon entschieden</h3>
+    <p>✅ Offene Ladenkasse: die Schichtsumme geht in den Kassenbericht, „Abrechnen“ heißt kassieren. <span class="opacity-60">(Ersetzt „jeder Deckel einzeln in die Kasse“; das beruhte auf meiner falschen TSE-Annahme.)</span></p>
+    <p>✅ Abschließen erst, wenn alle Deckel abgerechnet sind.</p>
+    <p>✅ Umsatz-Seite offen wie der Rest der App, ohne PIN.</p>
+    <p>✅ Neuer Reiter Kunden: Umsatz, Deckel und Rabatt pro Kunde.</p>
+  </div></div>
+
+  <form data-lavish-question="freigabe" class="card card-border bg-base-200" onsubmit="event.preventDefault(); const f = new FormData(event.currentTarget); const v = f.get('ok'); const n = (f.get('notiz') || '').trim(); if (v) window.lavish.queuePrompt('Plan 0.2: ' + v + (n ? ' – Anmerkung: ' + n : ''), { tag: 'choice', text: 'Plan 0.2: ' + v, element: event.currentTarget, data: { question: 'freigabe', answer: v, notiz: n } });">
+    <div class="card-body space-y-2">
+      <h3 class="card-title">Passt der Plan?</h3>
+      <label class="flex gap-2"><input type="radio" class="radio" name="ok" value="Ja, los"> <span>Ja, los</span></label>
+      <label class="flex gap-2"><input type="radio" class="radio" name="ok" value="Ja, mit Änderungen (siehe Anmerkung)"> <span>Ja, mit Änderungen</span></label>
+      <label class="flex gap-2"><input type="radio" class="radio" name="ok" value="Nein, nochmal überarbeiten"> <span>Nein, nochmal überarbeiten</span></label>
+      <textarea name="notiz" class="textarea w-full" placeholder="Anmerkungen (optional)"></textarea>
+      <button class="btn btn-sm btn-primary w-fit" type="submit">Antwort vormerken</button>
+    </div>
+  </form>
+  <p class="text-sm opacity-70">Danach oben auf <b>„Send to Agent“</b> klicken.</p>
+</section>
+
+<footer class="text-xs opacity-50 space-y-1 pt-6">
+  <p>Grundlage: Code-Stand nach PR #5 (<code>src/lib/db.ts</code>, <code>src/ui/TabPanel.svelte</code>), Plan 0.1, Antworten aus Chat und Plan-Seite vom 22.10.2026 (offene Ladenkasse, keine TSE). Die Beträge in den Skizzen sind Beispiele.</p>
+</footer>
+</main>
+</body>
+</html>

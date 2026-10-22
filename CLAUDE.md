@@ -5,7 +5,7 @@ Keep it short: conditional how-to (e.g. how to run end-to-end tests) goes into a
 When Ilker corrects a mistake, add the lesson here in one line, or in the skill it belongs to.
 
 ## What this is
-Loyalty-card app for Ilker's father's bar "Pub 22". Customers get a QR card; scanning it checks them in, drinks go on their tab, settling the tab credits points (configurable, start 1 EUR = 1 point), points are redeemed as fixed rewards or as a EUR discount. Walk-in guests without a card get a plain tab without points. Not a cash register: payment still goes through the bar's TSE register. Full v0.1 plan: `docs/plan-0.1.html`.
+Loyalty-card app for Ilker's father's bar "Pub 22". Customers get a QR card; scanning it checks them in, drinks go on their tab, settling the tab credits points (configurable, start 1 EUR = 1 point), points are redeemed as fixed rewards or as a EUR discount. Walk-in guests without a card get a plain tab without points. Not a cash register: the bar has an open cash box (offene Ladenkasse, no TSE register); guests pay cash, the shift total goes into the Kassenbericht. Never assume a TSE register. Full v0.1 plan: `docs/plan-0.1.html`.
 
 - **For whom:** only the bar owner, on one iPad at the counter. No customer accounts, no login. UI language German.
 - **Platform and stack:** web app installed to the iPad home screen (PWA, offline after first load), hosted on GitHub Pages (public repo, code only). Vite + TypeScript + Svelte 5; jsQR for scanning (iOS Safari has no BarcodeDetector), qrcode for card generation; data in localStorage on the iPad only, with backup export/import; Vitest.

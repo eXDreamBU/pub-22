@@ -156,3 +156,43 @@ dialog h2 {
   text-align: right;
   white-space: nowrap;
 }
+
+table.report {
+  width: 100%;
+  border-collapse: collapse;
+}
+
+table.report th {
+  text-align: left;
+  color: var(--muted);
+  font-weight: normal;
+  font-size: 0.85rem;
+}
+
+table.report th.num,
+table.report td.num {
+  text-align: right;
+}
+
+table.report td,
+table.report th {
+  padding: 0.55rem 0.5rem;
+  border-bottom: 1px solid var(--line);
+}
+
+table.report tr.tap {
+  cursor: pointer;
+}
+
+table.report tr.tap:active {
+  background: var(--panel-2);
+}
+
+button.sort {
+  background: none;
+  border: none;
+  min-height: 0;
+  padding: 0;
+  color: inherit;
+  font: inherit;
+}

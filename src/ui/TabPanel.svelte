@@ -153,8 +153,8 @@
   {#if summary.discountCents}
     <div class="row"><span class="grow">Rabatt</span><span class="num">−{formatEuro(summary.discountCents)}</span></div>
   {/if}
-  <div class="row pay"><b class="grow">Zu zahlen</b><b class="num">{formatEuro(summary.paidCents)}</b></div>
-  <p class="muted">Bitte in der Kasse buchen.</p>
+  <div class="row pay"><b class="grow">Kassieren</b><b class="num">{formatEuro(summary.paidCents)}</b></div>
+  <p class="muted">Zählt in die laufende Schicht.</p>
   {#each tab.rewards as r, i (i)}
     <p>🎁 Gratis ausgeben: {r.name}</p>
   {/each}
@@ -165,7 +165,7 @@
   {/if}
   <div class="row">
     <button class="grow" onclick={() => settleDialog.close()}>Zurück</button>
-    <button class="ok grow" onclick={doSettle}>Abgerechnet</button>
+    <button class="ok grow" onclick={doSettle}>Bezahlt</button>
   </div>
 </dialog>
 

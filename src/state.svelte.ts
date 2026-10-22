@@ -3,12 +3,13 @@
 
 import { loadDb, saveDb } from './lib/storage';
 
-export type View = 'bar' | 'customers' | 'settings';
+export type View = 'bar' | 'customers' | 'revenue' | 'settings';
 
 export const app = $state({
   db: loadDb(),
   view: 'bar' as View,
   selectedTabId: null as string | null,
+  selectedCustomerId: null as string | null, // customer shown in the Kunden view
 });
 
 export function startPersisting(): void {

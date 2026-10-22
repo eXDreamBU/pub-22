@@ -5,7 +5,9 @@ import {
   availablePoints,
   cancelTab,
   checkIn,
+  closeShift,
   createDb,
+  migrate,
   lastVisits,
   openGuestTab,
   parseBackup,
@@ -229,5 +231,135 @@ describe('parseBackup', () => {
   it('rejects a file that is not a backup', () => {
     expect(() => parseBackup('{"hello":1}')).toThrow('Keine Pub-22-Sicherung');
     expect(() => parseBackup('kein json')).toThrow('Keine Pub-22-Sicherung');
+  });
+});
+
+const pils = { id: 'p1', category: 'Bier', name: 'Pils', priceCents: 400 };
+const cola = { id: 'p2', category: 'Alkoholfrei', name: 'Cola', priceCents: 300 };
+
+describe('tab lines', () => {
+  it('snapshot the category of the product', () => {
+    const db = createDb(NOW);
+    const tab = openGuestTab(db, 'Tisch', NOW);
+    addItem(tab, pils);
+    expect(tab.lines[0].category).toBe('Bier');
+  });
+});
+
+describe('closeShift', () => {
+  function bookedDb() {
+    const { db, id } = dbWithCustomer(300);
+    db.settings.discountPoints = 100;
+    db.settings.discountCents = 500;
+    const a = checkIn(db, id, '2026-10-18T16:00:00.000Z');
+    addItem(a, pils);
+    addItem(a, pils);
+    addItem(a, cola);
+    setDiscountSteps(db, a, 1);
+    redeemReward(db, a, { id: 'r', name: 'Freigetränk', points: 100 });
+    settle(db, a.id, '2026-10-18T20:00:00.000Z');
+    const g = openGuestTab(db, 'Gast', '2026-10-18T15:30:00.000Z');
+    addItem(g, cola);
+    settle(db, g.id, '2026-10-18T21:00:00.000Z');
+    return db;
+  }
+
+  it('freezes totals, categories, rewards and note and stamps the tabs', () => {
+    const db = bookedDb();
+    const shift = closeShift(db, '  Kasse stimmt  ', '2026-10-19T01:00:00.000Z');
+    expect(shift).toMatchObject({
+      startedAt: '2026-10-18T15:30:00.000Z',
+      closedAt: '2026-10-19T01:00:00.000Z',
+      tabCount: 2,
+      totalCents: 1400,
+      discountCents: 500,
+      paidCents: 900,
+      byCategory: [
+        { category: 'Bier', cents: 800, qty: 2 },
+        { category: 'Alkoholfrei', cents: 600, qty: 2 },
+      ],
+      rewards: [{ name: 'Freigetränk', count: 1 }],
+      note: 'Kasse stimmt',
+    });
+    expect(db.shifts).toEqual([shift]);
+    expect(db.history.every((t) => t.shiftId === shift.id)).toBe(true);
+  });
+
+  it('refuses while a tab is open', () => {
+    const db = bookedDb();
+    openGuestTab(db, 'offen', NOW);
+    expect(() => closeShift(db, '', NOW)).toThrow('Erst alle Deckel');
+    expect(db.shifts).toEqual([]);
+  });
+
+  it('refuses an empty shift, so closing twice fails', () => {
+    const db = bookedDb();
+    closeShift(db, '', NOW);
+    expect(() => closeShift(db, '', NOW)).toThrow('noch keinen');
+    expect(db.shifts.length).toBe(1);
+  });
+
+  it('the next shift only contains tabs settled after the close', () => {
+    const db = bookedDb();
+    const first = closeShift(db, '', NOW);
+    settle(db, openGuestTab(db, 'neu', NOW).id, NOW);
+    const second = closeShift(db, '', NOW);
+    expect([first.tabCount, second.tabCount]).toEqual([2, 1]);
+    expect(db.history.length).toBe(3);
+  });
+});
+
+describe('migrate', () => {
+  function v1(): unknown {
+    const line = { productId: 'p1', name: 'Pils', priceCents: 400, qty: 2 };
+    const orphan = { productId: 'gone', name: 'Alt', priceCents: 100, qty: 1 };
+    const base = { label: 'A', rewards: [], discountSteps: 0 };
+    return {
+      version: 1,
+      products: [{ id: 'p1', category: 'Bier', name: 'Pils', priceCents: 400 }],
+      customers: [],
+      tabs: [{ ...base, id: 't0', openedAt: '2026-10-20T10:00:00.000Z', lines: [{ ...line }] }],
+      history: [
+        { ...base, id: 't1', openedAt: '2026-10-10T18:00:00.000Z', closedAt: '2026-10-10T22:00:00.000Z', lines: [{ ...line }, orphan], totalCents: 900, discountCents: 0, paidCents: 900, pointsSpent: 0, pointsEarned: 0 },
+        { ...base, id: 't2', openedAt: '2026-10-09T18:00:00.000Z', closedAt: '2026-10-11T01:00:00.000Z', lines: [{ ...line }], totalCents: 800, discountCents: 0, paidCents: 800, pointsSpent: 0, pointsEarned: 0 },
+      ],
+      rewards: [],
+      settings: { pointsPerEuro: 1, discountPoints: 100, discountCents: 500 },
+      createdAt: NOW,
+    };
+  }
+
+  it('moves old history into one "vor 0.2" shift and fills categories', () => {
+    const db = migrate(v1());
+    expect(db.version).toBe(2);
+    expect(db.shifts).toHaveLength(1);
+    expect(db.shifts[0]).toMatchObject({
+      note: 'vor 0.2',
+      startedAt: '2026-10-09T18:00:00.000Z',
+      closedAt: '2026-10-11T01:00:00.000Z',
+      tabCount: 2,
+      paidCents: 1700,
+    });
+    expect(db.history.every((t) => t.shiftId === db.shifts[0].id)).toBe(true);
+    expect(db.history[0].lines.map((l) => l.category)).toEqual(['Bier', 'Sonstiges']);
+    expect(db.tabs[0].lines[0].category).toBe('Bier');
+  });
+
+  it('creates no shift for an empty v1 history', () => {
+    const data = v1() as { history: unknown[] };
+    data.history = [];
+    expect(migrate(data).shifts).toEqual([]);
+  });
+
+  it('passes v2 through and rejects anything else', () => {
+    const db = createDb(NOW);
+    expect(migrate(db)).toBe(db);
+    expect(() => migrate({ ...db, shifts: undefined })).toThrow('Keine Pub-22-Sicherung');
+    expect(() => migrate({ ...db, version: 3 })).toThrow('Keine Pub-22-Sicherung');
+    expect(() => migrate(null)).toThrow('Keine Pub-22-Sicherung');
+  });
+
+  it('parseBackup runs old backups through the migration', () => {
+    expect(parseBackup(JSON.stringify(v1())).version).toBe(2);
   });
 });
