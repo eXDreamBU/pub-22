@@ -6,7 +6,6 @@
   import { formatDate } from './format';
 
   let search = $state('');
-  let selectedId = $state<string | null>(null);
   let newDialog: HTMLDialogElement;
   let newName = $state('');
   let newPhone = $state('');
@@ -17,12 +16,12 @@
       .filter((c) => c.name.toLowerCase().includes(search.trim().toLowerCase()))
       .sort((a, b) => a.name.localeCompare(b.name, 'de')),
   );
-  let selected = $derived(app.db.customers.find((c) => c.id === selectedId));
+  let selected = $derived(app.db.customers.find((c) => c.id === app.selectedCustomerId));
 
   function create(e: SubmitEvent) {
     e.preventDefault();
     if (!newName.trim()) return;
-    selectedId = addCustomer(app.db, newName, newPhone, now()).id;
+    app.selectedCustomerId = addCustomer(app.db, newName, newPhone, now()).id;
     newName = newPhone = '';
     newDialog.close();
   }
@@ -44,7 +43,7 @@
     }
     if (!confirm(`${selected!.name} löschen? Die Karte funktioniert danach nicht mehr.`)) return;
     app.db.customers = app.db.customers.filter((c) => c.id !== selected!.id);
-    selectedId = null;
+    app.selectedCustomerId = null;
   }
 </script>
 
@@ -57,7 +56,7 @@
     <ul>
       {#each customers as c (c.id)}
         <li>
-          <button class="item" class:selected={c.id === selectedId} onclick={() => (selectedId = c.id)}>
+          <button class="item" class:selected={c.id === app.selectedCustomerId} onclick={() => (app.selectedCustomerId = c.id)}>
             <b class="grow">{c.name}</b>
             <span class="muted">⭐ {c.points}</span>
           </button>
