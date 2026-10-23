@@ -222,7 +222,7 @@
         {#if recent.length}
           <p class="muted heading">Zuletzt frei eingetragen</p>
           <div class="tiles">
-            {#each recent as p (p.id + p.priceCents)}{@render tile(p)}{/each}
+            {#each recent as p (`${p.id}\u0000${p.priceCents}`)}{@render tile(p)}{/each}
           </div>
         {/if}
       </div>
