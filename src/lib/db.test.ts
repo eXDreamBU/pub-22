@@ -11,6 +11,7 @@ import {
   creditTotal,
   creditedThisShift,
   deleteShift,
+  freeProduct,
   inBar,
   incrementLine,
   migrate,
@@ -20,6 +21,7 @@ import {
   parseBackup,
   parseCardPayload,
   payPart,
+  recentFreeItems,
   renameCustomer,
   cardPayload,
   redeemReward,
@@ -119,6 +121,46 @@ describe('tab lines', () => {
     incrementLine(tab, 0);
     incrementLine(tab, 5);
     expect(tab.lines.map((l) => [l.qty, l.priceCents])).toEqual([[2, 330]]);
+  });
+});
+
+describe('free items (not on the menu)', () => {
+  it('book with name, category and price and merge like menu drinks', () => {
+    const db = createDb(NOW);
+    const tab = openGuestTab(db, 'Tisch 3', NOW);
+    addItem(tab, freeProduct(' Kilkenny 0,4 l ', 'Bier', 450));
+    addItem(tab, freeProduct('Kilkenny 0,4 l', 'Bier', 450));
+    expect(tab.lines).toEqual([expect.objectContaining({ name: 'Kilkenny 0,4 l', category: 'Bier', priceCents: 450, qty: 2 })]);
+    expect(db.products.some((p) => p.name === 'Kilkenny 0,4 l')).toBe(false);
+  });
+
+  it('refuse an empty name or a price of zero', () => {
+    expect(() => freeProduct('  ', 'Bier', 450)).toThrow('Name');
+    expect(() => freeProduct('Kilkenny', 'Bier', 0)).toThrow('Preis');
+  });
+
+  it('count in the shift under the chosen category', () => {
+    const db = createDb(NOW);
+    const tab = openGuestTab(db, 'Tisch 3', NOW);
+    addItem(tab, freeProduct('Erdnüsse', 'Sonstiges', 200));
+    settle(db, tab.id, NOW);
+    expect(summarizeShift(db.history).byCategory).toEqual([{ category: 'Sonstiges', cents: 200, qty: 1 }]);
+  });
+
+  it('recent ones come newest first, once each, at most the limit, and not once the menu has them', () => {
+    const db = createDb(NOW);
+    const old = openGuestTab(db, 'Tisch 1', NOW);
+    addItem(old, freeProduct('Erdnüsse', 'Sonstiges', 200));
+    addItem(old, freeProduct('Kilkenny', 'Bier', 450));
+    settle(db, old.id, '2026-10-22T21:00:00.000Z');
+    const tab = openGuestTab(db, 'Tisch 3', NOW);
+    addItem(tab, db.products[0]);
+    addItem(tab, freeProduct('Chips', 'Sonstiges', 250));
+    addItem(tab, freeProduct('Erdnüsse', 'Sonstiges', 200));
+    expect(recentFreeItems(db).map((p) => p.name)).toEqual(['Erdnüsse', 'Chips', 'Kilkenny']);
+    expect(recentFreeItems(db, 2).map((p) => p.name)).toEqual(['Erdnüsse', 'Chips']);
+    db.products.push({ id: 'k', category: 'Bier', name: 'kilkenny', priceCents: 450 });
+    expect(recentFreeItems(db).map((p) => p.name)).toEqual(['Erdnüsse', 'Chips']);
   });
 });
 

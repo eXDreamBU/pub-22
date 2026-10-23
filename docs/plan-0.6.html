@@ -1,0 +1,138 @@
+<!doctype html>
+<html lang="de" data-theme="luxury" data-lavish-annotate="on">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>Pub 22 – Plan 0.6</title>
+<link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/daisyui@5.5.19/daisyui.css">
+<link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/daisyui@5.5.19/themes.css">
+<script src="https://cdn.jsdelivr.net/npm/@tailwindcss/browser@4.2.4/dist/index.global.js"></script>
+<style>
+  *, *::before, *::after { box-sizing: border-box; }
+  .grid > *, .flex > * { min-width: 0; }
+  p, li, td, th, h1, h2, h3 { overflow-wrap: anywhere; }
+  svg { max-width: 100%; height: auto; }
+  .ipad { border: 10px solid #222; border-radius: 22px; background: #15120f; }
+  .tile { background: #241f1a; border-radius: 10px; padding: .75rem; }
+  .chip { border: 1px solid #3a322a; border-radius: 999px; padding: .2rem .7rem; font-size: .8rem; white-space: nowrap; }
+  .chip.on { border-color: #c9a24a; color: #c9a24a; }
+  .gold { color: #c9a24a; }
+  .money { color: #5fb878; }
+</style>
+</head>
+<script type="application/json" data-lavish-revisions>
+[{ "id": "r1", "label": "Entwurf", "timestamp": "2026-10-23T13:30:00Z", "summary": "Erster Entwurf mit deinen drei Antworten aus dem Chat" }]
+</script>
+<body class="bg-base-100 text-base-content">
+<main class="max-w-5xl mx-auto px-4 py-10 space-y-12">
+
+<header class="space-y-3" data-lavish-revision="r1">
+  <p class="text-sm opacity-60">Plan 0.6 · 23.10.2026 · baut auf 0.5 auf</p>
+  <h1 class="text-4xl font-bold">Frei eintragen: Getränk, das noch nicht auf der Karte steht</h1>
+  <p class="text-lg opacity-80 max-w-3xl">Heute kann man nur buchen, was in der Getränkekarte angelegt ist. Kommt etwas Neues in den Bestand (z. B. ein neues Bier vom Lieferanten), muss man erst in die Einstellungen. Neu gibt es vorne in der Kategorie-Leiste eine eigene Spalte <b>„Frei“</b>: Name und Preis eintippen, Kategorie antippen, fertig. Es steht dann auf dem Deckel wie jedes andere Getränk.</p>
+</header>
+
+<section class="space-y-4" data-lavish-revision="r1">
+  <h2 class="text-2xl font-bold">Heute und mit 0.6</h2>
+  <svg viewBox="0 0 900 220" class="w-full" role="img" aria-label="Heute: Einstellungen, Getränkekarte, anlegen, zurück zur Bar, buchen. Neu: Frei antippen, Name und Preis, auf den Deckel.">
+    <defs><marker id="a" markerWidth="10" markerHeight="10" refX="8" refY="5" orient="auto"><path d="M0,0 L10,5 L0,10 z" fill="currentColor"/></marker></defs>
+    <g font-family="sans-serif" font-size="14" fill="currentColor" text-anchor="middle">
+      <text x="10" y="40" text-anchor="start" opacity=".7">Heute</text>
+      <g fill="none" stroke="currentColor" opacity=".6">
+        <rect x="80" y="15" width="150" height="45" rx="10"/><rect x="270" y="15" width="150" height="45" rx="10"/><rect x="460" y="15" width="150" height="45" rx="10"/><rect x="650" y="15" width="150" height="45" rx="10"/>
+      </g>
+      <text x="155" y="43">Einstellungen</text><text x="345" y="43">Getränk anlegen</text><text x="535" y="43">zurück zur Bar</text><text x="725" y="43">Kachel antippen</text>
+      <g stroke="currentColor" opacity=".6" marker-end="url(#a)"><line x1="230" y1="38" x2="266" y2="38"/><line x1="420" y1="38" x2="456" y2="38"/><line x1="610" y1="38" x2="646" y2="38"/></g>
+      <text x="10" y="150" text-anchor="start" class="gold" fill="#c9a24a">Neu</text>
+      <g fill="none" stroke="#c9a24a" stroke-width="2">
+        <rect x="80" y="125" width="150" height="45" rx="10"/><rect x="270" y="125" width="230" height="45" rx="10"/>
+      </g>
+      <rect x="540" y="125" width="170" height="45" rx="10" fill="none" stroke="#5fb878" stroke-width="2"/>
+      <text x="155" y="153">„Frei“ antippen</text><text x="385" y="153">Name, Preis, Kategorie</text><text x="625" y="153">Auf den Deckel</text>
+      <g stroke="currentColor" marker-end="url(#a)"><line x1="230" y1="148" x2="266" y2="148"/><line x1="500" y1="148" x2="536" y2="148"/></g>
+      <text x="625" y="200" font-size="12" opacity=".7">zählt in Umsatz, Schicht und Punkte wie jedes Getränk</text>
+    </g>
+  </svg>
+</section>
+
+<section class="space-y-4" data-lavish-revision="r1">
+  <h2 class="text-2xl font-bold">Die Spalte „Frei“ am Deckel</h2>
+  <div class="grid md:grid-cols-2 gap-4 items-start">
+    <div class="ipad p-5 text-sm text-stone-200 space-y-3" id="frei">
+      <b class="text-lg">Murat K.</b>
+      <div class="flex gap-1 flex-wrap"><span class="chip">Alkoholfrei</span><span class="chip">Bier</span><span class="chip">Wein</span><span class="chip">…</span><span class="chip on">＋ Frei</span></div>
+      <div class="tile space-y-2">
+        <input class="input input-sm w-full" placeholder="Name, z. B. Kilkenny 0,4 l" value="Kilkenny 0,4 l">
+        <div class="flex items-center gap-2"><span class="flex-1 opacity-70">Preis</span><input class="input input-sm w-28 text-right" value="4,50"><span>€</span></div>
+        <p class="opacity-70 text-xs">Kategorie</p>
+        <div class="flex gap-1 flex-wrap"><span class="chip">Alkoholfrei</span><span class="chip on">Bier</span><span class="chip">Wein</span><span class="chip">…</span><span class="chip">Sonstiges</span></div>
+        <button class="btn btn-sm btn-primary w-full">Auf den Deckel</button>
+      </div>
+      <p class="opacity-70 text-xs">Zuletzt frei eingetragen</p>
+      <div class="grid grid-cols-3 gap-2">
+        <div class="tile"><div>Kilkenny 0,4 l</div><b>4,50 €</b> <span class="gold">+</span></div>
+        <div class="tile"><div>Erdnüsse</div><b>2,00 €</b> <span class="gold">+</span></div>
+      </div>
+    </div>
+    <div class="space-y-3 text-sm">
+      <p><b>„＋ Frei“</b> ist der erste Knopf in der Kategorie-Leiste (gebaut vorne statt hinten, sonst ist er hinter den vielen Kategorien versteckt). Statt Kacheln zeigt er ein kleines Formular.</p>
+      <p><b>Name und Preis</b> sind Pflicht. Preis wie in den Einstellungen: „4,50“, „4.5“ oder „4 €“. Größe schreibt man in den Namen.</p>
+      <p><b>Kategorie</b>: Auswahlliste mit allen Kategorien der Karte plus „Sonstiges“ (gebaut als Liste statt Knöpfe, damit „Zuletzt frei eingetragen“ ohne Blättern zu sehen ist), vorausgewählt ist „Sonstiges“. Danach zählt der Umsatz bei der gewählten Kategorie.</p>
+      <p><b>„Auf den Deckel“</b> bucht es einmal; Name und Preis bleiben stehen, damit man es gleich nochmal tippen kann. Auf dem Deckel geht es mit + und − wie bei jedem Getränk.</p>
+      <p><b>Zuletzt frei eingetragen</b>: die letzten 12 freien Getränke als Kacheln (aus offenen und abgerechneten Deckeln), ein Tipp bucht sie wieder. Steht ein Getränk mit demselben Namen inzwischen in der Getränkekarte, verschwindet die Kachel hier.</p>
+      <p><b>Punkte</b>, Rabatt, Aufs Haus, Teil zahlen, Anschreiben: alles wie bei normalen Getränken.</p>
+    </div>
+  </div>
+</section>
+
+<section class="space-y-4" data-lavish-revision="r1">
+  <h2 class="text-2xl font-bold">Daten und alte Sicherungen</h2>
+  <ul class="list-disc pl-5 space-y-1 text-sm">
+    <li>Kein neues Feld: ein frei eingetragenes Getränk ist eine normale Deckel-Zeile mit Name, Kategorie und Preis (wie heute schon als Kopie gespeichert). Nur die Getränke-Nummer ist keine aus der Karte, sondern beginnt mit <code>frei:</code>.</li>
+    <li>Die Getränkekarte bleibt unverändert; nichts wird dort angelegt.</li>
+    <li>Schicht, Umsatz nach Kategorie, Top-Getränke und CSV lesen schon heute Name und Kategorie aus der Zeile, also zählen freie Getränke dort von selbst mit.</li>
+    <li>Keine Umwandlung, alte Sicherungen bleiben einspielbar.</li>
+  </ul>
+</section>
+
+<section class="space-y-4" data-lavish-revision="r1">
+  <h2 class="text-2xl font-bold">Wie getestet wird</h2>
+  <ul class="list-disc pl-5 space-y-1 text-sm">
+    <li>Automatische Tests (Vitest): freies Getränk landet mit Name, Kategorie, Preis auf dem Deckel; zweimal dasselbe ergibt Menge 2; leerer Name oder ungültiger Preis wird abgelehnt; Schicht zählt es bei der gewählten Kategorie; „Zuletzt frei eingetragen“ zeigt jedes nur einmal, höchstens 12, und nicht mehr, sobald es in der Karte steht.</li>
+    <li>Bildschirmfoto der neuen Spalte, hell und dunkel.</li>
+  </ul>
+</section>
+
+<section class="space-y-4" data-lavish-revision="r1">
+  <h2 class="text-2xl font-bold">Risiken</h2>
+  <ul class="list-disc pl-5 space-y-1 text-sm">
+    <li><b>Tippfehler im Preis</b> (45 statt 4,50): steht sofort mit Betrag auf dem Deckel und lässt sich mit − wieder abziehen.</li>
+    <li><b>Zwei Schreibweisen</b> („Kilkenny“ und „kilkenny 0,4“) zählen in den Top-Getränken getrennt. Hilft: die Kachel unter „Zuletzt frei eingetragen“ antippen statt neu tippen.</li>
+  </ul>
+</section>
+
+<section class="space-y-4" data-lavish-revision="r1">
+  <h2 class="text-2xl font-bold">Bewusst weggelassen</h2>
+  <ul class="list-disc pl-5 space-y-1 text-sm">
+    <li>Häkchen „gleich in die Getränkekarte“: du hast „nur für den Deckel“ gewählt; dauerhaft anlegen weiter in den Einstellungen.</li>
+    <li>Eigenes Feld für die Größe.</li>
+    <li>Freie Getränke löschen oder umbenennen in der Liste „Zuletzt“ (sie fallen nach 12 neueren von selbst raus).</li>
+  </ul>
+</section>
+
+<section class="space-y-4" data-lavish-revision="r1" data-lavish-question="plan">
+  <h2 class="text-2xl font-bold">Passt der Plan?</h2>
+  <form class="space-y-3" onsubmit="event.preventDefault(); const f = new FormData(event.currentTarget); const ok = f.get('ok'); const note = (f.get('note') || '').trim(); window.lavish.queuePrompt('Plan 0.6: ' + ok + (note ? '. Anmerkung: ' + note : ''), { tag: 'choice', text: 'Plan 0.6: ' + ok, element: event.currentTarget, data: { ok, note } });">
+    <fieldset class="space-y-1">
+      <legend class="font-bold text-sm">Gesamt</legend>
+      <label class="flex gap-2 items-center"><input type="radio" class="radio radio-sm" name="ok" value="Ja, los" checked> Ja, los</label>
+      <label class="flex gap-2 items-center"><input type="radio" class="radio radio-sm" name="ok" value="Ändern"> Ändern (bitte unten schreiben)</label>
+    </fieldset>
+    <textarea name="note" class="textarea w-full" rows="3" placeholder="Anmerkung (freiwillig)"></textarea>
+    <button type="submit" class="btn btn-primary">Antwort senden</button>
+  </form>
+</section>
+
+</main>
+</body>
+</html>

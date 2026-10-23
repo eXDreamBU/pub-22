@@ -222,6 +222,34 @@ export function incrementLine(tab: Tab, lineIndex: number): void {
   if (line) line.qty++;
 }
 
+const FREE = 'frei:';
+
+/** A drink typed in at the bar that is not on the menu; book it with addItem. Never stored in db.products. */
+export function freeProduct(name: string, category: string, priceCents: number): Product {
+  name = name.trim();
+  if (!name) throw new Error('Bitte einen Namen eintippen');
+  if (!(priceCents > 0)) throw new Error('Bitte einen Preis eintippen');
+  return { id: `${FREE}${category}:${name}`, category, name, priceCents };
+}
+
+/** Free items booked lately (open tabs, then the newest settled ones), once each, minus those now on the menu. */
+export function recentFreeItems(db: Db, limit = 12): Product[] {
+  const onMenu = new Set(
+    db.products.filter((p) => !p.hidden).flatMap((p) => [p.name, `${p.name} ${p.size ?? ''}`].map((n) => n.trim().toLowerCase())),
+  );
+  const history = [...db.history].sort((a, b) => b.closedAt.localeCompare(a.closedAt));
+  // ponytail: lines carry no time, so "newest" is tab order and line order; good enough for a shortcut list
+  const lines = [...db.tabs].reverse().concat(history).flatMap((t) => [...t.lines].reverse());
+  const found = new Map<string, Product>();
+  for (const l of lines) {
+    const key = `${l.productId}\u0000${l.priceCents}`;
+    if (!l.productId.startsWith(FREE) || found.has(key) || onMenu.has(l.name.toLowerCase())) continue;
+    found.set(key, { id: l.productId, category: l.category, name: l.name, priceCents: l.priceCents });
+    if (found.size === limit) break;
+  }
+  return [...found.values()];
+}
+
 function pendingPoints(db: Db, tab: Tab, discountSteps = tab.discountSteps): number {
   return tab.rewards.reduce((sum, r) => sum + r.points, 0) + discountSteps * db.settings.discountPoints;
 }

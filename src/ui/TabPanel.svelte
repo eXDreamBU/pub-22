@@ -6,15 +6,18 @@
     cancelTab,
     checkIn,
     creditTab,
+    freeProduct,
     inBar,
     incrementLine,
     payPart,
+    recentFreeItems,
     redeemReward,
     removeItem,
     setDiscountSteps,
     settleTogether,
     tabSince,
     tabSummary,
+    type Product,
     type Tab,
     type TabLine,
   } from '../lib/db';
@@ -30,6 +33,26 @@
   let picked = $state('');
   // Falls back to the first category when the picked one has no visible drinks (left).
   let category = $derived(categories.includes(picked) ? picked : categories[0]);
+
+  // "＋ Frei": a drink not on the menu yet, typed in and booked straight onto the tab.
+  const FREE = '＋ Frei';
+  let free = $derived(picked === FREE);
+  let freeName = $state('');
+  let freePrice = $state('');
+  let freeCategory = $state('Sonstiges');
+  let freeError = $state('');
+  let freeCategories = $derived([...new Set([...categories, 'Sonstiges'])]);
+  let recent = $derived(recentFreeItems(app.db));
+
+  function bookFree(e: SubmitEvent) {
+    e.preventDefault();
+    try {
+      addItem(tab, freeProduct(freeName, freeCategory, parseEuro(freePrice) ?? 0));
+      freeError = '';
+    } catch (err) {
+      freeError = (err as Error).message;
+    }
+  }
   let summary = $derived(tabSummary(app.db, tab));
   let count = $derived(tab.lines.reduce((sum, l) => sum + l.qty, 0));
 
@@ -158,25 +181,56 @@
     {:else}
 
     <div class="cats">
+      <!-- first, so it never hides behind the scrolling category row -->
+      <button class="chip" class:active={free} onclick={() => (picked = FREE)}>{FREE}</button>
       {#each categories as c (c)}
-        <button class="chip" class:active={c === category} onclick={() => (picked = c)}
+        <button class="chip" class:active={!free && c === category} onclick={() => (picked = c)}
           ><Icon svg={categoryIcon(c)} size={18} />{c}</button
         >
       {/each}
     </div>
 
-    <div class="tiles">
-      {#each products.filter((p) => p.category === category) as p (p.id)}
-        <button class="tile" onclick={() => addItem(tab, p)}>
-          <span class="tile-icon"><Icon svg={categoryIcon(p.category)} /></span>
-          <span class="tile-name">{p.name.replaceAll('/', '/​')}</span>
-          <span class="tile-foot">
-            <span><span class="muted">{p.size ? `${p.size} · ` : ''}</span><b class="num">{formatEuro(p.priceCents)}</b></span>
-            <span class="plus" aria-hidden="true">+</span>
-          </span>
-        </button>
-      {/each}
-    </div>
+    {#snippet tile(p: Product)}
+      <button class="tile" onclick={() => addItem(tab, p)}>
+        <span class="tile-icon"><Icon svg={categoryIcon(p.category)} /></span>
+        <span class="tile-name">{p.name.replaceAll('/', '/​')}</span>
+        <span class="tile-foot">
+          <span><span class="muted">{p.size ? `${p.size} · ` : ''}</span><b class="num">{formatEuro(p.priceCents)}</b></span>
+          <span class="plus" aria-hidden="true">+</span>
+        </span>
+      </button>
+    {/snippet}
+
+    {#if free}
+      <div class="free-col">
+        <form class="free" onsubmit={bookFree}>
+          <input placeholder="Name, z. B. Kilkenny 0,4 l" aria-label="Name" bind:value={freeName} />
+          <label class="row">
+            <span class="grow">Preis</span>
+            <input class="house-cents num" inputmode="decimal" placeholder="0,00" aria-label="Preis" bind:value={freePrice} />
+            <span>€</span>
+          </label>
+          <label class="row">
+            <span class="grow">Kategorie</span>
+            <select bind:value={freeCategory}>
+              {#each freeCategories as c (c)}<option>{c}</option>{/each}
+            </select>
+          </label>
+          {#if freeError}<p class="error">{freeError}</p>{/if}
+          <button type="submit" class="primary">Auf den Deckel</button>
+        </form>
+        {#if recent.length}
+          <p class="muted heading">Zuletzt frei eingetragen</p>
+          <div class="tiles">
+            {#each recent as p (p.id + p.priceCents)}{@render tile(p)}{/each}
+          </div>
+        {/if}
+      </div>
+    {:else}
+      <div class="tiles">
+        {#each products.filter((p) => p.category === category) as p (p.id)}{@render tile(p)}{/each}
+      </div>
+    {/if}
     {/if}
   </div>
 
@@ -434,6 +488,23 @@
     gap: 0.7rem;
     overflow-y: auto;
     padding: 2px 2px 1rem;
+  }
+  .free-col {
+    min-height: 0;
+    overflow-y: auto;
+  }
+  .free-col .tiles {
+    overflow: visible;
+  }
+  .free {
+    display: grid;
+    gap: 0.6rem;
+    max-width: 32rem;
+    padding: 2px;
+  }
+  .free-col .heading {
+    margin: 1.2rem 0 0.5rem;
+    font-size: 0.85rem;
   }
   .tile {
     display: grid;
