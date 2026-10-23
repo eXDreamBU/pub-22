@@ -42,18 +42,28 @@ export interface Tab {
   lines: TabLine[];
   rewards: Reward[]; // redeemed on this tab, points deducted at settle
   discountSteps: number; // each step trades settings.discountPoints for settings.discountCents
+  deposits?: Deposit[]; // "Betrag zahlen": cash already taken (and booked in its shift); missing = none
+}
+
+/** Part of an open tab paid as a free amount; the drinks stay on the tab. */
+export interface Deposit {
+  cents: number;
+  at: string;
 }
 
 export interface Summary {
   totalCents: number;
   discountCents: number;
-  paidCents: number;
+  prepaidCents: number; // deposits, taken earlier
+  paidCents: number; // still to pay: totalCents - discountCents - prepaidCents
   pointsSpent: number;
   pointsEarned: number;
 }
 
-export interface ClosedTab extends Tab, Summary {
+export interface ClosedTab extends Tab, Omit<Summary, 'prepaidCents'> {
   closedAt: string;
+  prepaidCents?: number; // deposits taken in earlier entries, not in paidCents; missing = 0 (older tabs)
+  depositFor?: string; // this entry is a deposit (cash, no drinks) on the open tab with this id
   shiftId?: string; // missing = belongs to the running shift
   paidBy?: string; // label of the tab that paid for this one (paying together); missing = paid itself
   houseCents?: number; // "aufs Haus": the owner's own discount, already taken off paidCents; missing = 0 (older tabs)
@@ -75,7 +85,8 @@ export interface Shift {
   totalCents: number; // value of the drinks (sum of the categories)
   discountCents: number; // points discount, not spread over the categories
   houseCents?: number; // "aufs Haus", not spread over the categories; missing = 0 (older shifts)
-  paidCents: number; // totalCents - discountCents - houseCents = cash actually taken
+  depositCents?: number; // deposits taken in this shift minus deposits on the tabs it settled; missing = 0
+  paidCents: number; // totalCents - discountCents - houseCents + depositCents = cash actually taken
   byCategory: { category: string; cents: number; qty: number }[];
   rewards: { name: string; count: number }[]; // free drinks handed out, no money involved
   creditCents?: number; // all credited tabs at close, not in the cash box; missing before 0.5
@@ -212,6 +223,7 @@ export function addItem(tab: Tab, product: Product): void {
 export function removeItem(tab: Tab, lineIndex: number): void {
   const line = tab.lines[lineIndex];
   if (!line) return;
+  if (tabTotal(tab.lines) - line.priceCents < prepaidOf(tab)) throw new Error('Das ist schon angezahlt');
   if (line.qty > 1) line.qty--;
   else tab.lines.splice(lineIndex, 1);
 }
@@ -250,6 +262,10 @@ export function recentFreeItems(db: Db, limit = 12): Product[] {
   return [...found.values()];
 }
 
+export function prepaidOf(tab: Tab): number {
+  return (tab.deposits ?? []).reduce((sum, d) => sum + d.cents, 0);
+}
+
 function pendingPoints(db: Db, tab: Tab, discountSteps = tab.discountSteps): number {
   return tab.rewards.reduce((sum, r) => sum + r.points, 0) + discountSteps * db.settings.discountPoints;
 }
@@ -270,7 +286,7 @@ export function setDiscountSteps(db: Db, tab: Tab, steps: number): void {
   const customer = customerOf(db, tab);
   if (!customer) throw new Error('Gäste ohne Karte sammeln keine Punkte');
   if (steps < 0 || pendingPoints(db, tab, steps) > customer.points) throw new Error('Nicht genug Punkte');
-  if (steps > tab.discountSteps && tab.discountSteps * db.settings.discountCents >= tabTotal(tab.lines)) {
+  if (steps > tab.discountSteps && tab.discountSteps * db.settings.discountCents >= tabTotal(tab.lines) - prepaidOf(tab)) {
     throw new Error('Der Rabatt deckt schon die ganze Summe');
   }
   tab.discountSteps = steps;
@@ -278,12 +294,14 @@ export function setDiscountSteps(db: Db, tab: Tab, steps: number): void {
 
 export function tabSummary(db: Db, tab: Tab): Summary {
   const totalCents = tabTotal(tab.lines);
-  const discountCents = Math.min(tab.discountSteps * db.settings.discountCents, totalCents);
-  const paidCents = totalCents - discountCents;
+  const prepaidCents = prepaidOf(tab);
+  const discountCents = Math.min(tab.discountSteps * db.settings.discountCents, totalCents - prepaidCents);
+  const paidCents = totalCents - discountCents - prepaidCents;
   const isCustomer = !!customerOf(db, tab);
   return {
     totalCents,
     discountCents,
+    prepaidCents,
     paidCents,
     pointsSpent: isCustomer ? pendingPoints(db, tab) : 0,
     pointsEarned: isCustomer ? pointsFor(paidCents, db.settings.pointsPerEuro) : 0,
@@ -363,7 +381,8 @@ export function payPart(db: Db, tabId: string, qtys: number[], now: string): Clo
   const lines = tab.lines.flatMap((l, i) => (qtys[i] ? [{ ...l, qty: qtys[i] }] : []));
   if (lines.length === 0) throw new Error('Nichts ausgewählt');
   const rest = tab.lines.flatMap((l, i) => (l.qty > qtys[i] ? [{ ...l, qty: l.qty - qtys[i] }] : []));
-  if (tab.discountSteps && tabTotal(rest) < tabSummary(db, tab).discountCents) throw new Error('Erst den Rabatt verringern');
+  if (tabTotal(rest) < prepaidOf(tab)) throw new Error('Das ist schon angezahlt');
+  if (tab.discountSteps && tabTotal(rest) - prepaidOf(tab) < tabSummary(db, tab).discountCents) throw new Error('Erst den Rabatt verringern');
   resumeTab(tab, now);
   const paidCents = tabTotal(lines);
   const part: ClosedTab = {
@@ -386,13 +405,52 @@ export function payPart(db: Db, tabId: string, qtys: number[], now: string): Clo
   return part;
 }
 
+/**
+ * "Betrag zahlen": a card customer pays a free amount below what is due. It is booked at once as a deposit entry
+ * (cash and points, no drinks) in the running shift; the drinks stay on the tab and count when it is settled.
+ * Afterwards the tab is credited ('credit': a credited tab stays credited as it was) or in the bar ('open').
+ */
+export function payAmount(db: Db, tabId: string, cents: number, now: string, then: 'credit' | 'open'): ClosedTab {
+  const tab = db.tabs.find((t) => t.id === tabId);
+  if (!tab) throw new Error('Deckel nicht gefunden');
+  const customer = customerOf(db, tab);
+  if (!customer) throw new Error('Nur Kunden mit Karte können einen Betrag anzahlen');
+  if (!Number.isInteger(cents) || cents <= 0) throw new Error('Ungültiger Betrag');
+  const due = tabSummary(db, tab).paidCents;
+  if (cents > due) throw new Error(`Höchstens ${formatEuro(due)} offen`);
+  if (cents === due) throw new Error('Das ist alles, bitte Abrechnen tippen');
+  if (then === 'open') resumeTab(tab, now);
+  else if (!tab.creditedAt) creditTab(db, tab.id, now);
+  tab.deposits = [...(tab.deposits ?? []), { cents, at: now }];
+  const pointsEarned = pointsFor(cents, db.settings.pointsPerEuro);
+  customer.points += pointsEarned;
+  const entry: ClosedTab = {
+    id: newId(),
+    customerId: tab.customerId,
+    label: `${tab.label} (Anzahlung)`,
+    openedAt: now, // the shift it is paid in, not the tab's old evening
+    lines: [],
+    rewards: [],
+    discountSteps: 0,
+    totalCents: 0,
+    discountCents: 0,
+    paidCents: cents,
+    pointsSpent: 0,
+    pointsEarned,
+    closedAt: now,
+    depositFor: tab.id,
+  };
+  db.history.push(entry);
+  return entry;
+}
+
 export function cancelTab(db: Db, tabId: string): void {
   db.tabs = db.tabs.filter((t) => t.id !== tabId);
 }
 
 export function lastVisits(db: Db, customerId: string, count: number): ClosedTab[] {
   return db.history
-    .filter((t) => t.customerId === customerId)
+    .filter((t) => t.customerId === customerId && !t.depositFor)
     .sort((a, b) => b.closedAt.localeCompare(a.closedAt))
     .slice(0, count);
 }
@@ -409,10 +467,12 @@ export function summarizeShift(tabs: ClosedTab[]): Omit<Shift, 'id' | 'note'> {
   let totalCents = 0;
   let discountCents = 0;
   let houseCents = 0;
+  let depositCents = 0;
   for (const tab of tabs) {
     totalCents += tab.totalCents;
     discountCents += tab.discountCents;
     houseCents += tab.houseCents ?? 0;
+    depositCents += (tab.depositFor ? tab.paidCents : 0) - (tab.prepaidCents ?? 0);
     for (const line of tab.lines) {
       const entry = categories.get(line.category) ?? { cents: 0, qty: 0 };
       entry.cents += line.priceCents * line.qty;
@@ -424,11 +484,12 @@ export function summarizeShift(tabs: ClosedTab[]): Omit<Shift, 'id' | 'note'> {
   return {
     startedAt: tabs.map((t) => t.openedAt).sort()[0],
     closedAt: tabs.map((t) => t.closedAt).sort().at(-1)!,
-    tabCount: tabs.length,
+    tabCount: tabs.filter((t) => !t.depositFor).length,
     totalCents,
     discountCents,
     houseCents,
-    paidCents: totalCents - discountCents - houseCents,
+    depositCents,
+    paidCents: totalCents - discountCents - houseCents + depositCents,
     byCategory: [...categories].map(([category, v]) => ({ category, ...v })).sort((a, b) => b.cents - a.cents),
     rewards: [...rewards].map(([name, count]) => ({ name, count })),
   };
@@ -487,7 +548,12 @@ export function shiftDeleteBlocker(db: Db, shiftId: string): string | null {
   if (!shift) return 'Schicht nicht gefunden';
   const previousClose = db.shifts.map((s) => s.closedAt).filter((c) => c < shift.closedAt).sort().at(-1) ?? '';
   const credited = db.tabs.filter((t) => t.creditedAt && t.creditedAt > previousClose && t.creditedAt <= shift.closedAt);
-  return credited.length ? 'Erst die angeschriebenen Deckel abrechnen oder löschen' : null;
+  if (credited.length) return 'Erst die angeschriebenen Deckel abrechnen oder löschen';
+  // Its deposits would vanish from the cash while their tab still counts them as paid (open, or settled later).
+  const deposits = db.history.filter((t) => t.shiftId === shiftId && t.depositFor);
+  if (deposits.some((d) => db.tabs.some((t) => t.id === d.depositFor))) return 'Erst die angezahlten Deckel abrechnen oder löschen';
+  const settledLater = deposits.some((d) => db.history.some((t) => t.id === d.depositFor && t.shiftId !== shiftId));
+  return settledLater ? 'Erst die Schicht löschen, in der der angezahlte Deckel bezahlt wurde' : null;
 }
 
 /** Delete a closed shift with its tabs, e.g. a test run; the points its tabs booked are taken back. */

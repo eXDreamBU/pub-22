@@ -27,3 +27,8 @@ const euro = new Intl.NumberFormat('de-DE', { style: 'currency', currency: 'EUR'
 export function formatEuro(cents: number): string {
   return euro.format(cents / 100);
 }
+
+/** "+20,00 €" or "−30,00 €" (typographic minus, like the other minus amounts on screen). */
+export function formatSigned(cents: number): string {
+  return `${cents < 0 ? '−' : '+'}${formatEuro(Math.abs(cents))}`;
+}

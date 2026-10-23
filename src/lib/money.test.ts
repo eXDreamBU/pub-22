@@ -1,5 +1,5 @@
 import { describe, expect, it } from 'vitest';
-import { formatEuro, parseEuro, pointsFor, tabTotal } from './money';
+import { formatEuro, formatSigned, parseEuro, pointsFor, tabTotal } from './money';
 
 describe('tabTotal', () => {
   it('sums quantity times price in cents', () => {
@@ -47,5 +47,12 @@ describe('parseEuro', () => {
     expect(parseEuro('abc')).toBeNull();
     expect(parseEuro('-1')).toBeNull();
     expect(parseEuro('1,234')).toBeNull();
+  });
+});
+
+describe('formatSigned', () => {
+  it('puts a plus or a typographic minus in front', () => {
+    expect(formatSigned(2000).replace(/\s/g, ' ')).toBe('+20,00 €');
+    expect(formatSigned(-3050).replace(/\s/g, ' ')).toBe('−30,50 €');
   });
 });

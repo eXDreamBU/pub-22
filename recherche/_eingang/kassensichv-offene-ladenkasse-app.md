@@ -58,6 +58,7 @@ Keine Rechtsberatung. Korrigiert die Prämisse in `kassensichv-deckel-app.md` (d
 6. Alternativ: Ist eine zertifizierte TSE-Kasse mit Tischfunktion die für diese Größe empfohlene Lösung?
 7. Der Chef lässt manchmal etwas nach oder gibt eine Runde aufs Haus. Die App zieht das vom kassierten Betrag ab und führt es getrennt als „Aufs Haus“ (Betrag, freiwilliger Grund). Wie muss das im Kassenbericht und in der Buchhaltung stehen (Preisnachlass, Werbung, Bewirtung, Eigenverbrauch)?
 8. Stammkunden lassen anschreiben: Der Deckel bleibt über mehrere Abende offen und wird später bar bezahlt. Die App zählt das Geld in der Schicht, in der es bezahlt wird (Kassenbericht = Geld in der Kasse), und zeigt die offenen Beträge getrennt. Passt das für offene Ladenkasse und Umsatzsteuer, oder muss der Umsatz am Abend des Trinkens erfasst werden (Forderung gegen den Gast)?
+9. Stammkunden zahlen manchmal nur einen Teil ihres Deckels (z. B. 50 von 60 €), der Rest bleibt offen. Die App zählt die 50 € als Anzahlung in die Schicht, in der sie bezahlt werden; die Getränke stehen in der Schicht, in der der Deckel ganz bezahlt ist. Passt das, oder muss die Anzahlung anders erfasst werden?
 
 ## Nicht gefunden
 1. BMF-Aussage, FG-Urteil oder Steuerberater-Fachartikel zu "elektronische Deckel/Strichliste/Bestell-App mit offener Ladenkasse" (nur Anbieter-Blog Lido und Suchzusammenfassungen).

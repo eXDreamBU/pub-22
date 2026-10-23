@@ -2,7 +2,7 @@
   import { app, now } from '../state.svelte';
   import { backupDue } from '../lib/backup';
   import { closeShift, creditTotal, runningTabs, summarizeShift, tabSummary, tabsToCredit } from '../lib/db';
-  import { formatEuro } from '../lib/money';
+  import { formatEuro, formatSigned } from '../lib/money';
   import { runningShift } from '../lib/report';
   import { formatDay, formatTime } from './format';
 
@@ -64,6 +64,9 @@
         {/if}
         {#if summary.houseCents}
           <tr class="gold"><td>Aufs Haus</td><td class="num">−{formatEuro(summary.houseCents)}</td></tr>
+        {/if}
+        {#if summary.depositCents}
+          <tr class="gold"><td>Anzahlungen</td><td class="num">{formatSigned(summary.depositCents)}</td></tr>
         {/if}
         <tr class="total"><th>Gesamt</th><th class="num">{formatEuro(summary.paidCents)}</th></tr>
       </tbody>
