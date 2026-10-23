@@ -1,7 +1,7 @@
 // The whole app state as one JSON-able object, plus the pure operations on it.
 // UI code mutates it only through these functions; storage.ts persists it.
 
-import { seedMenu, type MenuItem } from './menu';
+import { addMixDrinks, seedMenu, type MenuItem } from './menu';
 import { formatEuro, pointsFor, tabTotal } from './money';
 
 export interface Product extends MenuItem {
@@ -89,7 +89,7 @@ export interface Settings {
 }
 
 export interface Db {
-  version: 2;
+  version: 3;
   products: Product[];
   customers: Customer[];
   tabs: Tab[];
@@ -108,7 +108,7 @@ export function newId(): string {
 
 export function createDb(now: string): Db {
   return {
-    version: 2,
+    version: 3,
     products: seedMenu.map((item) => ({ ...item, id: newId() })),
     customers: [],
     tabs: [],
@@ -508,27 +508,33 @@ export function migrate(data: unknown): Db {
   const db = data as Db | undefined;
   const version = (db as { version?: number } | undefined)?.version;
   const arrays = [db?.products, db?.customers, db?.tabs, db?.history, db?.rewards];
-  if ((version !== 1 && version !== 2) || !arrays.every(Array.isArray) || typeof db?.settings !== 'object') {
+  if (!db || (version !== 1 && version !== 2 && version !== 3) || !arrays.every(Array.isArray) || typeof db.settings !== 'object') {
     throw new Error('Keine Pub-22-Sicherung');
   }
-  if (version === 2) {
-    if (!Array.isArray(db.shifts)) throw new Error('Keine Pub-22-Sicherung');
-    return db;
+  if (version === 1) migrateV1(db);
+  else if (!Array.isArray(db.shifts)) throw new Error('Keine Pub-22-Sicherung');
+  if (version !== 3) {
+    // v2 -> v3: the Mischgetränke category, once; a menu that already has one is the owner's and stays as it is.
+    if (!db.products.some((p) => p.category === 'Mischgetränke')) {
+      db.products = addMixDrinks(db.products, (mix) => ({ ...mix, id: newId() }));
+    }
+    db.version = 3;
   }
-  // v1 -> v2: lines get a category, past tabs go into one "vor 0.2" shift.
+  return db;
+}
+
+// v1 -> v2: lines get a category, past tabs go into one "vor 0.2" shift.
+function migrateV1(db: Db): void {
   const categoryOf = (productId: string) => db.products.find((p) => p.id === productId)?.category ?? 'Sonstiges';
   for (const tab of [...db.tabs, ...db.history]) {
     for (const line of tab.lines) line.category ??= categoryOf(line.productId);
   }
-  const migrated = db as unknown as Db;
-  migrated.version = 2;
-  migrated.shifts = [];
+  db.shifts = [];
   if (db.history.length > 0) {
     const shift: Shift = { id: newId(), ...summarizeShift(db.history), note: 'vor 0.2' };
     for (const tab of db.history) tab.shiftId = shift.id;
-    migrated.shifts.push(shift);
+    db.shifts.push(shift);
   }
-  return migrated;
 }
 
 export function parseBackup(json: string): Db {
