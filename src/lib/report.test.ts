@@ -8,6 +8,7 @@ import {
   createDb,
   creditTab,
   openGuestTab,
+  payAmount,
   redeemReward,
   settle,
   type ClosedTab,
@@ -276,23 +277,29 @@ describe('CSV', () => {
       fakeShift(at(2026, 10, 19, 18), 5, { byCategory: [{ category: 'Snacks', cents: 105, qty: 1 }] }),
     ];
     expect(shiftsCsv(shifts)).toBe(
-      '﻿Tag;Beginn;Ende;Deckel;Getränke;Rabatt;Aufs Haus;Kassiert;Bier;Snacks;Freigetränke;Notiz\r\n' +
-        '18.10.2026;17:55;02:40;41;1260,50;10,00;0,00;1250,50;1260,50;0,00;4× Frei;"Abweichung; ""5 €"""\r\n' +
-        '19.10.2026;18:00;18:00;2;1,05;1,00;0,00;0,05;0,00;1,05;;\r\n',
+      '﻿Tag;Beginn;Ende;Deckel;Getränke;Rabatt;Aufs Haus;Anzahlungen;Kassiert;Bier;Snacks;Freigetränke;Notiz\r\n' +
+        '18.10.2026;17:55;02:40;41;1260,50;10,00;0,00;0,00;1250,50;1260,50;0,00;4× Frei;"Abweichung; ""5 €"""\r\n' +
+        '19.10.2026;18:00;18:00;2;1,05;1,00;0,00;0,00;0,05;0,00;1,05;;\r\n',
     );
   });
   it('writes tabs', () => {
     const { tabs } = history();
     const lines = tabsCsv(tabs.slice(0, 1)).split('\r\n');
-    expect(lines[0]).toBe('﻿Datum;Geöffnet;Bezahlt;Name;Kunde;Summe;Rabatt;Aufs Haus;Bezahlt €;Punkte +;Punkte −;Grund');
-    expect(lines[1]).toBe('20.10.2026;19:00;23:00;Murat;ja;8,00;0,00;0,00;8,00;8;100;');
+    expect(lines[0]).toBe('﻿Datum;Geöffnet;Bezahlt;Name;Kunde;Summe;Rabatt;Aufs Haus;Angezahlt;Bezahlt €;Punkte +;Punkte −;Grund');
+    expect(lines[1]).toBe('20.10.2026;19:00;23:00;Murat;ja;8,00;0,00;0,00;0,00;8,00;8;100;');
     expect(lines[2]).toBe('');
   });
   it('writes the house discount and its reason', () => {
     const tab = { ...history().tabs[0], houseCents: 300, paidCents: 500, houseReason: 'Geburtstag' };
-    expect(tabsCsv([tab]).split('\r\n')[1]).toBe('20.10.2026;19:00;23:00;Murat;ja;8,00;0,00;3,00;5,00;8;100;Geburtstag');
+    expect(tabsCsv([tab]).split('\r\n')[1]).toBe('20.10.2026;19:00;23:00;Murat;ja;8,00;0,00;3,00;0,00;5,00;8;100;Geburtstag');
     const shift = fakeShift(at(2026, 10, 19, 18), 5, { houseCents: 250 });
-    expect(shiftsCsv([shift]).split('\r\n')[1]).toBe('19.10.2026;18:00;18:00;2;1,05;1,00;2,50;0,05;;');
+    expect(shiftsCsv([shift]).split('\r\n')[1]).toBe('19.10.2026;18:00;18:00;2;1,05;1,00;2,50;0,00;0,05;;');
+  });
+  it('writes deposits: the shift sum may be negative, a settled tab shows what was paid before', () => {
+    const shift = fakeShift(at(2026, 10, 19, 18), 1000, { totalCents: 6050, discountCents: 0, depositCents: -5050 });
+    expect(shiftsCsv([shift]).split('\r\n')[1]).toBe('19.10.2026;18:00;18:00;2;60,50;0,00;0,00;-50,50;10,00;;');
+    const tab = { ...history().tabs[0], prepaidCents: 500, paidCents: 300 };
+    expect(tabsCsv([tab]).split('\r\n')[1]).toBe('20.10.2026;19:00;23:00;Murat;ja;8,00;0,00;0,00;5,00;3,00;8;100;');
   });
   it('defuses typed text that Excel would run as a formula', () => {
     const tab = { ...history().tabs[0], label: '=HYPERLINK("x")' };
@@ -309,5 +316,23 @@ describe('backupDue', () => {
     expect(backupDue(db, now)).toBe(true);
     db.lastBackupAt = '2026-10-20T00:00:00Z';
     expect(backupDue(db, now)).toBe(false);
+  });
+});
+
+describe('deposits in the reports', () => {
+  it('count as cash of the customer and of the shift, never as a tab of their own', () => {
+    const db = createDb(NOW);
+    const murat = addCustomer(db, 'Murat', '', NOW);
+    const tab = checkIn(db, murat.id, at(2026, 10, 23, 20));
+    for (let i = 0; i < 5; i++) addItem(tab, pils);
+    payAmount(db, tab.id, 1500, at(2026, 10, 23, 21), 'credit');
+    expect(runningShift(db)).toMatchObject({ tabCount: 0, paidCents: 1500 });
+    expect(customerRanking(db, db.history).map((r) => [r.name, r.paidCents, r.tabCount, r.avgCents])).toEqual([['Murat', 1500, 0, 0]]);
+    const fri = closeShift(db, '', at(2026, 10, 24, 1));
+    checkIn(db, murat.id, at(2026, 10, 24, 20));
+    settle(db, tab.id, at(2026, 10, 24, 21));
+    const sat = closeShift(db, '', at(2026, 10, 25, 1));
+    expect(customerRanking(db, db.history).map((r) => [r.paidCents, r.tabCount])).toEqual([[2000, 1]]);
+    expect(periodTotals([fri, sat], 'week').map((p) => [p.paidCents, p.depositCents, p.tabCount])).toEqual([[2000, 0, 1]]);
   });
 });

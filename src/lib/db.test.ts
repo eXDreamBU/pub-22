@@ -20,6 +20,7 @@ import {
   openTabsTotal,
   parseBackup,
   parseCardPayload,
+  payAmount,
   payPart,
   recentFreeItems,
   renameCustomer,
@@ -193,6 +194,7 @@ describe('settle', () => {
     expect(tabSummary(db, tab)).toEqual({
       totalCents: 1850,
       discountCents: 1000,
+      prepaidCents: 0,
       paidCents: 850,
       pointsSpent: 200,
       pointsEarned: 8,
@@ -905,5 +907,138 @@ describe('anschreiben', () => {
     const loaded = parseBackup(JSON.stringify(db));
     expect(inBar(loaded)).toHaveLength(1);
     expect(tabSince(loaded.tabs[0])).toBe(NOW);
+  });
+});
+
+describe('betrag zahlen', () => {
+  const FRI = '2026-10-23T20:00:00.000Z';
+  const SAT = '2026-10-24T20:00:00.000Z';
+
+  /** Murat with 15 Pils = 60 € on the tab. */
+  function sixtyDb() {
+    const { db, id } = dbWithCustomer(0);
+    const tab = checkIn(db, id, FRI);
+    for (let i = 0; i < 15; i++) addItem(tab, pils);
+    return { db, id, tab };
+  }
+
+  it('books the amount as cash with points now, the rest is credited', () => {
+    const { db, tab } = sixtyDb();
+    const entry = payAmount(db, tab.id, 5000, FRI, 'credit');
+    expect(entry).toMatchObject({ label: 'Murat K. (Anzahlung)', customerId: tab.customerId, lines: [], totalCents: 0, paidCents: 5000, pointsEarned: 50, depositFor: tab.id, openedAt: FRI, closedAt: FRI });
+    expect(db.history).toEqual([entry]);
+    expect(db.customers[0].points).toBe(50);
+    expect(tab.deposits).toEqual([{ cents: 5000, at: FRI }]);
+    expect(tab.creditedAt).toBe(FRI);
+    expect(tabSummary(db, tab)).toMatchObject({ totalCents: 6000, prepaidCents: 5000, paidCents: 1000, pointsEarned: 10 });
+    expect(creditTotal(db)).toBe(1000);
+  });
+
+  it('"bleibt offen" keeps the tab in the bar; several payments add up', () => {
+    const { db, tab } = sixtyDb();
+    payAmount(db, tab.id, 2000, FRI, 'open');
+    payAmount(db, tab.id, 1050, FRI, 'open');
+    expect(inBar(db)).toEqual([tab]);
+    expect(openTabsTotal(db)).toBe(2950);
+    expect(db.customers[0].points).toBe(20 + 10);
+  });
+
+  it('on a credited tab: stays credited from its old evening, or comes back into the bar', () => {
+    const { db, id, tab } = sixtyDb();
+    creditTab(db, tab.id, FRI);
+    payAmount(db, tab.id, 1000, SAT, 'credit');
+    expect(tab).toMatchObject({ creditedAt: FRI, openedAt: FRI });
+    payAmount(db, tab.id, 1000, SAT, 'open');
+    expect(tab.creditedAt).toBeUndefined();
+    expect(tab.openedAt).toBe(SAT);
+    expect(checkIn(db, id, SAT)).toBe(tab);
+  });
+
+  it('refuses guests, empty, fractional and amounts of the whole rest or more, and changes nothing', () => {
+    const { db, tab } = sixtyDb();
+    const guest = openGuestTab(db, 'Tisch 3', FRI);
+    addItem(guest, pils);
+    expect(() => payAmount(db, guest.id, 100, FRI, 'open')).toThrow('Nur Kunden mit Karte');
+    expect(() => payAmount(db, tab.id, 0, FRI, 'open')).toThrow('Ungültiger Betrag');
+    expect(() => payAmount(db, tab.id, 10.5, FRI, 'open')).toThrow('Ungültiger Betrag');
+    expect(() => payAmount(db, tab.id, 6000, FRI, 'open')).toThrow('bitte Abrechnen');
+    expect(() => payAmount(db, tab.id, 7000, FRI, 'open')).toThrow('Höchstens 60,00');
+    expect(() => payAmount(db, 'nope', 100, FRI, 'open')).toThrow('nicht gefunden');
+    expect(db.history).toEqual([]);
+    expect(tab.deposits).toBeUndefined();
+    expect(db.customers[0].points).toBe(0);
+  });
+
+  it('settling the rest: points and house discount only on the rest, the deposit is remembered', () => {
+    const { db, tab } = sixtyDb();
+    payAmount(db, tab.id, 5000, FRI, 'credit');
+    expect(() => settle(db, tab.id, SAT, { cents: 1001 })).toThrow('Höchstens 10,00');
+    const closed = settle(db, tab.id, SAT);
+    expect(closed).toMatchObject({ totalCents: 6000, prepaidCents: 5000, paidCents: 1000, pointsEarned: 10 });
+    expect(db.customers[0].points).toBe(60);
+    expect(db.tabs).toEqual([]);
+  });
+
+  it('each shift holds the cash it took; the drinks count where the tab is paid in full', () => {
+    const { db, id, tab } = sixtyDb();
+    payAmount(db, tab.id, 5000, FRI, 'credit');
+    const fri = closeShift(db, '', '2026-10-24T01:00:00.000Z');
+    expect(fri).toMatchObject({ tabCount: 0, totalCents: 0, depositCents: 5000, paidCents: 5000, byCategory: [], creditCents: 1000 });
+
+    const jonas = addCustomer(db, 'Jonas', '', SAT);
+    const j = checkIn(db, jonas.id, SAT);
+    addItem(j, cola);
+    payAmount(db, j.id, 200, SAT, 'open');
+    checkIn(db, id, SAT);
+    settle(db, tab.id, SAT);
+    settle(db, j.id, SAT);
+    const sat = closeShift(db, '', '2026-10-25T01:00:00.000Z');
+    expect(sat).toMatchObject({ tabCount: 2, totalCents: 6300, depositCents: 200 - 5000 - 200, paidCents: 1000 + 200 + 100 });
+    expect(sat.byCategory).toEqual([
+      { category: 'Bier', cents: 6000, qty: 15 },
+      { category: 'Alkoholfrei', cents: 300, qty: 1 },
+    ]);
+  });
+
+  it('nothing drops the tab below what is paid already', () => {
+    const { db, id } = dbWithCustomer(1000);
+    const t = checkIn(db, id, FRI);
+    addItem(t, pils);
+    addItem(t, cola);
+    payAmount(db, t.id, 400, FRI, 'open');
+    expect(() => removeItem(t, 0)).toThrow('schon angezahlt');
+    expect(() => payPart(db, t.id, [1, 0], FRI)).toThrow('schon angezahlt');
+    expect(t.lines.map((l) => l.qty)).toEqual([1, 1]);
+    removeItem(t, 1);
+    expect(tabSummary(db, t).paidCents).toBe(0);
+    expect(() => setDiscountSteps(db, t, 1)).toThrow('deckt schon die ganze Summe');
+  });
+
+  it('the points discount comes off what is left after the deposit', () => {
+    const { db, id } = dbWithCustomer(1000);
+    const t = checkIn(db, id, FRI);
+    for (let i = 0; i < 3; i++) addItem(t, pils);
+    payAmount(db, t.id, 1000, FRI, 'open');
+    setDiscountSteps(db, t, 1);
+    expect(tabSummary(db, t)).toMatchObject({ discountCents: 200, paidCents: 0 });
+    expect(() => setDiscountSteps(db, t, 2)).toThrow('deckt schon die ganze Summe');
+  });
+
+  it('a shift whose deposit hangs on an open tab cannot be deleted; its points go back on delete', () => {
+    const { db, id, tab } = sixtyDb();
+    payAmount(db, tab.id, 5000, FRI, 'credit');
+    const fri = closeShift(db, '', '2026-10-24T01:00:00.000Z');
+    checkIn(db, id, SAT); // back in the bar: no longer credited, the deposit still counts
+    expect(() => deleteShift(db, fri.id)).toThrow('Erst die angezahlten Deckel abrechnen oder löschen');
+    cancelTab(db, tab.id);
+    deleteShift(db, fri.id);
+    expect(db.history).toEqual([]);
+    expect(db.customers[0].points).toBe(0);
+  });
+
+  it('a deposit is no visit of its own', () => {
+    const { db, id, tab } = sixtyDb();
+    payAmount(db, tab.id, 5000, FRI, 'open');
+    expect(lastVisits(db, id, 5)).toEqual([]);
   });
 });

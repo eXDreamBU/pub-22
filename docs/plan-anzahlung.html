@@ -1,0 +1,202 @@
+<!doctype html>
+<html lang="de" data-theme="luxury" data-lavish-annotate="on">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>Pub 22 – Plan Betrag zahlen</title>
+<link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/daisyui@5.5.19/daisyui.css">
+<link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/daisyui@5.5.19/themes.css">
+<script src="https://cdn.jsdelivr.net/npm/@tailwindcss/browser@4.2.4/dist/index.global.js"></script>
+<style>
+  *, *::before, *::after { box-sizing: border-box; }
+  .grid > *, .flex > * { min-width: 0; }
+  p, li, td, th, h1, h2, h3 { overflow-wrap: anywhere; }
+  svg { max-width: 100%; height: auto; }
+  .ipad { border: 10px solid #222; border-radius: 22px; background: #15120f; }
+  .tile { background: #241f1a; border-radius: 10px; padding: .75rem; }
+  .gold { color: #c9a24a; }
+  .money { color: #5fb878; }
+</style>
+</head>
+<script type="application/json" data-lavish-revisions>
+[{ "id": "r1", "label": "Entwurf", "timestamp": "2026-10-23T13:30:00Z", "summary": "Erster Entwurf mit deinen vier Antworten aus dem Chat" }]
+</script>
+<body class="bg-base-100 text-base-content">
+<main class="max-w-5xl mx-auto px-4 py-10 space-y-12">
+
+<header class="space-y-3" data-lavish-revision="r1">
+  <p class="text-sm opacity-60">Plan · Betrag zahlen · 23.10.2026 · baut auf 0.5 auf (Anschreiben, Aufs Haus)</p>
+  <h1 class="text-4xl font-bold">„Betrag zahlen“: Kunden mit Karte zahlen einen Teil ihres Deckels</h1>
+  <p class="text-lg opacity-80 max-w-3xl">Ein Stammgast hat 60 € auf dem Deckel, aber nur 50 € dabei. Er gibt die 50 €, die restlichen 10 € zahlt er nächstes Mal. Heute kann die App nur ganze Getränke abzahlen („Teil zahlen“). Diese Version bringt einen Knopf <b>„Betrag zahlen“</b>: freier Betrag in €, der Rest bleibt auf dem Deckel, wahlweise angeschrieben oder offen in der Bar.</p>
+</header>
+
+<section class="space-y-4" data-lavish-revision="r1">
+  <h2 class="text-2xl font-bold">Heute und mit „Betrag zahlen“</h2>
+  <div class="grid md:grid-cols-2 gap-4">
+    <div class="card card-border bg-base-200"><div class="card-body">
+      <h3 class="card-title">Heute</h3>
+      <ul class="list-disc pl-5 space-y-1 text-sm">
+        <li>„Teil zahlen“ zahlt nur ganze Getränke ab, ohne Punkte. 50 € lassen sich selten genau aus Getränken zusammensetzen.</li>
+        <li>Nimmt der Chef 50 € und schreibt den ganzen Deckel an, steht in der Kasse Geld, das die App nicht kennt; der Kassenbericht stimmt nicht.</li>
+      </ul>
+    </div></div>
+    <div class="card card-border bg-base-200 border-success/40"><div class="card-body">
+      <h3 class="card-title">Mit „Betrag zahlen“</h3>
+      <ul class="list-disc pl-5 space-y-1 text-sm">
+        <li>Neuer Knopf <b>„Betrag zahlen“</b> am Deckel, nur bei Kunden mit Karte (auch an einem angeschriebenen Deckel).</li>
+        <li>Betrag eintippen, z. B. 50. Die App zeigt: „Rest 10,00 €“ und „+50 Punkte“.</li>
+        <li>Zwei Knöpfe: <b>„Bezahlt, Rest anschreiben“</b> (Kunde geht) oder <b>„Bezahlt, bleibt offen“</b> (Kunde trinkt weiter).</li>
+        <li>Am Deckel steht danach eine Zeile <b>„Angezahlt 23.10. −50,00 €“</b>, die Summe zeigt den Rest.</li>
+        <li>Die 50 € zählen in die Schicht, in der sie bezahlt werden. Punkte gibt es sofort auf die 50 €.</li>
+        <li>„Teil zahlen“ (einzelne Getränke) bleibt wie es ist.</li>
+      </ul>
+    </div></div>
+  </div>
+</section>
+
+<section class="space-y-4" data-lavish-revision="r1">
+  <h2 class="text-2xl font-bold">Ablauf an einem Beispiel</h2>
+  <p class="text-sm opacity-80 max-w-3xl">Murat hat 60 € auf dem Deckel. Am Freitag zahlt er 50 € und geht, am Samstag zahlt er die 10 €.</p>
+  <svg viewBox="0 0 900 230" class="w-full" role="img" aria-label="Freitag: Deckel 60 Euro, Murat zahlt 50 Euro, die gehen in die Freitagsschicht, Rest 10 Euro angeschrieben. Samstag: er zahlt 10 Euro, die gehen in die Samstagsschicht.">
+    <defs><marker id="a" markerWidth="10" markerHeight="10" refX="8" refY="5" orient="auto"><path d="M0,0 L10,5 L0,10 z" fill="currentColor"/></marker></defs>
+    <g font-family="sans-serif" font-size="15" fill="currentColor" text-anchor="middle">
+      <g id="f-tab"><title>Offener Deckel am Freitag</title><rect x="10" y="40" width="170" height="70" rx="12" fill="none" stroke="currentColor"/><text x="95" y="72">Deckel</text><text x="95" y="92" font-size="12" opacity=".7">60,00 €</text></g>
+      <g id="f-pay"><title>Neu: freier Betrag</title><rect x="240" y="40" width="190" height="70" rx="12" fill="none" stroke="#c9a24a" stroke-width="2"/><text x="335" y="72">Betrag zahlen</text><text x="335" y="92" font-size="12" opacity=".7">50,00 € · +50 Punkte</text></g>
+      <g id="f-shift"><title>Die 50 € sind Geld in der Kasse am Freitag</title><rect x="490" y="10" width="190" height="60" rx="12" fill="none" stroke="#5fb878" stroke-width="2"/><text x="585" y="37">Schicht Freitag</text><text x="585" y="56" font-size="12" opacity=".7">Anzahlungen +50,00 €</text></g>
+      <g id="f-rest"><title>Rest bleibt angeschrieben</title><rect x="490" y="90" width="190" height="60" rx="12" fill="none" stroke="currentColor"/><text x="585" y="117">Angeschrieben</text><text x="585" y="136" font-size="12" opacity=".7">Rest 10,00 €</text></g>
+      <g id="s-pay"><title>Samstag: normales Abrechnen des Rests</title><rect x="730" y="90" width="160" height="60" rx="12" fill="none" stroke="currentColor"/><text x="810" y="117">Abrechnen</text><text x="810" y="136" font-size="12" opacity=".7">10,00 € · +10 Punkte</text></g>
+      <g id="s-shift"><title>Samstagsschicht: Getränke 60 €, früher angezahlt −50 €, kassiert 10 €</title><rect x="730" y="170" width="160" height="50" rx="12" fill="none" stroke="#5fb878" stroke-width="2"/><text x="810" y="200" font-size="13">Schicht Samstag +10 €</text></g>
+      <g stroke="currentColor" fill="none" marker-end="url(#a)"><line x1="180" y1="75" x2="236" y2="75"/><line x1="430" y1="65" x2="486" y2="45"/><line x1="430" y1="85" x2="486" y2="115"/><line x1="680" y1="120" x2="726" y2="120"/><line x1="810" y1="150" x2="810" y2="166"/></g>
+    </g>
+  </svg>
+  <p class="text-sm opacity-80 max-w-3xl">Die Kasse stimmt jeden Abend: Freitag 50 €, Samstag 10 €. Die <b>Getränke</b> (60 €, je Kategorie) zählen in die Schicht, in der der Deckel ganz bezahlt ist, so wie heute schon beim Anschreiben.</p>
+</section>
+
+<section class="space-y-4" data-lavish-revision="r1">
+  <h2 class="text-2xl font-bold">Deckel und Dialog</h2>
+  <div class="grid md:grid-cols-2 gap-4 items-start">
+    <div class="ipad p-5 text-sm text-stone-200 space-y-2" id="deckel">
+      <b class="text-lg">Deckel · Murat K.</b>
+      <div class="flex justify-between pt-1"><span>4 × Pils 0,5</span><span>18,00 €</span></div>
+      <div class="flex justify-between"><span>3 × Raki</span><span>12,00 €</span></div>
+      <div class="flex justify-between"><span>…</span><span>…</span></div>
+      <div class="flex justify-between gold"><span>Angezahlt 23.10.</span><span>−50,00 €</span></div>
+      <div class="flex justify-between text-lg border-t border-stone-700 pt-2"><b>Summe</b><b>10,00 €</b></div>
+      <p class="opacity-60">+10 Punkte beim Abrechnen</p>
+      <button class="btn btn-sm btn-success w-full">Abrechnen</button>
+      <button class="btn btn-sm w-full">Betrag zahlen</button>
+      <button class="btn btn-sm w-full">Anschreiben</button>
+      <div class="flex gap-2"><button class="btn btn-sm flex-1">Teil zahlen</button><button class="btn btn-sm btn-error flex-1">Löschen</button></div>
+    </div>
+    <div class="ipad p-5 text-sm text-stone-200 space-y-2" id="dialog">
+      <b class="text-lg">Betrag zahlen: Murat K.</b>
+      <div class="flex justify-between pt-1"><span>Offen</span><span>60,00 €</span></div>
+      <div class="tile flex items-center gap-2"><span class="gold flex-1">Er zahlt</span><input class="input input-sm w-28 text-right" value="50"><span>€</span></div>
+      <div class="flex justify-between text-lg border-t border-stone-700 pt-2"><b>Kassieren</b><b class="money">50,00 €</b></div>
+      <div class="flex justify-between"><span>Rest bleibt</span><span>10,00 €</span></div>
+      <p>★ +50 Punkte</p>
+      <p class="opacity-60">Zählt in die laufende Schicht.</p>
+      <button class="btn btn-sm btn-success w-full">Bezahlt, Rest anschreiben</button>
+      <button class="btn btn-sm btn-success btn-outline w-full">Bezahlt, bleibt offen</button>
+      <button class="btn btn-sm w-full">Zurück</button>
+    </div>
+  </div>
+  <div class="space-y-2 text-sm max-w-3xl">
+    <p><b>Eintippen</b> wie bei „Aufs Haus“: „50“, „50,00“ oder „12,5“.</p>
+    <p><b>Der Betrag muss kleiner als das Offene sein.</b> Tippt man genau 60 ein, steht da: „Das ist alles, bitte Abrechnen tippen“ (dort gibt es „Aufs Haus“ und „Zusammen zahlen“). Mehr als offen oder ungültig: rote Zeile, die Knöpfe sind gesperrt.</p>
+    <p><b>Am angeschriebenen Deckel</b> (Kunde kommt nur zum Zahlen vorbei) heißen die Knöpfe „Bezahlt, bleibt angeschrieben“ und „Bezahlt, ist wieder da“. Der erste lässt den Deckel unter „Angeschrieben“, ohne ihn in die Bar zu holen.</p>
+    <p><b>Mehrere Anzahlungen</b> gehen auch, jede eine eigene Zeile mit Datum. Bei einem Deckel über mehrere Abende steht die Zeile unter dem Abend, an dem bezahlt wurde.</p>
+    <p><b>Punkte-Rabatt und Getränke entfernen:</b> Der Deckel darf nie unter das schon Angezahlte fallen. Wer nach einer Anzahlung ein Getränk wieder entfernen oder Rabatt einlösen will, bekommt „Das ist schon bezahlt“, wenn sonst weniger als 0 € offen wären.</p>
+  </div>
+</section>
+
+<section class="space-y-4" data-lavish-revision="r1">
+  <h2 class="text-2xl font-bold">Schichtabschluss, Umsatz, Verlauf</h2>
+  <div class="grid md:grid-cols-2 gap-4 items-start">
+    <div class="ipad p-5 text-sm text-stone-200 space-y-1" id="schicht">
+      <b class="text-lg">Schicht abschließen (Samstag)</b>
+      <div class="flex justify-between pt-2"><span>Getränke</span><span>412,30 €</span></div>
+      <div class="flex justify-between"><span>Rabatt (Punkte)</span><span>−15,00 €</span></div>
+      <div class="flex justify-between gold"><span>Aufs Haus</span><span>−3,50 €</span></div>
+      <div class="flex justify-between gold"><span>Anzahlungen</span><span>−30,00 €</span></div>
+      <div class="flex justify-between text-lg border-t border-stone-700 pt-1"><b>Gesamt</b><b class="money">363,80 €</b></div>
+      <p class="opacity-60 pt-1">„Gesamt“ ist das Geld in der Kasse, wie bisher.</p>
+    </div>
+    <div class="space-y-2 text-sm">
+      <p><b>Schichtabschluss und Schicht-Ansicht:</b> eine neue Zeile „Anzahlungen“, nur wenn es welche gab: was heute für noch offene Deckel angezahlt wurde (+), minus was an heute bezahlten Deckeln schon früher angezahlt war (−). Beispiel: heute 20 € angezahlt, Murats 50 € von Freitag verrechnet = −30 €.</p>
+      <p><b>Umsatz → Schichten und Zeiträume:</b> „Kassiert“ stimmt mit der Kasse. Die Anzahlungen stehen als eigene Spalte.</p>
+      <p><b>Verlauf der Schicht:</b> eine Anzahlung erscheint als eigener Eintrag „Murat K. (Anzahlung) 50,00 €“.</p>
+      <p><b>CSV-Export:</b> Schichten bekommen die Spalte „Anzahlungen“, Deckel eine Spalte „Angezahlt“; die Anzahlung selbst ist eine eigene Zeile.</p>
+      <p><b>Kunden-Rangliste:</b> der Umsatz zählt die Anzahlungen mit (das hat der Kunde bezahlt); die Zahl der Deckel zählt eine Anzahlung nicht als eigenen Deckel.</p>
+    </div>
+  </div>
+</section>
+
+<section class="space-y-4" data-lavish-revision="r1">
+  <h2 class="text-2xl font-bold">Daten und alte Sicherungen</h2>
+  <ul class="list-disc pl-5 space-y-1 text-sm">
+    <li>Ein offener Deckel bekommt eine Liste <code>deposits</code>: je Anzahlung Betrag in Cent und Zeitpunkt.</li>
+    <li>Jede Anzahlung legt sofort einen Eintrag im Verlauf an (ohne Getränke, mit Kunde, Betrag und Punkten, Verweis auf den Deckel). So landet das Geld in der laufenden Schicht.</li>
+    <li>Die Summe des Deckels ist dann: Getränke − Punkte-Rabatt − Angezahlt. Das gilt überall, wo heute schon der offene Betrag steht: Deckel, „Angeschrieben“, Summe aller offenen Deckel, Schichtabschluss, Abrechnen. „Aufs Haus“ geht höchstens bis zum Rest.</li>
+    <li>Beim Abrechnen merkt sich der Deckel, wie viel angezahlt war (<code>prepaidCents</code>); die Schicht bekommt die Summe „Anzahlungen“ (<code>depositCents</code>, heute angezahlt minus früher angezahlt). Die Rechnung der Schicht wird so: Getränke − Rabatt − Aufs Haus + Anzahlungen = Kasse.</li>
+    <li>Alte Deckel, Schichten und Sicherungen haben die Felder nicht; die App liest sie als 0 €. Keine Umwandlung, alte Sicherungen lassen sich weiter einspielen. Festgeschriebene Schichten bleiben unverändert.</li>
+  </ul>
+</section>
+
+<section class="space-y-4" data-lavish-revision="r1">
+  <h2 class="text-2xl font-bold">Wie getestet wird</h2>
+  <ul class="list-disc pl-5 space-y-1 text-sm">
+    <li>Automatische Tests (Vitest): Anzahlung senkt die Summe; Punkte sofort auf den Betrag; Rest anschreiben bzw. offen lassen; Anzahlung am angeschriebenen Deckel bleibt angeschrieben; Betrag 0, gleich oder über dem Offenen wird abgelehnt; Abrechnen des Rests gibt Punkte nur auf den Rest; Schichtsumme stimmt mit der Kasse über zwei Schichten; Rabatt, Getränk entfernen und „Teil zahlen“ fallen nicht unter das Angezahlte; „Aufs Haus“ höchstens bis zum Rest; Zahl der Deckel und Rangliste zählen die Anzahlung nicht doppelt; Schicht löschen ist gesperrt, solange ihre Anzahlung an einem offenen Deckel hängt; alte Daten ohne Feld zählen als 0.</li>
+    <li>Bildschirmfotos vom Deckel mit Anzahlung, vom Dialog und vom Schichtabschluss, hell und dunkel.</li>
+    <li>Danach dein Test auf dem iPad wie bisher.</li>
+  </ul>
+</section>
+
+<section class="space-y-4" data-lavish-revision="r1">
+  <h2 class="text-2xl font-bold">Risiken</h2>
+  <ul class="list-disc pl-5 space-y-1 text-sm">
+    <li><b>Steuer:</b> Geld kommt an einem Abend, die Getränke zählen an einem anderen. Das ist derselbe Fall wie beim Anschreiben (E-036: Kassenbericht = Geld in der Kasse). Ich ergänze die Frage in der Steuerberater-Liste.</li>
+    <li><b>Tippfehler:</b> 500 statt 50 wird abgelehnt (mehr als offen). 5 statt 50 würde durchgehen; „Kassieren“ und „Rest bleibt“ stehen groß da, bevor man tippt. Rückgängig gibt es wie bei jedem Bezahlen nicht.</li>
+    <li><b>Punkte runden:</b> Jede Zahlung wird für sich abgerundet. 50,70 € + 9,30 € ergibt 50 + 9 = 59 Punkte statt 60. Das folgt der Regel „Punkte auf das wirklich Bezahlte, abgerundet“.</li>
+    <li><b>Deckel löschen nach Anzahlung:</b> Die Anzahlung ist schon in der Kasse und bleibt im Verlauf; Löschen erlässt nur den Rest. Die Rückfrage sagt das deutlich.</li>
+    <li><b>Schicht löschen:</b> Eine Schicht mit einer Anzahlung für einen noch offenen Deckel lässt sich erst löschen, wenn der Deckel bezahlt oder gelöscht ist (wie E-042 beim Anschreiben).</li>
+  </ul>
+</section>
+
+<section class="space-y-4" data-lavish-revision="r1">
+  <h2 class="text-2xl font-bold">Bewusst weggelassen</h2>
+  <ul class="list-disc pl-5 space-y-1 text-sm">
+    <li>„Betrag zahlen“ für Gäste ohne Karte (du hast „nur Kunden mit Karte“ gewählt).</li>
+    <li>„Aufs Haus“ und „Zusammen zahlen“ im Betrag-Dialog: beides gibt es beim Abrechnen des Rests.</li>
+    <li>Anzahlung zurücknehmen oder Geld zurückgeben.</li>
+    <li>Guthaben (mehr zahlen als offen).</li>
+  </ul>
+</section>
+
+<section class="space-y-4" data-lavish-revision="r1" data-lavish-question="plan">
+  <h2 class="text-2xl font-bold">Passt der Plan?</h2>
+  <form class="space-y-3" onsubmit="event.preventDefault(); const f = new FormData(event.currentTarget); const name = f.get('name'); const shift = f.get('schicht'); const ok = f.get('ok'); const note = (f.get('note') || '').trim(); window.lavish.queuePrompt('Plan Betrag zahlen: ' + ok + '. Name: ' + name + '. Schichtabschluss: ' + shift + (note ? '. Anmerkung: ' + note : ''), { tag: 'choice', text: 'Plan Betrag zahlen: ' + ok, element: event.currentTarget, data: { ok, name, shift, note } });">
+    <fieldset class="space-y-1">
+      <legend class="font-bold text-sm">Wie heißt es in der App?</legend>
+      <label class="flex gap-2 items-center"><input type="radio" class="radio radio-sm" name="name" value="Knopf Betrag zahlen, Zeile Angezahlt" checked> Knopf „Betrag zahlen“, Zeile am Deckel „Angezahlt“ (empfohlen)</label>
+      <label class="flex gap-2 items-center"><input type="radio" class="radio radio-sm" name="name" value="Knopf Teilbetrag, Zeile Bezahlt"> Knopf „Teilbetrag“, Zeile „Bezahlt“</label>
+      <label class="flex gap-2 items-center"><input type="radio" class="radio radio-sm" name="name" value="Knopf Abschlag, Zeile Abschlag"> Knopf und Zeile „Abschlag“</label>
+    </fieldset>
+    <fieldset class="space-y-1">
+      <legend class="font-bold text-sm">Anzahlungen im Schichtabschluss</legend>
+      <label class="flex gap-2 items-center"><input type="radio" class="radio radio-sm" name="schicht" value="zwei Zeilen" checked> Zwei Zeilen „Anzahlungen heute +“ und „Früher angezahlt −“ (empfohlen: man sieht, woher das Geld kommt)</label>
+      <label class="flex gap-2 items-center"><input type="radio" class="radio radio-sm" name="schicht" value="eine Zeile netto"> Eine Zeile „Anzahlungen ±“ mit der Differenz (kürzer)</label>
+    </fieldset>
+    <fieldset class="space-y-1">
+      <legend class="font-bold text-sm">Gesamt</legend>
+      <label class="flex gap-2 items-center"><input type="radio" class="radio radio-sm" name="ok" value="Ja, los" checked> Ja, los</label>
+      <label class="flex gap-2 items-center"><input type="radio" class="radio radio-sm" name="ok" value="Ändern"> Ändern (bitte unten schreiben)</label>
+    </fieldset>
+    <textarea name="note" class="textarea w-full" rows="3" placeholder="Anmerkung (freiwillig)"></textarea>
+    <button type="submit" class="btn btn-primary">Antwort senden</button>
+  </form>
+</section>
+
+</main>
+</body>
+</html>

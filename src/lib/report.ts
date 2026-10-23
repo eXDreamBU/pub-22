@@ -26,7 +26,7 @@ export function runningShift(db: Db) {
   const tabs = runningTabs(db);
   return {
     startedAt: runningShiftStart(db),
-    tabCount: tabs.length,
+    tabCount: tabs.filter((t) => !t.depositFor).length,
     paidCents: tabs.reduce((sum, t) => sum + t.paidCents, 0),
     openTabs: inBar(db).length,
     openCents: inBar(db).reduce((sum, t) => sum + tabSummary(db, t).paidCents, 0),
@@ -56,6 +56,7 @@ export interface PeriodTotal {
   paidCents: number;
   discountCents: number;
   houseCents: number;
+  depositCents: number;
   tabCount: number;
 }
 
@@ -63,10 +64,11 @@ export function periodTotals(shifts: Shift[], by: 'week' | 'month'): PeriodTotal
   const groups = new Map<string, PeriodTotal>();
   for (const shift of shifts) {
     const { key, label } = (by === 'week' ? weekOf : monthOf)(shiftDay(shift));
-    const g = groups.get(key) ?? { key, label, paidCents: 0, discountCents: 0, houseCents: 0, tabCount: 0 };
+    const g = groups.get(key) ?? { key, label, paidCents: 0, discountCents: 0, houseCents: 0, depositCents: 0, tabCount: 0 };
     g.paidCents += shift.paidCents;
     g.discountCents += shift.discountCents;
     g.houseCents += shift.houseCents ?? 0;
+    g.depositCents += shift.depositCents ?? 0;
     g.tabCount += shift.tabCount;
     groups.set(key, g);
   }
@@ -137,14 +139,14 @@ export function customerRanking(db: Db, tabs: ClosedTab[], sortBy: RankingKey = 
       discountCents: 0,
       freeCount: 0,
     };
-    row.paidCents += tab.paidCents;
-    row.tabCount++;
+    row.paidCents += tab.paidCents; // deposits too: the customer paid them
+    if (!tab.depositFor) row.tabCount++;
     row.discountCents += tab.discountCents;
     row.freeCount += tab.rewards.length;
     rows.set(tab.customerId, row);
   }
   for (const row of rows.values()) {
-    row.avgCents = Math.floor(row.paidCents / row.tabCount);
+    row.avgCents = row.tabCount ? Math.floor(row.paidCents / row.tabCount) : 0;
     const current = db.customers.find((c) => c.id === row.customerId);
     if (current) row.name = current.name;
   }
@@ -159,7 +161,7 @@ export function customerRanking(db: Db, tabs: ClosedTab[], sortBy: RankingKey = 
 
 // --- CSV for Excel (German): BOM, ';' separator, CRLF, decimal comma ---
 
-const csvEuro = (cents: number) => `${Math.floor(cents / 100)},${pad(cents % 100)}`;
+const csvEuro = (cents: number) => `${cents < 0 ? '-' : ''}${Math.floor(Math.abs(cents) / 100)},${pad(Math.abs(cents) % 100)}`;
 const csvDate = (iso: string) => {
   const d = new Date(iso);
   return `${pad(d.getDate())}.${pad(d.getMonth() + 1)}.${d.getFullYear()}`;
@@ -170,7 +172,9 @@ const csvTime = (iso: string) => {
 };
 const csvField = (value: string | number) => {
   // Typed text like "=HYPERLINK(...)" would run as a formula in Excel; a leading ' keeps it text.
-  const text = typeof value === 'string' && /^[=+\-@\t\r]/.test(value) ? `'${value}` : String(value);
+  // A negative amount like "-50,50" from csvEuro stays a number.
+  const formula = typeof value === 'string' && /^[=+\-@\t\r]/.test(value) && !/^-\d+,\d\d$/.test(value);
+  const text = formula ? `'${value}` : String(value);
   return /[;"\r\n]/.test(text) ? `"${text.replaceAll('"', '""')}"` : text;
 };
 const csv = (rows: (string | number)[][]) => '﻿' + rows.map((r) => r.map(csvField).join(';') + '\r\n').join('');
@@ -178,7 +182,7 @@ const csv = (rows: (string | number)[][]) => '﻿' + rows.map((r) => r.map(csvFi
 export function shiftsCsv(shifts: Shift[]): string {
   const categories = [...new Set(shifts.flatMap((s) => s.byCategory.map((c) => c.category)))];
   const rows: (string | number)[][] = [
-    ['Tag', 'Beginn', 'Ende', 'Deckel', 'Getränke', 'Rabatt', 'Aufs Haus', 'Kassiert', ...categories, 'Freigetränke', 'Notiz'],
+    ['Tag', 'Beginn', 'Ende', 'Deckel', 'Getränke', 'Rabatt', 'Aufs Haus', 'Anzahlungen', 'Kassiert', ...categories, 'Freigetränke', 'Notiz'],
   ];
   for (const s of shifts) {
     rows.push([
@@ -189,6 +193,7 @@ export function shiftsCsv(shifts: Shift[]): string {
       csvEuro(s.totalCents),
       csvEuro(s.discountCents),
       csvEuro(s.houseCents ?? 0),
+      csvEuro(s.depositCents ?? 0),
       csvEuro(s.paidCents),
       ...categories.map((c) => csvEuro(s.byCategory.find((x) => x.category === c)?.cents ?? 0)),
       s.rewards.map((r) => `${r.count}× ${r.name}`).join(', '),
@@ -200,7 +205,7 @@ export function shiftsCsv(shifts: Shift[]): string {
 
 export function tabsCsv(tabs: ClosedTab[]): string {
   const rows: (string | number)[][] = [
-    ['Datum', 'Geöffnet', 'Bezahlt', 'Name', 'Kunde', 'Summe', 'Rabatt', 'Aufs Haus', 'Bezahlt €', 'Punkte +', 'Punkte −', 'Grund'],
+    ['Datum', 'Geöffnet', 'Bezahlt', 'Name', 'Kunde', 'Summe', 'Rabatt', 'Aufs Haus', 'Angezahlt', 'Bezahlt €', 'Punkte +', 'Punkte −', 'Grund'],
   ];
   for (const t of tabs) {
     rows.push([
@@ -212,6 +217,7 @@ export function tabsCsv(tabs: ClosedTab[]): string {
       csvEuro(t.totalCents),
       csvEuro(t.discountCents),
       csvEuro(t.houseCents ?? 0),
+      csvEuro(t.prepaidCents ?? 0),
       csvEuro(t.paidCents),
       t.pointsEarned,
       t.pointsSpent,
