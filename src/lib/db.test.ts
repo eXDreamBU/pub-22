@@ -49,8 +49,8 @@ function dbWithCustomer(points = 0): { db: Db; id: string } {
 describe('createDb', () => {
   it('seeds the drink menu with unique ids and default settings', () => {
     const db = createDb(NOW);
-    expect(db.products.length).toBe(112);
-    expect(new Set(db.products.map((p) => p.id)).size).toBe(112);
+    expect(db.products.length).toBe(152);
+    expect(new Set(db.products.map((p) => p.id)).size).toBe(152);
     expect(db.settings.pointsPerEuro).toBe(1);
   });
 });
@@ -458,7 +458,7 @@ describe('migrate', () => {
 
   it('moves old history into one "vor 0.2" shift and fills categories', () => {
     const db = migrate(v1());
-    expect(db.version).toBe(2);
+    expect(db.version).toBe(3);
     expect(db.shifts).toHaveLength(1);
     expect(db.shifts[0]).toMatchObject({
       note: 'vor 0.2',
@@ -478,16 +478,46 @@ describe('migrate', () => {
     expect(migrate(data).shifts).toEqual([]);
   });
 
-  it('passes v2 through and rejects anything else', () => {
+  it('passes v3 through and rejects anything else', () => {
     const db = createDb(NOW);
     expect(migrate(db)).toBe(db);
     expect(() => migrate({ ...db, shifts: undefined })).toThrow('Keine Pub-22-Sicherung');
-    expect(() => migrate({ ...db, version: 3 })).toThrow('Keine Pub-22-Sicherung');
+    expect(() => migrate({ ...db, version: 4 })).toThrow('Keine Pub-22-Sicherung');
     expect(() => migrate(null)).toThrow('Keine Pub-22-Sicherung');
   });
 
   it('parseBackup runs old backups through the migration', () => {
-    expect(parseBackup(JSON.stringify(v1())).version).toBe(2);
+    expect(parseBackup(JSON.stringify(v1())).version).toBe(3);
+  });
+
+  it('v2 -> v3 adds mixes from the stored spirits after Whisky, keeping the owner prices', () => {
+    const v2 = {
+      ...createDb(NOW),
+      version: 2,
+      products: [
+        { id: 's', category: 'Spirituosen', name: 'Wodka', size: '2 cl', priceCents: 380 },
+        { id: 'm', category: 'Spirituosen', name: 'Mix-Aufpreis', priceCents: 70 },
+        { id: 'w', category: 'Whisky', name: 'Jim Beam', size: '2 cl', priceCents: 350 },
+        { id: 'c', category: 'Cocktails', name: 'Mojito', priceCents: 700 },
+      ],
+    };
+    const db = migrate(v2);
+    expect(db.version).toBe(3);
+    expect(db.products.map((p) => `${p.category}|${p.name}|${p.priceCents}`)).toEqual([
+      'Spirituosen|Wodka|380',
+      'Spirituosen|Mix-Aufpreis|70',
+      'Whisky|Jim Beam|350',
+      'Mischgetränke|Wodka Mix|450',
+      'Mischgetränke|Jim Beam Mix|420',
+      'Cocktails|Mojito|700',
+    ]);
+    expect(new Set(db.products.map((p) => p.id)).size).toBe(6);
+  });
+
+  it('v2 -> v3 leaves a menu alone that already has Mischgetränke', () => {
+    const own = { id: 'x', category: 'Mischgetränke', name: 'Cuba Libre', priceCents: 450 };
+    const v2 = { ...createDb(NOW), version: 2, products: [{ id: 's', category: 'Spirituosen', name: 'Rum', priceCents: 350 }, own] };
+    expect(migrate(v2).products.map((p) => p.name)).toEqual(['Rum', 'Cuba Libre']);
   });
 });
 

@@ -10,7 +10,8 @@ export interface MenuItem {
 
 type Row = [name: string, size: string | undefined, priceCents: number];
 
-// "Alle Schnäpse als Mix 0,50 € mehr": booked as its own tile after the spirit.
+// "Alle Schnäpse als Mix 0,50 € mehr": booked as its own tile after the spirit,
+// or as one "<Schnaps> Mix" tile from the Mischgetränke category (addMixDrinks).
 const MIX: Row = ['Mix-Aufpreis', undefined, 50];
 
 const card: Record<string, Row[]> = {
@@ -152,6 +153,24 @@ const card: Record<string, Row[]> = {
   ],
 };
 
-export const seedMenu: MenuItem[] = Object.entries(card).flatMap(([category, rows]) =>
-  rows.map(([name, size, priceCents]) => (size ? { category, name, size, priceCents } : { category, name, priceCents })),
+const MIXABLE = ['Spirituosen', 'Whisky'];
+
+/**
+ * Every visible spirit and whisky once more as "<name> Mix" in the category Mischgetränke, priced at the spirit plus
+ * the menu's Mix-Aufpreis, inserted right after the last Whisky item. `toItem` turns a new mix into the caller's type.
+ */
+export function addMixDrinks<T extends MenuItem & { hidden?: boolean }>(items: T[], toItem: (mix: MenuItem) => T): T[] {
+  const surcharge = items.find((i) => MIXABLE.includes(i.category) && i.name === MIX[0])?.priceCents ?? MIX[2];
+  const mixes = items
+    .filter((i) => MIXABLE.includes(i.category) && i.name !== MIX[0] && !i.hidden)
+    .map((i) => toItem({ category: 'Mischgetränke', name: `${i.name} Mix`, priceCents: i.priceCents + surcharge }));
+  const at = Math.max(...MIXABLE.map((c) => items.map((i) => i.category).lastIndexOf(c))) + 1 || items.length;
+  return [...items.slice(0, at), ...mixes, ...items.slice(at)];
+}
+
+export const seedMenu: MenuItem[] = addMixDrinks(
+  Object.entries(card).flatMap(([category, rows]) =>
+    rows.map(([name, size, priceCents]) => (size ? { category, name, size, priceCents } : { category, name, priceCents })),
+  ),
+  (mix) => mix,
 );
