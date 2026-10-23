@@ -9,6 +9,7 @@
     freeProduct,
     inBar,
     incrementLine,
+    payAmount,
     payPart,
     recentFreeItems,
     redeemReward,
@@ -17,6 +18,7 @@
     settleTogether,
     tabSince,
     tabSummary,
+    type Deposit,
     type Product,
     type Tab,
     type TabLine,
@@ -64,10 +66,19 @@
   // ponytail: separators assume lines of one evening are contiguous, true because new lines are appended
   const eveningStarts = (i: number) => i === 0 || visitOf(tab.lines[i - 1]) !== visitOf(tab.lines[i]);
   const eveningLabel = (l: TabLine) => (!l.visit && !tab.creditedAt ? 'Heute' : formatDay(visitOf(l)));
+  const eveningEnds = (i: number) => i === tab.lines.length - 1 || visitOf(tab.lines[i + 1]) !== visitOf(tab.lines[i]);
+  // A deposit sits under the last evening that began before it was paid.
+  const depositEvening = (d: Deposit) => {
+    const visits = tab.lines.map(visitOf).sort();
+    return visits.filter((v) => v <= d.at).at(-1) ?? visits[0];
+  };
+  const depositsAfter = (i: number) =>
+    eveningEnds(i) ? (tab.deposits ?? []).filter((d) => depositEvening(d) === visitOf(tab.lines[i])) : [];
 
   let redeemDialog: HTMLDialogElement;
   let settleDialog: HTMLDialogElement;
   let partDialog: HTMLDialogElement;
+  let amountDialog: HTMLDialogElement;
   let renameDialog: HTMLDialogElement;
   let error = $state('');
 
@@ -91,6 +102,19 @@
   // Paying part: how many of each line are paid now.
   let partQtys = $state<number[]>([]);
   let partCents = $derived(tabTotal(tab.lines.map((l, i) => ({ priceCents: l.priceCents, qty: partQtys[i] ?? 0 }))));
+
+  // "Betrag zahlen": a free amount below what is due, the rest stays on the tab.
+  let amountText = $state('');
+  let amountCents = $derived(amountText.trim() ? parseEuro(amountText) : 0);
+  let amountError = $derived(
+    amountCents === null
+      ? 'Bitte einen Betrag wie 50 eintippen'
+      : amountCents > summary.paidCents
+        ? `Höchstens ${formatEuro(summary.paidCents)} offen`
+        : amountCents === summary.paidCents
+          ? 'Das ist alles, bitte Abrechnen tippen'
+          : '',
+  );
 
   let newLabel = $state('');
 
@@ -133,6 +157,17 @@
     if (!app.db.tabs.includes(tab)) app.selectedTabId = null;
   }
 
+  function showAmount() {
+    amountText = '';
+    amountDialog.showModal();
+  }
+
+  function doPayAmount(then: 'credit' | 'open') {
+    payAmount(app.db, tab.id, amountCents ?? 0, now(), then);
+    amountDialog.close();
+    if (then === 'credit') app.selectedTabId = null;
+  }
+
   function showRename() {
     newLabel = tab.label;
     renameDialog.showModal();
@@ -151,9 +186,11 @@
   }
 
   function doCancel() {
-    const question = tab.creditedAt
-      ? `„${tab.label}“ löschen? ${formatEuro(summary.paidCents)} angeschrieben gehen verloren.`
-      : `Deckel „${tab.label}“ ohne Abrechnen löschen?`;
+    const question =
+      (tab.creditedAt
+        ? `„${tab.label}“ löschen? ${formatEuro(summary.paidCents)} angeschrieben gehen verloren.`
+        : `Deckel „${tab.label}“ ohne Abrechnen löschen?`) +
+      (summary.prepaidCents ? ` Die angezahlten ${formatEuro(summary.prepaidCents)} bleiben in der Kasse.` : '');
     if ((tab.lines.length || tab.creditedAt) && !confirm(question)) return;
     cancelTab(app.db, tab.id);
     app.selectedTabId = null;
@@ -246,13 +283,24 @@
         {/if}
         <div class="line">
           <span class="stepper">
-            <button class="small" aria-label="Eins entfernen" onclick={() => removeItem(tab, i)}>−</button>
+            <button
+              class="small"
+              aria-label="Eins entfernen"
+              disabled={summary.totalCents - line.priceCents < summary.prepaidCents}
+              onclick={() => removeItem(tab, i)}>−</button
+            >
             <b>{line.qty}</b>
             <button class="small" aria-label="Eins mehr" onclick={() => incrementLine(tab, i)}>+</button>
           </span>
           <span class="grow">{line.name.replaceAll('/', '/​')} <span class="muted">{line.size ?? ''}</span></span>
           <span class="num">{formatEuro(line.priceCents * line.qty)}</span>
         </div>
+        {#each depositsAfter(i) as d}
+          <div class="line gold">
+            <span class="grow">Angezahlt {formatDay(d.at)}</span>
+            <span class="num">−{formatEuro(d.cents)}</span>
+          </div>
+        {/each}
       {:else}
         <p class="muted empty">Getränk antippen, dann steht es hier.</p>
       {/each}
@@ -286,8 +334,13 @@
         <span class="muted">+{summary.pointsEarned} Punkte beim Abrechnen</span>
       {/if}
       <button class="ok pay" onclick={showSettle}>Abrechnen</button>
-      {#if tab.customerId && !tab.creditedAt}
-        <button onclick={doCredit} disabled={!tab.lines.length && !tab.rewards.length}>Anschreiben</button>
+      {#if tab.customerId}
+        <div class="row">
+          <button class="grow" onclick={showAmount} disabled={summary.paidCents < 2}>Betrag zahlen</button>
+          {#if !tab.creditedAt}
+            <button class="grow" onclick={doCredit} disabled={!tab.lines.length && !tab.rewards.length}>Anschreiben</button>
+          {/if}
+        </div>
       {/if}
       <div class="row">
         <button class="grow" onclick={showPart} disabled={!tab.lines.length}>Teil zahlen</button>
@@ -359,6 +412,9 @@
     {#if summary.discountCents}
       <div class="row"><span class="grow">Rabatt</span><span class="num">−{formatEuro(summary.discountCents)}</span></div>
     {/if}
+    {#if summary.prepaidCents}
+      <div class="row"><span class="grow">Angezahlt</span><span class="num">−{formatEuro(summary.prepaidCents)}</span></div>
+    {/if}
   {/if}
   <div class="house">
     <label class="row">
@@ -406,12 +462,38 @@
     </div>
   {/each}
   <div class="row kassieren"><b class="grow">Kassieren</b><b class="num">{formatEuro(partCents)}</b></div>
-  <div class="row muted"><span class="grow">Bleibt offen</span><span class="num">{formatEuro(summary.totalCents - partCents)}</span></div>
+  <div class="row muted"><span class="grow">Bleibt offen</span><span class="num">{formatEuro(summary.totalCents - summary.prepaidCents - partCents)}</span></div>
   <p class="muted">Teilzahlung ohne Punkte. Zählt in die laufende Schicht.</p>
   {#if error}<p class="error">{error}</p>{/if}
   <div class="row">
     <button class="grow" onclick={() => partDialog.close()}>Zurück</button>
     <button class="ok grow" disabled={!partCents} onclick={doPayPart}>Teil bezahlt</button>
+  </div>
+</dialog>
+
+<dialog bind:this={amountDialog}>
+  <h2>Betrag zahlen: {tab.label}</h2>
+  <div class="row"><span class="grow">Offen</span><span class="num">{formatEuro(summary.paidCents)}</span></div>
+  <label class="row amount">
+    <span class="grow gold">Er zahlt</span>
+    <input class="house-cents num" inputmode="decimal" placeholder="0,00" bind:value={amountText} />
+    <span>€</span>
+  </label>
+  {#if amountError}<p class="error">{amountError}</p>{/if}
+  <div class="row kassieren"><b class="grow">Kassieren</b><b class="num">{formatEuro(amountError ? 0 : (amountCents ?? 0))}</b></div>
+  {#if !amountError && amountCents}
+    <div class="row"><span class="grow">Rest bleibt</span><span class="num">{formatEuro(summary.paidCents - amountCents)}</span></div>
+    <p>★ +{pointsFor(amountCents, app.db.settings.pointsPerEuro)} Punkte</p>
+  {/if}
+  <p class="muted">Zählt in die laufende Schicht.</p>
+  <div class="actions">
+    <button class="ok" disabled={!!amountError || !amountCents} onclick={() => doPayAmount('credit')}
+      >{tab.creditedAt ? 'Bezahlt, bleibt angeschrieben' : 'Bezahlt, Rest anschreiben'}</button
+    >
+    <button disabled={!!amountError || !amountCents} onclick={() => doPayAmount('open')}
+      >{tab.creditedAt ? 'Bezahlt, ist wieder da' : 'Bezahlt, bleibt offen'}</button
+    >
+    <button onclick={() => amountDialog.close()}>Zurück</button>
   </div>
 </dialog>
 
@@ -664,6 +746,16 @@
   .house-cents {
     width: 7rem;
     text-align: right;
+  }
+  .amount {
+    margin-top: 0.8rem;
+    padding: 0.75rem;
+    border-radius: var(--radius);
+    background: var(--panel-2);
+  }
+  .actions {
+    display: grid;
+    gap: 0.5rem;
   }
   .kassieren {
     font-size: 1.45rem;

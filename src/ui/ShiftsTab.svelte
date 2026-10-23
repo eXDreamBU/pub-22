@@ -1,7 +1,7 @@
 <script lang="ts">
   import { app } from '../state.svelte';
   import { deleteShift, shiftDeleteBlocker, type Shift } from '../lib/db';
-  import { formatEuro } from '../lib/money';
+  import { formatEuro, formatSigned } from '../lib/money';
   import { formatDay, formatTime } from './format';
 
   let dialog: HTMLDialogElement;
@@ -29,7 +29,7 @@
 
 <table class="report">
   <thead>
-    <tr><th>Tag</th><th>Zeit</th><th class="num">Deckel</th><th class="num">Rabatt</th><th class="num">Aufs Haus</th><th class="num">Umsatz</th></tr>
+    <tr><th>Tag</th><th>Zeit</th><th class="num">Deckel</th><th class="num">Rabatt</th><th class="num">Aufs Haus</th><th class="num">Anzahlungen</th><th class="num">Umsatz</th></tr>
   </thead>
   <tbody>
     {#each shifts as s (s.id)}
@@ -39,10 +39,11 @@
         <td class="num">{s.tabCount}</td>
         <td class="num">{s.discountCents ? `−${formatEuro(s.discountCents)}` : '–'}</td>
         <td class="num">{s.houseCents ? `−${formatEuro(s.houseCents)}` : '–'}</td>
+        <td class="num">{s.depositCents ? formatSigned(s.depositCents) : '–'}</td>
         <td class="num"><b>{formatEuro(s.paidCents)}</b></td>
       </tr>
     {:else}
-      <tr><td colspan="6" class="muted">Noch keine abgeschlossene Schicht.</td></tr>
+      <tr><td colspan="7" class="muted">Noch keine abgeschlossene Schicht.</td></tr>
     {/each}
   </tbody>
 </table>
@@ -62,6 +63,9 @@
         {#if shown.houseCents}
           <tr class="gold"><td>Aufs Haus</td><td class="num">−{formatEuro(shown.houseCents)}</td></tr>
         {/if}
+        {#if shown.depositCents}
+          <tr class="gold"><td>Anzahlungen</td><td class="num">{formatSigned(shown.depositCents)}</td></tr>
+        {/if}
         <tr><th>Gesamt</th><th class="num">{formatEuro(shown.paidCents)}</th></tr>
       </tbody>
     </table>
@@ -78,7 +82,7 @@
           <span class="grow"
             >{t.label}{#if t.paidBy}<span class="muted">{` · bezahlt von ${t.paidBy}`}</span>{/if}{#if t.houseCents}<span class="gold"
                 >{` · aufs Haus ${formatEuro(t.houseCents)}${t.houseReason ? ` · ${t.houseReason}` : ''}`}</span
-              >{/if}</span
+              >{/if}{#if t.prepaidCents}<span class="gold">{` · angezahlt ${formatEuro(t.prepaidCents)}`}</span>{/if}</span
           >
           <span class="num">{formatEuro(t.paidCents)}</span>
         </div>

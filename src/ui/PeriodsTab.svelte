@@ -1,6 +1,6 @@
 <script lang="ts">
   import { app } from '../state.svelte';
-  import { formatEuro } from '../lib/money';
+  import { formatEuro, formatSigned } from '../lib/money';
   import { periodTotals, type PeriodTotal } from '../lib/report';
 
   let weeks = $derived(periodTotals(app.db.shifts, 'week'));
@@ -11,7 +11,7 @@
   <section class="panel">
     <h3>{title}</h3>
     <table class="report">
-      <thead><tr><th></th><th class="num">Deckel</th><th class="num">Rabatt</th><th class="num">Aufs Haus</th><th class="num">Umsatz</th></tr></thead>
+      <thead><tr><th></th><th class="num">Deckel</th><th class="num">Rabatt</th><th class="num">Aufs Haus</th><th class="num">Anzahlungen</th><th class="num">Umsatz</th></tr></thead>
       <tbody>
         {#each rows as r (r.key)}
           <tr>
@@ -19,10 +19,11 @@
             <td class="num">{r.tabCount}</td>
             <td class="num">{r.discountCents ? `−${formatEuro(r.discountCents)}` : '–'}</td>
             <td class="num">{r.houseCents ? `−${formatEuro(r.houseCents)}` : '–'}</td>
+            <td class="num">{r.depositCents ? formatSigned(r.depositCents) : '–'}</td>
             <td class="num"><b>{formatEuro(r.paidCents)}</b></td>
           </tr>
         {:else}
-          <tr><td colspan="5" class="muted">Noch keine Schicht.</td></tr>
+          <tr><td colspan="6" class="muted">Noch keine Schicht.</td></tr>
         {/each}
       </tbody>
     </table>
