@@ -1036,6 +1036,19 @@ describe('betrag zahlen', () => {
     expect(db.customers[0].points).toBe(0);
   });
 
+  it('a shift whose deposit was used up by a later shift goes only after that one', () => {
+    const { db, id, tab } = sixtyDb();
+    payAmount(db, tab.id, 5000, FRI, 'credit');
+    const fri = closeShift(db, '', '2026-10-24T01:00:00.000Z');
+    checkIn(db, id, SAT);
+    settle(db, tab.id, SAT);
+    expect(() => deleteShift(db, fri.id)).toThrow('Erst die Schicht löschen, in der der angezahlte Deckel bezahlt wurde');
+    deleteShift(db, closeShift(db, '', '2026-10-25T01:00:00.000Z').id);
+    deleteShift(db, fri.id);
+    expect(db.history).toEqual([]);
+    expect(db.customers[0].points).toBe(0);
+  });
+
   it('a deposit is no visit of its own', () => {
     const { db, id, tab } = sixtyDb();
     payAmount(db, tab.id, 5000, FRI, 'open');

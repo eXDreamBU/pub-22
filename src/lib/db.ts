@@ -549,9 +549,11 @@ export function shiftDeleteBlocker(db: Db, shiftId: string): string | null {
   const previousClose = db.shifts.map((s) => s.closedAt).filter((c) => c < shift.closedAt).sort().at(-1) ?? '';
   const credited = db.tabs.filter((t) => t.creditedAt && t.creditedAt > previousClose && t.creditedAt <= shift.closedAt);
   if (credited.length) return 'Erst die angeschriebenen Deckel abrechnen oder löschen';
-  // Its deposits would vanish from the cash while the open tab still counts them as paid.
-  const deposited = db.history.some((t) => t.shiftId === shiftId && t.depositFor && db.tabs.some((o) => o.id === t.depositFor));
-  return deposited ? 'Erst die angezahlten Deckel abrechnen oder löschen' : null;
+  // Its deposits would vanish from the cash while their tab still counts them as paid (open, or settled later).
+  const deposits = db.history.filter((t) => t.shiftId === shiftId && t.depositFor);
+  if (deposits.some((d) => db.tabs.some((t) => t.id === d.depositFor))) return 'Erst die angezahlten Deckel abrechnen oder löschen';
+  const settledLater = deposits.some((d) => db.history.some((t) => t.id === d.depositFor && t.shiftId !== shiftId));
+  return settledLater ? 'Erst die Schicht löschen, in der der angezahlte Deckel bezahlt wurde' : null;
 }
 
 /** Delete a closed shift with its tabs, e.g. a test run; the points its tabs booked are taken back. */
