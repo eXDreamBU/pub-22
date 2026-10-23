@@ -508,10 +508,26 @@ describe('migrate', () => {
       'Spirituosen|Mix-Aufpreis|70',
       'Whisky|Jim Beam|350',
       'Mischgetränke|Wodka Mix|450',
-      'Mischgetränke|Jim Beam Mix|420',
+      'Mischgetränke|Jim Beam Mix|400',
       'Cocktails|Mojito|700',
     ]);
     expect(new Set(db.products.map((p) => p.id)).size).toBe(6);
+  });
+
+  it('v2 -> v3 puts Mischgetränke right after Whisky even when the owner appended a spirit at the end', () => {
+    const v2 = {
+      ...createDb(NOW),
+      version: 2,
+      products: [
+        { id: 's', category: 'Spirituosen', name: 'Wodka', priceCents: 380 },
+        { id: 'w', category: 'Whisky', name: 'Jim Beam', priceCents: 350 },
+        { id: 'c', category: 'Cocktails', name: 'Mojito', priceCents: 700 },
+        { id: 'n', category: 'Spirituosen', name: 'Sambuca', priceCents: 300 },
+      ],
+    };
+    const products = migrate(v2).products;
+    expect(products.map((p) => p.name)).toEqual(['Wodka', 'Jim Beam', 'Wodka Mix', 'Jim Beam Mix', 'Sambuca Mix', 'Mojito', 'Sambuca']);
+    expect([...new Set(products.map((p) => p.category))]).toEqual(['Spirituosen', 'Whisky', 'Mischgetränke', 'Cocktails']);
   });
 
   it('v2 -> v3 leaves a menu alone that already has Mischgetränke', () => {

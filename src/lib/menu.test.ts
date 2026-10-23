@@ -46,4 +46,27 @@ describe('addMixDrinks', () => {
       'Bier|Pils|400',
     ]);
   });
+
+  it("prices each mix with its own category's Mix-Aufpreis, 0,50 € when the category has none", () => {
+    const items = [
+      { category: 'Spirituosen', name: 'Mix-Aufpreis', priceCents: 50 },
+      { category: 'Spirituosen', name: 'Wodka', priceCents: 350 },
+      { category: 'Whisky', name: 'Mix-Aufpreis', priceCents: 100 },
+      { category: 'Whisky', name: 'Jim Beam', priceCents: 350 },
+    ];
+    const price = (name: string) => addMixDrinks(items, (m) => m).find((i) => i.name === name)?.priceCents;
+    expect(price('Wodka Mix')).toBe(400);
+    expect(price('Jim Beam Mix')).toBe(450);
+    expect(addMixDrinks(items.slice(0, 2).concat(items[3]), (m) => m).find((i) => i.name === 'Jim Beam Mix')?.priceCents).toBe(400);
+  });
+
+  it('without Whisky puts the mixes right after Spirituosen', () => {
+    const items = [
+      { category: 'Bier', name: 'Pils', priceCents: 400 },
+      { category: 'Spirituosen', name: 'Wodka', priceCents: 350 },
+      { category: 'Cocktails', name: 'Mojito', priceCents: 700 },
+      { category: 'Spirituosen', name: 'Sambuca', priceCents: 300 },
+    ];
+    expect(addMixDrinks(items, (m) => m).map((i) => i.name)).toEqual(['Pils', 'Wodka', 'Wodka Mix', 'Sambuca Mix', 'Mojito', 'Sambuca']);
+  });
 });

@@ -157,14 +157,19 @@ const MIXABLE = ['Spirituosen', 'Whisky'];
 
 /**
  * Every visible spirit and whisky once more as "<name> Mix" in the category Mischgetränke, priced at the spirit plus
- * the menu's Mix-Aufpreis, inserted right after the last Whisky item. `toItem` turns a new mix into the caller's type.
+ * its own category's Mix-Aufpreis, inserted so that Mischgetränke is the category right after Whisky (or Spirituosen
+ * without Whisky) in first-appearance order. `toItem` turns a new mix into the caller's type.
  */
 export function addMixDrinks<T extends MenuItem & { hidden?: boolean }>(items: T[], toItem: (mix: MenuItem) => T): T[] {
-  const surcharge = items.find((i) => MIXABLE.includes(i.category) && i.name === MIX[0])?.priceCents ?? MIX[2];
+  const surcharge = (category: string) => items.find((i) => i.category === category && i.name === MIX[0])?.priceCents ?? MIX[2];
   const mixes = items
     .filter((i) => MIXABLE.includes(i.category) && i.name !== MIX[0] && !i.hidden)
-    .map((i) => toItem({ category: 'Mischgetränke', name: `${i.name} Mix`, priceCents: i.priceCents + surcharge }));
-  const at = Math.max(...MIXABLE.map((c) => items.map((i) => i.category).lastIndexOf(c))) + 1 || items.length;
+    .map((i) => toItem({ category: 'Mischgetränke', name: `${i.name} Mix`, priceCents: i.priceCents + surcharge(i.category) }));
+  const whisky = items.findIndex((i) => i.category === 'Whisky');
+  const from = whisky >= 0 ? whisky : items.findIndex((i) => i.category === 'Spirituosen');
+  const seen = new Set(items.slice(0, from + 1).map((i) => i.category));
+  const next = items.findIndex((i, n) => n > from && !seen.has(i.category));
+  const at = next >= 0 ? next : items.length;
   return [...items.slice(0, at), ...mixes, ...items.slice(at)];
 }
 
